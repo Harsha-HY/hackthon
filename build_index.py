@@ -196,12 +196,6 @@ html_template = '''<!DOCTYPE html>
               <a class="button button-glass" href="#tracking">Track a complaint</a>
             </div>
 
-            <!-- Real City Metrics Strip -->
-            <div class="mt-10 flex flex-wrap gap-3 text-hero-foreground">
-              <div class="stats-pill">📍 65 MCC Wards Covered</div>
-              <div class="stats-pill">♻️ 9 Decentralized ZWM Plants</div>
-              <div class="stats-pill">⏱️ Avg. 4.2 Hr Ward Resolution</div>
-            </div>
           </div>
           
           <div class="route-preview hidden border-l border-hero-line pl-7 text-hero-foreground lg:block">
