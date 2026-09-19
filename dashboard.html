@@ -173,7 +173,7 @@
       </div>
       <div class="leading-tight">
         <span id="brand-title" class="block font-bold text-sm text-white tracking-tight">Smart Civic C&D</span>
-        <span id="brand-subtitle" class="block text-[10px] text-emerald-400 font-mono tracking-wider uppercase font-semibold">Mysuru Debris Hub</span>
+        <span id="brand-subtitle" class="block text-[10px] text-emerald-400 font-mono tracking-wider uppercase font-semibold">Mysuru City Corporation</span>
       </div>
     </div>
 
@@ -281,7 +281,7 @@
     <header class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-30 flex items-center justify-between">
       <div>
         <h1 id="topbar-title" class="text-lg font-bold text-slate-900 tracking-tight">1. Dashboard Overview</h1>
-        <p id="topbar-sub" class="text-xs text-slate-500 font-medium">Smart Civic Construction & Demolition (C&D) Waste Governance — Mysuru</p>
+        <p id="topbar-sub" class="text-xs text-slate-500 font-medium">Smart Civic Mysuru City Corporation</p>
       </div>
 
       <div class="flex items-center gap-3">
@@ -315,18 +315,34 @@
       </section>
 
       <!-- ===================================================================== -->
-      <!-- 2. APPLICATIONS                                                       -->
+      <!-- 2. APPLICATIONS (DEMOLITION APPLICATIONS REGISTRY)                    -->
       <!-- ===================================================================== -->
       <section id="panel-applications" class="panel-view space-y-6">
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
-              <h3 class="text-base font-bold text-slate-900">Demolition & Debris Applications Registry</h3>
-              <p class="text-xs text-slate-500">Citizen and builder applications for construction waste haulage and site clearance.</p>
+              <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold uppercase border border-emerald-200 mb-1">
+                <span>📁 Real-Time Intake & Field Status</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">Demolition Applications Registry</h3>
+              <p class="text-xs text-slate-500">Citizen and builder applications for construction waste haulage, site clearance & inspector verification.</p>
             </div>
-            <button onclick="openAddApplicationModal()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition">
-              + New Application
-            </button>
+            
+            <!-- Panchayat Filter Tabs -->
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+              <button onclick="filterApplicationsByDept('all')" id="btn-appfilter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
+                🌐 All Jurisdictions
+              </button>
+              <button onclick="filterApplicationsByDept('gp')" id="btn-appfilter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏡 Gram Panchayat
+              </button>
+              <button onclick="filterApplicationsByDept('tp')" id="btn-appfilter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏭 Town Panchayat
+              </button>
+              <button onclick="filterApplicationsByDept('mcc')" id="btn-appfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏛️ MCC
+              </button>
+            </div>
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -337,8 +353,8 @@
                   <th class="px-4 py-3">Applicant Name & Phone</th>
                   <th class="px-4 py-3">Address & PIN/Ward</th>
                   <th class="px-4 py-3">Property Details</th>
-                  <th class="px-4 py-3">Documents / Photos</th>
-                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3">Documents / Photos (Bulk)</th>
+                  <th class="px-4 py-3">Review Status</th>
                   <th class="px-4 py-3">Actions</th>
                 </tr>
               </thead>
@@ -352,12 +368,75 @@
       <!-- 3. PIN CODE & AREA MAPPING                                            -->
       <!-- ===================================================================== -->
       <section id="panel-pinmapping" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h3 class="text-base font-bold text-slate-900">PIN Code, Ward & Area Jurisdiction Mapping</h3>
-              <p class="text-xs text-slate-500">Maps postal PINs to Responsible Authority (MCC, Gram Panchayat, Town Panchayat) and Officer.</p>
+        
+        <!-- Header & Panchayat Switcher -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-mono font-bold uppercase border border-emerald-200 mb-1.5">
+              <span>📍 Geospatial & Field Inspector Matrix</span>
             </div>
+            <h3 class="text-lg font-bold text-slate-900">PIN Code, Ward & Area Jurisdiction Mapping</h3>
+            <p class="text-xs text-slate-500">Maps postal PINs to Responsible Authority (MCC, Gram Panchayat, Town Panchayat) with Assigned Field Inspectors.</p>
+          </div>
+
+          <!-- Panchayat Filter Tabs -->
+          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+            <button onclick="filterPinMappingByDept('all')" id="btn-pinfilter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
+              🌐 All Jurisdictions
+            </button>
+            <button onclick="filterPinMappingByDept('gp')" id="btn-pinfilter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+              🏡 Gram Panchayat
+            </button>
+            <button onclick="filterPinMappingByDept('tp')" id="btn-pinfilter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+              🏭 Town Panchayat
+            </button>
+            <button onclick="filterPinMappingByDept('mcc')" id="btn-pinfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+              🏛️ MCC
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. ASSIGNED FIELD INSPECTORS ROSTER FOR THIS PANCHAYAT -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h4 id="pin-inspectors-title" class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>👷</span> <span>Assigned Field Inspectors & Officers (7 Registered Field Officers)</span>
+              </h4>
+              <p class="text-xs text-slate-500">Official field inspectors assigned to handle site inspections and demolition clearances in this jurisdiction.</p>
+            </div>
+            <span id="pin-inspectors-count" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-mono text-[11px] font-bold border border-emerald-200">
+              7 Active Inspectors
+            </span>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3">Inspector Name & Designation</th>
+                  <th class="px-4 py-3">Department & Authority</th>
+                  <th class="px-4 py-3">Employee ID</th>
+                  <th class="px-4 py-3">Official Gmail</th>
+                  <th class="px-4 py-3">Phone Number</th>
+                  <th class="px-4 py-3">Assigned Area / Ward</th>
+                  <th class="px-4 py-3">Assigned PIN Codes</th>
+                  <th class="px-4 py-3">Duty Status</th>
+                  <th class="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-pin-inspectors" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. PIN CODE & AREA MAPPING TABLE -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span>📍</span> <span>Jurisdiction Postal PIN Routing Directory</span>
+            </h4>
+            <p class="text-xs text-slate-500">Ward boundary mappings and automatic routing to responsible panchayat desks.</p>
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -369,13 +448,14 @@
                   <th class="px-4 py-3">Streets Covered</th>
                   <th class="px-4 py-3">Map Location (GPS)</th>
                   <th class="px-4 py-3">Responsible Authority</th>
-                  <th class="px-4 py-3">Assigned Officer</th>
+                  <th class="px-4 py-3">Assigned Officer / Inspector</th>
                 </tr>
               </thead>
               <tbody id="table-pinmappings" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
             </table>
           </div>
         </div>
+
       </section>
 
       <!-- ===================================================================== -->
@@ -990,72 +1070,21 @@
         // Fetch Applications
         const resApps = await fetch('/api/applications');
         if (resApps.ok) {
-          const apps = await resApps.json();
-          const tableApps = document.getElementById('table-applications');
-          if (apps.length === 0) {
-            tableApps.innerHTML = `
-              <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
-                  No applications lodged yet. Fresh applications submitted by citizens or via "+ New Application" will appear here.
-                </td>
-              </tr>
-            `;
-          } else {
-            tableApps.innerHTML = apps.map(a => `
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-mono font-bold text-emerald-700">${a.id}</td>
-                <td class="px-4 py-3"><strong>${a.applicantName}</strong><br><span class="text-slate-400 text-[11px] font-mono">${a.phone}</span></td>
-                <td class="px-4 py-3 text-slate-700">
-                  ${a.address}<br>
-                  <span class="text-slate-400 text-[10px] font-mono">PIN ${a.pin || a.pincode} · ${a.ward || ''}</span>
-                  ${a.gpsLocation ? `
-                    <br><a href="${a.mapUrl || ('https://www.google.com/maps?q=' + (a.lat || 12.2958) + ',' + (a.lng || 76.6394))}" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 hover:text-emerald-900 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 mt-0.5 hover:underline">
-                      <span>📍 ${a.gpsLocation}</span> <span>↗</span>
-                    </a>
-                  ` : ''}
-                </td>
-                <td class="px-4 py-3 text-slate-600">${a.propertyDetails || a.debrisType || 'Debris Clearance'}</td>
-                <td class="px-4 py-3 text-slate-500 font-mono text-[11px]">${a.documents || (a.photo ? '📸 Site Photo Attached' : 'Standard')}</td>
-                <td class="px-4 py-3">
-                  <span class="badge-status ${a.status === 'Approved' ? 'badge-approved' : (a.status === 'Cancelled' ? 'badge-revoked' : 'badge-pending')}">
-                    ${a.status}
-                  </span>
-                </td>
-                <td class="px-4 py-3">
-                  ${a.status === 'Approved' ? `
-                    <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">✓ Approved</span>
-                  ` : (a.status === 'Cancelled' ? `
-                    <span class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-bold text-[11px]">✗ Cancelled</span>
-                  ` : `
-                    <div class="flex items-center gap-1.5">
-                      <button onclick="adminApproveApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
-                        ✓ Agree
-                      </button>
-                      <button onclick="adminCancelApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
-                        ✗ Cancel
-                      </button>
-                    </div>
-                  `)}
-                </td>
-              </tr>
-            `).join('');
-          }
+          cachedApplications = await resApps.json();
+          renderApplicationsTable();
         }
 
         // Fetch PIN Mappings
         const resPins = await fetch('/api/pin-mappings');
         if (resPins.ok) {
-          const pins = await resPins.json();
-          document.getElementById('table-pinmappings').innerHTML = pins.map(p => `
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-mono font-bold text-slate-900">${p.pin}</td>
-              <td class="px-4 py-3"><strong>${p.ward}</strong><br><span class="text-slate-500 text-[11px]">${p.area}</span></td>
-              <td class="px-4 py-3 text-slate-600">${p.streets}</td>
-              <td class="px-4 py-3 font-mono text-slate-500 text-[11px]">${p.mapLocation}</td>
-              <td class="px-4 py-3"><span class="badge-status badge-active">${p.authority}</span></td>
-              <td class="px-4 py-3 text-slate-800 font-bold">${p.officer}</td>
-            </tr>
-          `).join('');
+          try {
+            const fetchedPins = await resPins.json();
+            if (Array.isArray(fetchedPins) && fetchedPins.length > 0) {
+              cachedPinMappings = fetchedPins;
+            }
+          } catch(e) {}
+          renderPinMappingInspectors();
+          renderPinMappingTable();
         }
 
         // Fetch All Registered Users & Officers from Supabase Database
@@ -1326,31 +1355,457 @@
       }
     }
 
-    function openAddApplicationModal() {
-      const name = prompt('Applicant Full Name:');
-      if (!name) return;
-      const phone = prompt('Mobile Number:', '+91 98450 12345');
-      const address = prompt('Property Address:', 'Site 55, Kuvempunagar, Mysuru');
-      const pin = prompt('PIN Code (e.g. 570023):', '570023');
-      const prop = prompt('Property & Debris Description:', 'Commercial Renovation Rubble (8 MT)');
+    // =========================================================================
+    // 2. DEMOLITION APPLICATIONS REGISTRY & BULK PHOTOS LOGIC
+    // =========================================================================
+    let cachedApplications = [];
+    let currentAppDeptFilter = 'all';
 
-      fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          applicantName: name,
-          phone: phone,
-          address: address,
-          pin: pin,
-          area: 'Kuvempunagar',
-          ward: 'Ward 32',
-          propertyDetails: prop,
-          documents: 'Site_Photo.jpg'
-        })
-      }).then(() => {
-        showToast('Application created and routed by PIN!');
-        loadData();
+    function getAppPhotos(a) {
+      if (!a) return [];
+      if (Array.isArray(a.photos) && a.photos.length > 0) return a.photos.filter(Boolean);
+      if (Array.isArray(a.sitePhotos) && a.sitePhotos.length > 0) return a.sitePhotos.filter(Boolean);
+      if (a.photo && typeof a.photo === 'string') return [a.photo];
+      if (a.sitePhoto && typeof a.sitePhoto === 'string') return [a.sitePhoto];
+      if (a.documents && typeof a.documents === 'string' && a.documents.startsWith('data:image')) return [a.documents];
+      return [];
+    }
+
+    function filterApplicationsByDept(dept) {
+      currentAppDeptFilter = dept;
+      ['all', 'gp', 'tp', 'mcc'].forEach(k => {
+        const btn = document.getElementById('btn-appfilter-' + k);
+        if (btn) {
+          if (k === dept) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer';
+          }
+        }
       });
+      renderApplicationsTable(dept);
+    }
+
+    function renderApplicationsTable(filter = currentAppDeptFilter) {
+      const tableApps = document.getElementById('table-applications');
+      if (!tableApps) return;
+
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
+      let displayed = cachedApplications || [];
+
+      if (filter === 'gp') {
+        displayed = displayed.filter(a => {
+          const pin = String(a.pin || a.pincode || '').trim();
+          const auth = (a.authority || a.department || '').toLowerCase();
+          const area = (a.area || a.address || '').toLowerCase();
+          return GP_PINS.some(p => pin.startsWith(p)) || auth.includes('gp') || auth.includes('gram') || auth.includes('panchayat') || area.includes('bogadi') || area.includes('maratikyathanahalli');
+        });
+      } else if (filter === 'tp') {
+        displayed = displayed.filter(a => {
+          const pin = String(a.pin || a.pincode || '').trim();
+          const auth = (a.authority || a.department || '').toLowerCase();
+          const area = (a.area || a.address || '').toLowerCase();
+          return TP_PINS.some(p => pin.startsWith(p)) || auth.includes('tp') || auth.includes('town') || area.includes('hootagalli') || area.includes('belagola') || area.includes('koorgalli');
+        });
+      } else if (filter === 'mcc') {
+        displayed = displayed.filter(a => {
+          const pin = String(a.pin || a.pincode || '').trim();
+          const auth = (a.authority || a.department || '').toLowerCase();
+          const isGp = GP_PINS.some(p => pin.startsWith(p)) || auth.includes('gp') || auth.includes('gram') || auth.includes('panchayat');
+          const isTp = TP_PINS.some(p => pin.startsWith(p)) || auth.includes('tp') || auth.includes('town');
+          return !isGp && !isTp;
+        });
+      }
+
+      if (displayed.length === 0) {
+        tableApps.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No demolition applications lodged for this jurisdiction yet. Newly submitted citizen applications will appear here in real-time.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableApps.innerHTML = displayed.map(a => {
+        const photos = getAppPhotos(a);
+        const isApproved = (a.status || '').toLowerCase().includes('approved') || (a.status || '').toLowerCase().includes('clearance') || (a.status || '').toLowerCase().includes('completed');
+        const isCancelled = (a.status || '').toLowerCase().includes('cancel') || (a.status || '').toLowerCase().includes('reject');
+
+        const statusBadgeClass = isApproved 
+          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+          : (isCancelled ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-amber-100 text-amber-800 border-amber-200');
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">
+              <span>${a.id}</span>
+              ${a.propertyId ? `<br><span class="text-[10px] text-slate-500 font-normal">PID: ${a.propertyId}</span>` : ''}
+            </td>
+            <td class="px-4 py-3">
+              <span class="block font-bold text-slate-900">${a.applicantName || 'Citizen User'}</span>
+              <span class="text-slate-500 text-[11px] font-mono">${a.phone || '—'}</span>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <span class="block font-semibold text-xs">${a.address || 'Mysuru Site'}</span>
+              <span class="text-slate-500 text-[10px] font-mono">PIN: <strong>${a.pin || a.pincode || '570001'}</strong> ${a.ward ? `· ${a.ward}` : ''}</span>
+              ${a.gpsLocation ? `
+                <br><a href="${a.mapUrl || ('https://www.google.com/maps?q=' + (a.lat || 12.2958) + ',' + (a.lng || 76.6394))}" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 hover:text-emerald-900 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 mt-0.5 hover:underline">
+                  <span>📍 ${a.gpsLocation}</span> <span>↗</span>
+                </a>
+              ` : ''}
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <span class="block font-semibold text-xs text-slate-900">${a.propertyDetails || a.debrisType || a.structureType || 'Structure Clearance'}</span>
+              <span class="text-[10px] text-slate-500">${a.estimatedTonnage || a.estimatedDebris || 'Site Clearance Inspection'}</span>
+            </td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  ${photos.slice(0, 3).map((p, pIdx) => `
+                    <img src="${p}" onclick="openPhotoModal('${a.id}', ${pIdx})" alt="Evidence ${pIdx+1}" class="size-8 rounded-lg object-cover border border-slate-300 hover:border-emerald-500 cursor-pointer shadow-xs hover:scale-110 transition" title="Click to view full photo"/>
+                  `).join('')}
+                  ${photos.length > 3 ? `
+                    <span onclick="openPhotoModal('${a.id}', 3)" class="px-1.5 py-0.5 rounded-md bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-mono font-bold text-[10px] cursor-pointer transition">
+                      +${photos.length - 3}
+                    </span>
+                  ` : ''}
+                  <button onclick="openPhotoModal('${a.id}', 0)" class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200 transition cursor-pointer flex items-center gap-1">
+                    <span>📸</span> <span>${photos.length} Photo${photos.length > 1 ? 's' : ''}</span>
+                  </button>
+                </div>
+              ` : `
+                <span class="text-slate-400 font-mono text-[11px]">📄 Standard Docs</span>
+              `}
+            </td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold border ${statusBadgeClass}">
+                <span class="size-1.5 rounded-full ${isApproved ? 'bg-emerald-500' : (isCancelled ? 'bg-rose-500' : 'bg-amber-500 animate-pulse')}"></span>
+                <span>${a.status || 'Pending Review'}</span>
+              </span>
+              ${a.assignedInspectorName ? `
+                <span class="block text-[10px] text-slate-500 mt-1 font-sans">
+                  👮 Inspector: <strong>${a.assignedInspectorName}</strong>
+                </span>
+              ` : ''}
+            </td>
+            <td class="px-4 py-3">
+              ${isApproved ? `
+                <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px] inline-block">✓ Approved</span>
+              ` : (isCancelled ? `
+                <span class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-bold text-[11px] inline-block">✗ Cancelled</span>
+              ` : `
+                <div class="flex items-center gap-1.5">
+                  <button onclick="adminApproveApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
+                    ✓ Agree
+                  </button>
+                  <button onclick="adminCancelApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
+                    ✗ Cancel
+                  </button>
+                </div>
+              `)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 3. PIN CODE & AREA MAPPING WITH ASSIGNED INSPECTORS
+    // =========================================================================
+    let cachedPinMappings = [];
+    let currentPinDeptFilter = 'all';
+
+    const DEFAULT_PIN_MAPPINGS = [
+      { pin: '570001', ward: 'Ward 14', area: 'Palace & Devaraja Market', streets: 'Sayyaji Rao Rd, Dhanvantri Rd', mapLocation: '12.3051° N, 76.6554° E', authority: 'Mysuru City Corporation (MCC)', officer: 'Rajesh Kumar (inspector.mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570002', ward: 'Ward 18', area: 'Nazarbad & Zoo Circle', streets: 'Male Mahadeshwara Rd, Shalivahana Rd', mapLocation: '12.3020° N, 76.6690° E', authority: 'Mysuru City Corporation (MCC)', officer: 'MCC Executive Officer (mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570004', ward: 'Ward 22', area: 'Chamundipuram & Agrahara', streets: 'Vanivilasa Rd, Ramanuja Rd', mapLocation: '12.2930° N, 76.6510° E', authority: 'Mysuru City Corporation (MCC)', officer: 'MCC Executive Officer (mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570008', ward: 'Ward 28', area: 'Saraswathipuram & Jayalakshmipuram', streets: 'Kantharaj Urs Rd, Kalidasa Rd', mapLocation: '12.3110° N, 76.6280° E', authority: 'Mysuru City Corporation (MCC)', officer: 'K. Swamy (swamy.mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570010', ward: 'Ward 35', area: 'Vijayanagar 1st & 2nd Stage', streets: 'High Tension Double Rd, Water Tank Cross', mapLocation: '12.3350° N, 76.6110° E', authority: 'Mysuru City Corporation (MCC)', officer: 'MCC Executive Officer (mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570020', ward: 'Ward 46', area: 'Vidyaranyapuram & Industrial Suburb', streets: 'Chamundeshwari Rd, Sewage Farm Rd', mapLocation: '12.2810° N, 76.6430° E', authority: 'Mysuru City Corporation (MCC)', officer: 'MCC Executive Officer (mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570023', ward: 'Ward 32', area: 'Kuvempunagar & Jayanagar', streets: 'Adichunchanagiri Rd, Navodaya Circle', mapLocation: '12.2890° N, 76.6260° E', authority: 'Mysuru City Corporation (MCC)', officer: 'P. Ramesh (ramesh.mcc@gmail.com)', deptKey: 'mcc' },
+      { pin: '570024', ward: 'Ward 58', area: 'Dattagalli & Ramakrishnanagar', streets: 'Ring Road Junction, Andani Circle', mapLocation: '12.2780° N, 76.6080° E', authority: 'Mysuru City Corporation (MCC)', officer: 'MCC Executive Officer (mcc@gmail.com)', deptKey: 'mcc' },
+      
+      { pin: '570026', ward: 'GP Ward 01', area: 'Bogadi Village & Outer Ring Road', streets: 'Bogadi Main Rd, Gadhinglaj Cross, Ring Road', mapLocation: '12.3021° N, 76.5912° E', authority: 'Bogadi Gram Panchayat', officer: 'Seervi (q@gmail.com)', deptKey: 'gp' },
+      { pin: '571130', ward: 'GP Ward 02', area: 'Maratikyathanahalli Rural Cluster', streets: 'Gaddige Main Rd, Village Temple Circle', mapLocation: '12.2710° N, 76.5640° E', authority: 'Bogadi Gram Panchayat', officer: 'Dimple (dim@gmail.com)', deptKey: 'gp' },
+      { pin: '570028', ward: 'GP Ward 03', area: 'Belavadi Rural Periphery', streets: 'Hunsur Road Link, Lake View Enclave', mapLocation: '12.3310° N, 76.5820° E', authority: 'Bogadi Gram Panchayat', officer: 'S. Nanjappa (nanjappa.gp@gmail.com)', deptKey: 'gp' },
+      { pin: '571311', ward: 'GP Ward 04', area: 'Rammanahalli & Outer Agrarian Belts', streets: 'Bannur Rd Junction, GP Office Cross', mapLocation: '12.3290° N, 76.7110° E', authority: 'Bogadi Gram Panchayat', officer: 'Gram Panchayat PDO (gp@gmail.com)', deptKey: 'gp' },
+
+      { pin: '570018', ward: 'TP Ward 01', area: 'Hootagalli Town & Market', streets: 'Mysuru-Hunsur Highway, Town Hall Rd', mapLocation: '12.3489° N, 76.5744° E', authority: 'Hootagalli Town Panchayat', officer: 'M. Anand (anand.tp@gmail.com)', deptKey: 'tp' },
+      { pin: '571607', ward: 'TP Ward 04', area: 'Belagola KIADB Industrial Sector', streets: 'KIADB Belagola Cross, Heavy Machinery Lane', mapLocation: '12.3720° N, 76.5610° E', authority: 'Hootagalli Town Panchayat', officer: 'K. Suresh (suresh.tp@gmail.com)', deptKey: 'tp' },
+      { pin: '570016', ward: 'TP Ward 06', area: 'Koorgalli Industrial Area & IT Hub', streets: 'Infosys Campus Rd, Automotive Corridor', mapLocation: '12.3550° N, 76.5510° E', authority: 'Hootagalli Town Panchayat', officer: 'Town Panchayat Admin (tp@gmail.com)', deptKey: 'tp' },
+      { pin: '571604', ward: 'TP Ward 08', area: 'Elwala Outskirts & Suburban Fringe', streets: 'Elwala Gate, Bypass Cross', mapLocation: '12.3610° N, 76.5290° E', authority: 'Hootagalli Town Panchayat', officer: 'Town Panchayat Admin (tp@gmail.com)', deptKey: 'tp' }
+    ];
+
+    function filterPinMappingByDept(dept) {
+      currentPinDeptFilter = dept;
+      ['all', 'gp', 'tp', 'mcc'].forEach(k => {
+        const btn = document.getElementById('btn-pinfilter-' + k);
+        if (btn) {
+          if (k === dept) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer';
+          }
+        }
+      });
+      renderPinMappingInspectors(dept);
+      renderPinMappingTable(dept);
+    }
+
+    function getComprehensiveInspectorsList() {
+      const defaultSquad = [
+        { id: 'INS-01', headName: 'Rajesh Kumar', designation: 'Ward Health Inspector', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 14 (Palace & Devaraja Market)', pinCodes: '570001', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'Ward 14 Core' },
+        { id: 'INS-02', headName: 'Seervi', designation: 'Panchayat Health Inspector', email: 'q@gmail.com', password: '123456', phone: '+91 98450 11005', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 01 (Bogadi Rural)', pinCodes: '570026', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 1' },
+        { id: 'INS-03', headName: 'Dimple', designation: 'Rural Field Inspector', email: 'dim@gmail.com', password: '123456', phone: '+91 98450 11006', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 02 (Maratikyathanahalli)', pinCodes: '570026, 571130', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 2' },
+        { id: 'INS-04', headName: 'S. Nanjappa', designation: 'Panchayat Field Inspector', email: 'nanjappa.gp@gmail.com', password: '123456', phone: '+91 98450 11002', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 03 (Belavadi Rural)', pinCodes: '570026, 570028', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 3' },
+        { id: 'INS-05', headName: 'M. Anand', designation: 'Town Municipal Inspector', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 01 (Hootagalli Town)', pinCodes: '570018', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'Hootagalli Ward 1' },
+        { id: 'INS-06', headName: 'K. Suresh', designation: 'KIADB Industrial Inspector', email: 'suresh.tp@gmail.com', password: '123456', phone: '+91 98450 11008', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 04 (Belagola KIADB)', pinCodes: '570018, 571607', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'KIADB Belagola' },
+        { id: 'INS-07', headName: 'P. Ramesh', designation: 'Urban Sanitation Inspector', email: 'ramesh.mcc@gmail.com', password: '123456', phone: '+91 98450 11004', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 32 (Kuvempunagar & Jayanagar)', pinCodes: '570023', icon: '👷', activeCases: 'Active Inspector', dutyZone: 'Ward 32 Zone' }
+      ];
+
+      let regUsers = [];
+      try {
+        regUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      } catch(e) {}
+
+      let customIns = [];
+      try {
+        customIns = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      } catch(e) {}
+
+      const merged = [...defaultSquad];
+
+      [...regUsers, ...customIns].forEach(ins => {
+        if (!ins || !ins.email) return;
+        const email = ins.email.toLowerCase().trim();
+        const isInsp = (ins.role || '').toLowerCase() === 'inspector' || (ins.authority || '').toLowerCase().includes('inspector');
+        if (!isInsp) return;
+
+        const existing = merged.find(m => m.email.toLowerCase().trim() === email);
+        let insType = 'mcc';
+        const d = (ins.department || '').toLowerCase();
+        const dn = (ins.departmentName || '').toLowerCase();
+        const pin = String(ins.assignedPin || ins.pin || '');
+        if (d.includes('gp') || d.includes('panchayat') || dn.includes('panchayat') || pin.startsWith('570026') || pin.startsWith('571130')) insType = 'gp';
+        else if (d.includes('tp') || d.includes('town') || dn.includes('town') || pin.startsWith('570018') || pin.startsWith('571607')) insType = 'tp';
+
+        const formatted = {
+          id: ins.id || ('INS-' + String(merged.length + 1).padStart(2,'0')),
+          headName: ins.name || ins.headName || 'Field Inspector',
+          designation: ins.designation || 'Field Inspector',
+          email: ins.email,
+          password: ins.password || '123456',
+          phone: ins.phone || '+91 98450 11000',
+          type: insType,
+          organization: ins.departmentName || ins.department || (insType === 'gp' ? 'Bogadi Gram Panchayat' : (insType === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)')),
+          jurisdiction: ins.assignedArea || 'Ward Jurisdiction',
+          pinCodes: ins.assignedPin || ins.pin || (insType === 'gp' ? '570026' : (insType === 'tp' ? '570018' : '570001')),
+          icon: '👷',
+          activeCases: 'Active Inspector',
+          dutyZone: ins.assignedArea || 'Ward Zone'
+        };
+
+        if (existing) {
+          Object.assign(existing, formatted);
+        } else {
+          merged.push(formatted);
+        }
+      });
+
+      return merged;
+    }
+
+    function renderPinMappingInspectors(filter = currentPinDeptFilter) {
+      const tbody = document.getElementById('table-pin-inspectors');
+      const title = document.getElementById('pin-inspectors-title');
+      const countBadge = document.getElementById('pin-inspectors-count');
+      if (!tbody) return;
+
+      const inspectors = getComprehensiveInspectorsList();
+      let displayed = inspectors;
+      if (filter && filter !== 'all') {
+        displayed = inspectors.filter(i => i.type === filter);
+      }
+
+      const deptLabel = filter === 'gp' ? 'Bogadi Gram Panchayat' : (filter === 'tp' ? 'Hootagalli Town Panchayat' : (filter === 'mcc' ? 'Mysuru City Corporation (MCC)' : 'All Mysuru Jurisdictions'));
+
+      if (title) title.innerHTML = `<span>👷</span> <span>Assigned Field Inspectors — ${deptLabel}</span>`;
+      if (countBadge) countBadge.innerText = `${displayed.length} Active Inspector${displayed.length === 1 ? '' : 's'}`;
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No field inspectors registered for this jurisdiction yet.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayed.map(ins => {
+        const deptBadgeColor = ins.type === 'mcc' 
+          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+          : (ins.type === 'gp' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-blue-100 text-blue-800 border-blue-200');
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2.5">
+                <span class="size-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-sm shadow-xs">${ins.icon || '👷'}</span>
+                <div>
+                  <span class="block font-bold text-slate-900">${ins.headName}</span>
+                  <span class="block text-[11px] text-slate-500 font-medium">${ins.designation || 'Field Inspector'}</span>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${deptBadgeColor} inline-block">
+                ${ins.organization}
+              </span>
+            </td>
+            <td class="px-4 py-3.5 font-mono font-bold text-slate-900">${ins.id}</td>
+            <td class="px-4 py-3.5 font-mono text-[11px]">
+              <span class="block text-emerald-950 font-bold bg-emerald-50/80 px-2 py-0.5 rounded border border-emerald-200 mb-0.5 inline-block">${ins.email}</span>
+            </td>
+            <td class="px-4 py-3.5 font-mono text-slate-700 text-xs">${ins.phone}</td>
+            <td class="px-4 py-3.5 text-slate-800 font-semibold text-xs">${ins.jurisdiction || ins.dutyZone}</td>
+            <td class="px-4 py-3.5 font-mono font-bold text-emerald-800">PIN: ${ins.pinCodes}</td>
+            <td class="px-4 py-3.5">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Active (On Duty)</span>
+              </span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button onclick="copyOfficerLogin('${ins.email}', '${ins.password || '123456'}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
+                Copy Login
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPinMappingTable(filter = currentPinDeptFilter) {
+      const tbody = document.getElementById('table-pinmappings');
+      if (!tbody) return;
+
+      const GP_PINS = ['570026', '571130', '570028', '571311'];
+      const TP_PINS = ['570018', '571607', '570016', '571604'];
+
+      const allPins = (cachedPinMappings && cachedPinMappings.length > 0) ? cachedPinMappings : DEFAULT_PIN_MAPPINGS;
+
+      let displayed = allPins;
+      if (filter === 'gp') {
+        displayed = allPins.filter(p => GP_PINS.includes(p.pin) || (p.deptKey === 'gp') || (p.authority || '').toLowerCase().includes('panchayat'));
+      } else if (filter === 'tp') {
+        displayed = allPins.filter(p => TP_PINS.includes(p.pin) || (p.deptKey === 'tp') || (p.authority || '').toLowerCase().includes('town'));
+      } else if (filter === 'mcc') {
+        displayed = allPins.filter(p => !GP_PINS.includes(p.pin) && !TP_PINS.includes(p.pin) && p.deptKey !== 'gp' && p.deptKey !== 'tp');
+      }
+
+      tbody.innerHTML = displayed.map(p => {
+        const isGp = GP_PINS.includes(p.pin) || (p.authority || '').toLowerCase().includes('panchayat');
+        const isTp = TP_PINS.includes(p.pin) || (p.authority || '').toLowerCase().includes('town');
+        const badgeColor = isGp ? 'bg-amber-50 text-amber-800 border-amber-200' : (isTp ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200');
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800 text-sm">PIN ${p.pin}</td>
+            <td class="px-4 py-3"><strong>${p.ward}</strong><br><span class="text-slate-500 text-[11px]">${p.area}</span></td>
+            <td class="px-4 py-3 text-slate-600">${p.streets}</td>
+            <td class="px-4 py-3 font-mono text-slate-500 text-[11px]">${p.mapLocation}</td>
+            <td class="px-4 py-3"><span class="badge-status ${badgeColor}">${p.authority}</span></td>
+            <td class="px-4 py-3 text-slate-900 font-bold">${p.officer}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // PHOTO LIGHTBOX GALLERY MODAL LOGIC
+    // =========================================================================
+    let activeModalPhotos = [];
+    let activeModalIndex = 0;
+
+    function openPhotoModal(appId, photoIdx = 0) {
+      const app = (cachedApplications || []).find(a => String(a.id) === String(appId));
+      if (!app) return;
+      const photos = getAppPhotos(app);
+      if (photos.length === 0) {
+        showToast('No site evidence photos uploaded for this application.', 'info');
+        return;
+      }
+      activeModalPhotos = photos;
+      activeModalIndex = Math.max(0, Math.min(photoIdx, photos.length - 1));
+
+      const title = document.getElementById('photo-modal-title');
+      const sub = document.getElementById('photo-modal-subtitle');
+      if (title) title.innerText = `Customer Uploaded Site Evidence — ${app.applicantName || 'Citizen'}`;
+      if (sub) sub.innerText = `Application #${app.id} · ${app.address || 'Mysuru'} (PIN: ${app.pin || app.pincode || '570001'}) · ${photos.length} Photo${photos.length > 1 ? 's' : ''}`;
+
+      renderModalPhoto();
+      const modal = document.getElementById('admin-photo-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closePhotoModal() {
+      const modal = document.getElementById('admin-photo-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function renderModalPhoto() {
+      if (!activeModalPhotos || activeModalPhotos.length === 0) return;
+      const mainImg = document.getElementById('photo-modal-main-img');
+      const downloadBtn = document.getElementById('photo-modal-download');
+      const currentSrc = activeModalPhotos[activeModalIndex];
+      
+      if (mainImg) mainImg.src = currentSrc;
+      if (downloadBtn) {
+        downloadBtn.href = currentSrc;
+        downloadBtn.download = `Site_Evidence_${activeModalIndex + 1}.jpg`;
+      }
+
+      const thumbContainer = document.getElementById('photo-modal-thumbnails');
+      if (thumbContainer) {
+        thumbContainer.innerHTML = activeModalPhotos.map((p, idx) => `
+          <img src="${p}" onclick="setModalPhotoIndex(${idx})" alt="Thumb ${idx+1}" 
+            class="size-12 rounded-lg object-cover cursor-pointer border-2 transition ${idx === activeModalIndex ? 'border-emerald-400 scale-105 shadow-md shadow-emerald-500/50' : 'border-slate-700 opacity-60 hover:opacity-100'}"/>
+        `).join('');
+      }
+
+      const prevBtn = document.getElementById('photo-nav-prev');
+      const nextBtn = document.getElementById('photo-nav-next');
+      if (prevBtn) prevBtn.style.display = activeModalPhotos.length > 1 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = activeModalPhotos.length > 1 ? 'flex' : 'none';
+    }
+
+    function setModalPhotoIndex(idx) {
+      activeModalIndex = idx;
+      renderModalPhoto();
+    }
+
+    function prevModalPhoto() {
+      if (!activeModalPhotos || activeModalPhotos.length <= 1) return;
+      activeModalIndex = (activeModalIndex - 1 + activeModalPhotos.length) % activeModalPhotos.length;
+      renderModalPhoto();
+    }
+
+    function nextModalPhoto() {
+      if (!activeModalPhotos || activeModalPhotos.length <= 1) return;
+      activeModalIndex = (activeModalIndex + 1) % activeModalPhotos.length;
+      renderModalPhoto();
     }
 
     function sendQuickAlert() {
@@ -2551,7 +3006,7 @@
                       👑
                     </div>
                     <div>
-                      <h4 class="font-extrabold text-sm text-slate-900">Central Mysuru C&D Waste & Rubble Governance Command Centre</h4>
+                      <h4 class="font-extrabold text-sm text-slate-900">Smart Civic Mysuru City Corporation</h4>
                       <p class="text-xs text-slate-600">Logged in as <strong>${userName}</strong> (Super Administrator) · Full multi-agency oversight (MCC + Gram Panchayat + Town Panchayat)</p>
                     </div>
                   </div>
@@ -2644,13 +3099,13 @@
     const JURISDICTION_PROFILES = {
       all: {
         key: 'all',
-        name: 'Central Mysuru Apex Command',
+        name: 'Smart Civic Mysuru City Corporation (Central Command)',
         tag: 'Multi-Agency Oversight',
         icon: '👑',
         color: 'from-slate-900 to-slate-800',
         badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
         headOfficer: 'Super Administrator (admin@mysuru.gov.in)',
-        inspectors: ['Rajesh Kumar', 'Seervi', 'Dimple', 'S. Nanjappa', 'M. Anand'],
+        inspectors: ['Rajesh Kumar', 'Seervi', 'Dimple', 'S. Nanjappa', 'M. Anand', 'K. Suresh', 'P. Ramesh'],
         pinRange: 'All Mysuru PINs (570001 to 571607)',
         wards: '65 Urban Wards + 8 Rural Wards + 5 Town Zones',
         desc: 'Unified administrative console consolidating Gram Panchayat, Town Panchayat, and MCC Urban operations.'
@@ -3285,5 +3740,51 @@
       root.render(<PanchayatDashboardAnalytics />);
     }
   </script>
+
+  <!-- ========================================================================= -->
+  <!-- HIGH RESOLUTION SITE PHOTOS EVIDENCE LIGHTBOX MODAL                       -->
+  <!-- ========================================================================= -->
+  <div id="admin-photo-modal" class="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md hidden items-center justify-center p-4 sm:p-6 animate-fadeIn">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-800 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="size-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold">📸</span>
+          <div>
+            <h3 id="photo-modal-title" class="text-sm font-bold text-white">Customer Uploaded Site Evidence</h3>
+            <p id="photo-modal-subtitle" class="text-xs text-slate-400 font-mono">Application #APP-1001 · Photos Uploaded</p>
+          </div>
+        </div>
+        <button onclick="closePhotoModal()" class="size-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center font-bold text-lg transition cursor-pointer" title="Close">
+          ✕
+        </button>
+      </div>
+
+      <!-- Main Image Viewport with Navigation Controls -->
+      <div class="relative flex-1 bg-slate-950 flex items-center justify-center p-4 min-h-[350px] max-h-[520px] overflow-hidden">
+        <button id="photo-nav-prev" onclick="prevModalPhoto()" class="absolute left-4 z-10 size-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center font-bold text-xl transition border border-white/20 shadow-lg cursor-pointer">
+          ‹
+        </button>
+        <img id="photo-modal-main-img" src="" alt="Site Evidence" class="max-h-[480px] max-w-full object-contain rounded-xl shadow-2xl transition duration-300"/>
+        <button id="photo-nav-next" onclick="nextModalPhoto()" class="absolute right-4 z-10 size-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center font-bold text-xl transition border border-white/20 shadow-lg cursor-pointer">
+          ›
+        </button>
+      </div>
+
+      <!-- Thumbnail Strip & Action Footer -->
+      <div class="p-4 bg-slate-900 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div id="photo-modal-thumbnails" class="flex items-center gap-2 overflow-x-auto py-1 max-w-[65%] custom-scrollbar"></div>
+        <div class="flex items-center gap-2">
+          <a id="photo-modal-download" href="" target="_blank" download="site_evidence.jpg" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+            <span>⬇</span> <span>Download Original</span>
+          </a>
+          <button onclick="closePhotoModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
