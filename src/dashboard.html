@@ -883,27 +883,57 @@
     };
 
     function switchView(viewName) {
-      views.forEach(v => {
-        const panel = document.getElementById('panel-' + v);
-        const btn = document.getElementById('btn-' + v);
-        if (panel) panel.classList.remove('active');
-        if (btn) btn.classList.remove('active');
+      // 1. Hide all panels
+      document.querySelectorAll('.panel-view').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
       });
 
+      // 2. Deactivate all navigation buttons
+      document.querySelectorAll('.nav-btn').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // 3. Show target panel
       const targetPanel = document.getElementById('panel-' + viewName);
       const targetBtn = document.getElementById('btn-' + viewName);
-      if (targetPanel) targetPanel.classList.add('active');
-      if (targetBtn) targetBtn.classList.add('active');
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+        targetPanel.style.display = 'block';
+      }
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      }
 
+      // 4. Update top bar titles
       const title = document.getElementById('topbar-title');
       if (title && viewTitles[viewName]) {
         title.innerText = viewTitles[viewName];
       }
 
-      if (viewName === 'reports') {
-        renderReportsAnalytics();
+      // 5. Trigger panel-specific render functions
+      try {
+        if (viewName === 'authorities') {
+          if (typeof renderAuthoritiesTable === 'function') renderAuthoritiesTable();
+          if (typeof renderDeptFields === 'function') renderDeptFields(currentSelectedDept || 'mcc');
+        } else if (viewName === 'inspectors') {
+          if (typeof renderInspectorsTable === 'function') renderInspectorsTable();
+        } else if (viewName === 'demolition_requests') {
+          if (typeof renderDemolitionRequestsTable === 'function') renderDemolitionRequestsTable();
+        } else if (viewName === 'certificates') {
+          if (typeof renderCertificatesTable === 'function') renderCertificatesTable();
+        } else if (viewName === 'pinmapping') {
+          if (typeof renderPinMappingInspectors === 'function') renderPinMappingInspectors();
+        }
+      } catch (err) {
+        console.warn('View renderer trigger warning:', err);
+      }
+
+      if (typeof window.scrollTo === 'function') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
+    window.switchView = switchView;
 
     function showToast(msg, type = 'success') {
       const container = document.getElementById('toast-container');
