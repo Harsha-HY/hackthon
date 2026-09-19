@@ -1041,26 +1041,7 @@
 
     
 
-    function changeOfficerAuthority(authKey) {
-      if (!DEFAULT_DEPARTMENTS[authKey]) return;
-      currentAuthorityKey = authKey;
-      const dept = DEFAULT_DEPARTMENTS[authKey];
-      currentUser = {
-        name: dept.headName,
-        email: dept.email,
-        role: 'officer',
-        department: authKey,
-        departmentName: dept.name,
-        authority: dept.name,
-        assignedPin: dept.pinCodes.split(',')[0].trim()
-      };
-      localStorage.setItem('current_user', JSON.stringify(currentUser));
-      sessionStorage.setItem('current_user', JSON.stringify(currentUser));
-
-      renderCurrentAuthorityUI();
-      renderAllTables();
-      showToast(`Switched to ${dept.name}! All panels updated with authentic data.`, 'success');
-    }
+    
 
     function renderCurrentAuthorityUI() {
       const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
@@ -1082,10 +1063,8 @@
       }
 
       // Sync dropdowns
-      const selHeader = document.getElementById('officer-authority-switcher');
-      const selSidebar = document.getElementById('officer-authority-sidebar-select');
-      if (selHeader) selHeader.value = currentAuthorityKey;
-      if (selSidebar) selSidebar.value = currentAuthorityKey;
+      const headerBadge = document.getElementById('header-authority-badge');
+      if (headerBadge) headerBadge.innerText = `${dept.icon} ${dept.name}`;
 
       // Update officer footer profile
       const nameEl = document.getElementById('officer-name-display');
