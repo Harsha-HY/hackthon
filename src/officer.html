@@ -1441,13 +1441,23 @@
         );
       }
 
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
       // Strictly isolate inspectors to this authority
       const authorityInspectors = mergedInspectors.filter(ins => {
-        if (ins.department) {
-          return ins.department.toLowerCase() === currentAuthorityKey.toLowerCase();
-        }
+        const d = (ins.department || '').toLowerCase().trim();
+        const dn = (ins.departmentName || '').toLowerCase().trim();
+        const auth = (ins.authority || '').toLowerCase().trim();
         const pin = String(ins.assignedPin || ins.pin || '').trim();
-        return deptPins.includes(pin);
+
+        if (currentAuthorityKey === 'gp') {
+          return d === 'gp' || d.includes('panchayat') || d.includes('gram') || dn.includes('panchayat') || auth.includes('panchayat') || GP_PINS.some(p => pin.includes(p));
+        } else if (currentAuthorityKey === 'tp') {
+          return d === 'tp' || d.includes('town') || dn.includes('town') || auth.includes('town') || TP_PINS.some(p => pin.includes(p));
+        } else {
+          return d === 'mcc' || d.includes('mcc') || d.includes('city') || dn.includes('mcc') || auth.includes('mcc') || (!GP_PINS.some(p => pin.includes(p)) && !TP_PINS.some(p => pin.includes(p)));
+        }
       });
 
       if (authorityInspectors.length === 0) {
@@ -1487,7 +1497,7 @@
               <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[11px]">${linkedCount} Linked Request(s)</span>
             </td>
             <td class="px-4 py-3">
-              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
                 ✓ Active (Can Log In)
               </span>
             </td>
@@ -1518,11 +1528,11 @@
         <tr class="hover:bg-slate-50/80 transition">
           <td class="px-4 py-3 font-mono font-bold text-emerald-800">INSP-${String(i+201)}</td>
           <td class="px-4 py-3 font-mono text-slate-700 font-semibold">${a.id}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">Rajesh Kumar (INS-01)</td>
-          <td class="px-4 py-3 font-mono text-slate-600 text-[11px]">Today, 2:30 PM</td>
+          <td class="px-4 py-3 font-semibold text-slate-900">${a.assignedInspectorName || a.auditedBy || 'Field Officer'}</td>
+          <td class="px-4 py-3 font-mono text-slate-600 text-[11px]">${a.inspectionTime ? new Date(a.inspectionTime).toLocaleString() : 'Scheduled'}</td>
           <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">
-              ✓ Verified & Passed
+            <span class="px-2 py-0.5 rounded-full ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} text-[10px] font-bold font-mono">
+              ${a.status || 'Active Audit'}
             </span>
           </td>
         </tr>

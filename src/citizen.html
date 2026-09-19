@@ -989,31 +989,38 @@
       return s === 'approved' || s === 'issued' || s === 'certificate issued' || s === 'cancelled' || s === 'rejected';
     }
 
-    // Find any currently active (non-finalized) application for the logged-in customer
-    function getActiveCustomerApplication() {
-      const user = JSON.parse(sessionStorage.getItem('current_user') || localStorage.getItem('current_user') || '{}');
+    function getLoggedInUser() {
+      try {
+        return JSON.parse(sessionStorage.getItem('current_user') || localStorage.getItem('current_user') || '{}');
+      } catch(e) {
+        return {};
+      }
+    }
+
+    function getLoggedInUserApplications(allApps) {
+      const user = getLoggedInUser();
       const userEmail = (user.email || '').toLowerCase().trim();
-      const userPhone = (user.phone || '').trim();
+      const userPhone = String(user.phone || user.mobile || '').trim();
       const userName = (user.name || '').toLowerCase().trim();
 
-      const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      if (!userEmail && !userPhone && !userName) return [];
 
-      const pool = [...myRequests];
-      allApps.forEach(a => {
-        if (!pool.some(p => p.id === a.id)) {
-          pool.push(a);
-        }
-      });
+      return (allApps || []).filter(app => {
+        const appEmail = (app.email || '').toLowerCase().trim();
+        const appPhone = String(app.phone || '').trim();
+        const appName = (app.applicantName || app.applicant_name || '').toLowerCase().trim();
 
-      const userApps = pool.filter(app => {
-        if (userEmail && app.email && app.email.toLowerCase().trim() === userEmail) return true;
-        if (userPhone && app.phone && app.phone.trim() === userPhone) return true;
-        if (userName && app.applicantName && app.applicantName.toLowerCase().trim() === userName) return true;
-        if (myRequests.some(r => r.id === app.id)) return true;
+        if (userEmail && appEmail && appEmail === userEmail) return true;
+        if (userPhone && appPhone && appPhone === userPhone) return true;
+        if (userName && appName && appName === userName) return true;
         return false;
       });
+    }
 
+    // Find any currently active (non-finalized) application for the logged-in customer only
+    function getActiveCustomerApplication() {
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const userApps = getLoggedInUserApplications(allApps);
       return userApps.find(app => !isFinalizedStatus(app.status));
     }
 
@@ -1039,7 +1046,7 @@
                 </p>
               </div>
             </div>
-            <button type="button" onclick="switchTab('tracking')" class="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition cursor-pointer">
+            <button type="button" onclick="switchTab('applications')" class="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition cursor-pointer">
               Track Status &rarr;
             </button>
           `;
@@ -1345,32 +1352,40 @@
       }
     }
 
+    function resetLiveTrackerUI() {
+      if (document.getElementById('tracker-app-id')) document.getElementById('tracker-app-id').innerText = 'No Active Request';
+      if (document.getElementById('tracker-assigned-inspector')) document.getElementById('tracker-assigned-inspector').innerText = 'Ready to lodge application';
+      const statusPill = document.getElementById('tracker-current-status-pill');
+      if (statusPill) {
+        statusPill.innerText = 'Ready';
+        statusPill.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30';
+      }
+      const alertBox = document.getElementById('tracker-status-alert-box');
+      const alertTitle = document.getElementById('tracker-alert-title');
+      const alertDesc = document.getElementById('tracker-alert-desc');
+      if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1';
+      if (alertTitle) alertTitle.innerHTML = '<span>📄</span> <span>Apply for C&D Clearance Permit</span>';
+      if (alertDesc) alertDesc.innerText = 'Complete the form on the left with site address, PIN code, and camera photo to lodge your request.';
+    }
+
     async function syncLiveCustomerApplications() {
       try {
         const res = await fetch('/api/applications');
         if (res.ok) {
           const serverApps = await res.json();
-          if (Array.isArray(serverApps) && serverApps.length > 0) {
+          if (Array.isArray(serverApps)) {
             localStorage.setItem('civic_applications', JSON.stringify(serverApps));
-            const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
             
-            // Match updated server items
-            serverApps.forEach(sa => {
-              const idx = myRequests.findIndex(r => r.id === sa.id);
-              if (idx >= 0) {
-                myRequests[idx] = { ...myRequests[idx], ...sa };
-              }
-            });
-            if (myRequests.length === 0) {
-              myRequests.push(...serverApps);
-            }
+            const myRequests = getLoggedInUserApplications(serverApps);
             localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
             
             if (myRequests.length > 0) {
               updateLiveTrackerUI(myRequests[0]);
-              renderApplicationsHistory();
-              renderCertificatesGrid();
+            } else {
+              resetLiveTrackerUI();
             }
+            renderApplicationsHistory();
+            renderCertificatesGrid();
             checkActiveApplicationLock();
           }
         }
@@ -1382,7 +1397,8 @@
       const tbody = document.getElementById('table-my-applications');
       if (!tbody) return;
 
-      const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || localStorage.getItem('civic_applications') || '[]');
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const myRequests = getLoggedInUserApplications(allApps);
       if (myRequests.length === 0) {
         tbody.innerHTML = `
           <tr>
@@ -1432,7 +1448,8 @@
       const container = document.getElementById('certificates-grid');
       if (!container) return;
 
-      const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || localStorage.getItem('civic_applications') || '[]');
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const myRequests = getLoggedInUserApplications(allApps);
       const certs = myRequests.filter(r => r.status === 'Approved' || r.status === 'Issued');
 
       if (certs.length === 0) {
