@@ -180,21 +180,13 @@
             <span class="icon-box bg-blue-500/20 text-blue-300">🗺️</span>
             <span class="truncate">2. Wards</span>
           </button>
-          <button onclick="switchOfficerTab('areas')" id="nav-areas" class="nav-btn">
-            <span class="icon-box bg-cyan-500/20 text-cyan-300">📍</span>
-            <span class="truncate">3. Areas / Localities</span>
-          </button>
-          <button onclick="switchOfficerTab('pincodes')" id="nav-pincodes" class="nav-btn">
-            <span class="icon-box bg-amber-500/20 text-amber-300">📮</span>
-            <span class="truncate">4. PIN Codes</span>
-          </button>
           <button onclick="switchOfficerTab('citizens')" id="nav-citizens" class="nav-btn">
             <span class="icon-box bg-indigo-500/20 text-indigo-300">👥</span>
-            <span class="truncate">5. Applicants / Citizens</span>
+            <span class="truncate">3. Applicants / Citizens</span>
           </button>
           <button onclick="switchOfficerTab('properties')" id="nav-properties" class="nav-btn">
             <span class="icon-box bg-violet-500/20 text-violet-300">🏢</span>
-            <span class="truncate">6. Properties / Buildings</span>
+            <span class="truncate">4. Properties / Buildings</span>
           </button>
         </div>
       </div>
@@ -205,27 +197,19 @@
         <div class="space-y-0.5">
           <button onclick="switchOfficerTab('applications')" id="nav-applications" class="nav-btn">
             <span class="icon-box bg-teal-500/20 text-teal-300">📁</span>
-            <span class="truncate">7. Applications</span>
-          </button>
-          <button onclick="switchOfficerTab('documents')" id="nav-documents" class="nav-btn">
-            <span class="icon-box bg-sky-500/20 text-sky-300">📑</span>
-            <span class="truncate">8. Documents</span>
+            <span class="truncate">5. Applications</span>
           </button>
           <button onclick="switchOfficerTab('inspectors')" id="nav-inspectors" class="nav-btn">
             <span class="icon-box bg-orange-500/20 text-orange-300">👷</span>
-            <span class="truncate">9. Inspectors / Field Officers</span>
+            <span class="truncate">6. Inspectors / Field Officers</span>
           </button>
           <button onclick="switchOfficerTab('inspections')" id="nav-inspections" class="nav-btn">
             <span class="icon-box bg-rose-500/20 text-rose-300">🔍</span>
-            <span class="truncate">10. Inspections</span>
+            <span class="truncate">7. Inspections</span>
           </button>
           <button onclick="switchOfficerTab('demolition_requests')" id="nav-demolition_requests" class="nav-btn">
             <span class="icon-box bg-amber-500/20 text-amber-300">🏗️</span>
-            <span class="truncate">11. Demolition Requests</span>
-          </button>
-          <button onclick="switchOfficerTab('demolition_cases')" id="nav-demolition_cases" class="nav-btn">
-            <span class="icon-box bg-red-500/20 text-red-300">⏳</span>
-            <span class="truncate">12. Demolition Cases</span>
+            <span class="truncate">8. Demolition Requests</span>
           </button>
         </div>
       </div>
@@ -236,27 +220,23 @@
         <div class="space-y-0.5">
           <button onclick="switchOfficerTab('certificates')" id="nav-certificates" class="nav-btn">
             <span class="icon-box bg-emerald-500/20 text-emerald-300">📜</span>
-            <span class="truncate">13. Certificates</span>
+            <span class="truncate">9. Certificates</span>
           </button>
           <button onclick="switchOfficerTab('water')" id="nav-water" class="nav-btn">
             <span class="icon-box bg-blue-500/20 text-blue-300">💧</span>
-            <span class="truncate">14. Water Connections</span>
+            <span class="truncate">10. Water Connections</span>
           </button>
           <button onclick="switchOfficerTab('electricity')" id="nav-electricity" class="nav-btn">
             <span class="icon-box bg-yellow-500/20 text-yellow-300">⚡</span>
-            <span class="truncate">15. Electricity Connections</span>
-          </button>
-          <button onclick="switchOfficerTab('notifications')" id="nav-notifications" class="nav-btn">
-            <span class="icon-box bg-pink-500/20 text-pink-300">🔔</span>
-            <span class="truncate">16. Notifications</span>
+            <span class="truncate">11. Electricity Connections</span>
           </button>
           <button onclick="switchOfficerTab('reports')" id="nav-reports" class="nav-btn">
             <span class="icon-box bg-purple-500/20 text-purple-300">📈</span>
-            <span class="truncate">17. Reports</span>
+            <span class="truncate">12. Reports</span>
           </button>
           <button onclick="switchOfficerTab('users')" id="nav-users" class="nav-btn">
             <span class="icon-box bg-slate-500/20 text-slate-300">👤</span>
-            <span class="truncate">18. Users / Admins</span>
+            <span class="truncate">13. Users / Admins</span>
           </button>
         </div>
       </div>
@@ -366,64 +346,7 @@
         </div>
       </section>
 
-      <!-- ===================================================================== -->
-      <!-- ENTITY 3: AREAS / LOCALITIES                                          -->
-      <!-- ===================================================================== -->
-      <section id="panel-areas" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Areas & Localities Directory</h2>
-              <p class="text-xs text-slate-500">Neighborhoods, layouts, and colonies under this authority.</p>
-            </div>
-          </div>
 
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Area / Layout Name</th>
-                  <th class="px-4 py-3">Associated Ward</th>
-                  <th class="px-4 py-3">PIN Code</th>
-                  <th class="px-4 py-3">Debris Dumping Risk</th>
-                  <th class="px-4 py-3">Nearest Recycling Yard</th>
-                  <th class="px-4 py-3">Action</th>
-                </tr>
-              </thead>
-              <tbody id="table-areas" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- ENTITY 4: PIN CODES                                                   -->
-      <!-- ===================================================================== -->
-      <section id="panel-pincodes" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Postal PIN Code Jurisdiction Map</h2>
-              <p class="text-xs text-slate-500">Routing rules for citizen permit submissions by Postal Index Number.</p>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">PIN Code</th>
-                  <th class="px-4 py-3">Jurisdiction Name</th>
-                  <th class="px-4 py-3">Authority Level</th>
-                  <th class="px-4 py-3">Assigned Officer Email</th>
-                  <th class="px-4 py-3">Routing Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-pincodes" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ===================================================================== -->
       <!-- ENTITY 5: APPLICANTS / CITIZENS                                       -->
@@ -517,35 +440,7 @@
         </div>
       </section>
 
-      <!-- ===================================================================== -->
-      <!-- ENTITY 8: DOCUMENTS                                                   -->
-      <!-- ===================================================================== -->
-      <section id="panel-documents" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Submitted Site Documents & Blueprints</h2>
-              <p class="text-xs text-slate-500">Khatta certificates, structural blueprints, property deeds, and before-demolition photos.</p>
-            </div>
-          </div>
 
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Document Title</th>
-                  <th class="px-4 py-3">Type</th>
-                  <th class="px-4 py-3">Linked Application</th>
-                  <th class="px-4 py-3">Applicant</th>
-                  <th class="px-4 py-3">Upload Date</th>
-                  <th class="px-4 py-3">Verification</th>
-                </tr>
-              </thead>
-              <tbody id="table-documents" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ===================================================================== -->
       <!-- ENTITY 9: INSPECTORS / FIELD OFFICERS                                 -->
@@ -640,34 +535,7 @@
         </div>
       </section>
 
-      <!-- ===================================================================== -->
-      <!-- ENTITY 12: DEMOLITION CASES                                           -->
-      <!-- ===================================================================== -->
-      <section id="panel-demolition_cases" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Active Demolition Cases & Tipper Dispatch</h2>
-              <p class="text-xs text-slate-500">Ongoing demolition operations, debris hauling vehicles, and recycling destination tracking.</p>
-            </div>
-          </div>
 
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Case ID</th>
-                  <th class="px-4 py-3">Site Address</th>
-                  <th class="px-4 py-3">Assigned Tipper & Driver</th>
-                  <th class="px-4 py-3">Disposal Facility</th>
-                  <th class="px-4 py-3">Progress</th>
-                </tr>
-              </thead>
-              <tbody id="table-demolition_cases" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ===================================================================== -->
       <!-- ENTITY 13: CERTIFICATES                                               -->
@@ -756,34 +624,7 @@
         </div>
       </section>
 
-      <!-- ===================================================================== -->
-      <!-- ENTITY 16: NOTIFICATIONS                                              -->
-      <!-- ===================================================================== -->
-      <section id="panel-notifications" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Official Notifications & Dispatch Log</h2>
-              <p class="text-xs text-slate-500">SMS, Email, and in-app compliance alerts sent to citizens and field inspectors.</p>
-            </div>
-          </div>
 
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Notice ID</th>
-                  <th class="px-4 py-3">Recipient</th>
-                  <th class="px-4 py-3">Subject / Message</th>
-                  <th class="px-4 py-3">Channel</th>
-                  <th class="px-4 py-3">Timestamp</th>
-                </tr>
-              </thead>
-              <tbody id="table-notifications" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ===================================================================== -->
       <!-- ENTITY 17: REPORTS                                                    -->

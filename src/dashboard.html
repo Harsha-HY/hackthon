@@ -206,17 +206,13 @@
             <span class="icon-box bg-cyan-500/10 text-cyan-400">👷</span>
             <span>5. Inspectors / Officers</span>
           </button>
-          <button onclick="switchView('inspections')" id="btn-inspections" class="nav-btn">
-            <span class="icon-box bg-teal-500/10 text-teal-400">🔍</span>
-            <span>6. Inspection Management</span>
-          </button>
           <button onclick="switchView('demolition_requests')" id="btn-demolition_requests" class="nav-btn">
             <span class="icon-box bg-orange-500/10 text-orange-400">🏗️</span>
-            <span>7. Demolition Requests</span>
+            <span>6. Demolition Requests</span>
           </button>
           <button onclick="switchView('demolition_status')" id="btn-demolition_status" class="nav-btn">
             <span class="icon-box bg-rose-500/10 text-rose-400">⏳</span>
-            <span>8. Demolition Status</span>
+            <span>7. Demolition Status</span>
           </button>
         </div>
       </div>
@@ -227,19 +223,15 @@
         <div class="space-y-1">
           <button onclick="switchView('certificates')" id="btn-certificates" class="nav-btn">
             <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
-            <span>9. Certificates</span>
+            <span>8. Certificates</span>
           </button>
           <button onclick="switchView('utilities')" id="btn-utilities" class="nav-btn">
             <span class="icon-box bg-yellow-500/10 text-yellow-400">💡</span>
-            <span>10. Water / Electricity</span>
-          </button>
-          <button onclick="switchView('notifications')" id="btn-notifications" class="nav-btn">
-            <span class="icon-box bg-pink-500/10 text-pink-400">🔔</span>
-            <span>11. Notifications</span>
+            <span>9. Water / Electricity</span>
           </button>
           <button onclick="switchView('reports')" id="btn-reports" class="nav-btn">
             <span class="icon-box bg-violet-500/10 text-violet-400">📈</span>
-            <span>12. Reports & Analytics</span>
+            <span>10. Reports & Analytics</span>
           </button>
         </div>
       </div>
@@ -250,11 +242,7 @@
         <div class="space-y-1">
           <button onclick="switchView('users')" id="btn-users" class="nav-btn">
             <span class="icon-box bg-slate-500/10 text-slate-400">👥</span>
-            <span>13. Users</span>
-          </button>
-          <button onclick="switchView('settings')" id="btn-settings" class="nav-btn">
-            <span class="icon-box bg-gray-500/10 text-gray-400">⚙️</span>
-            <span>14. Settings</span>
+            <span>11. Users</span>
           </button>
         </div>
       </div>
@@ -2274,16 +2262,6 @@
           badgeColor: 'bg-emerald-50 text-emerald-700'
         },
         {
-          id: 'e-inspections',
-          icon: '🔍',
-          name: 'Inspections',
-          value: 'Field Verification Audits',
-          sub: 'Debris Tonnage Checks',
-          target: 'inspections',
-          badge: 'SLA Tracked',
-          badgeColor: 'bg-amber-50 text-amber-700'
-        },
-        {
           id: 'e-dem-req',
           icon: '🏗️',
           name: 'Demolition Requests',
@@ -2332,16 +2310,6 @@
           target: 'utilities',
           badge: 'CHESCOM Link',
           badgeColor: 'bg-yellow-50 text-yellow-700'
-        },
-        {
-          id: 'e-notifications',
-          icon: '🔔',
-          name: 'Notifications',
-          value: 'SMS & Email Broadcast',
-          sub: 'Karnataka SMS Gateway',
-          target: 'notifications',
-          badge: 'Auto-Dispatch',
-          badgeColor: 'bg-pink-50 text-pink-700'
         },
         {
           id: 'e-reports',
