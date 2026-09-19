@@ -516,7 +516,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <h2 class="text-lg font-bold text-slate-900">Demolition Clearance Requests</h2>
-              <p class="text-xs text-slate-500">Initial applications requesting structural dismantling authorization and debris processing.</p>
+              <p class="text-xs text-slate-500">Initial applications requesting structural dismantling authorization and waste processing.</p>
             </div>
           </div>
 
@@ -547,7 +547,7 @@
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
-              <h2 class="text-lg font-bold text-slate-900">Green Demolition & Debris Disposal Certificates</h2>
+              <h2 class="text-lg font-bold text-slate-900">Green Demolition & Waste Disposal Certificates</h2>
               <p class="text-xs text-slate-500">Official QR-verified civic compliance certificates issued upon verified recycling.</p>
             </div>
           </div>
@@ -558,9 +558,11 @@
                 <tr>
                   <th class="px-4 py-3">Certificate No.</th>
                   <th class="px-4 py-3">Applicant Name</th>
-                  <th class="px-4 py-3">Property / Site</th>
-                  <th class="px-4 py-3">Tonnage Recycled</th>
+                  <th class="px-4 py-3">Property Location</th>
                   <th class="px-4 py-3">Issue Date</th>
+                  <th class="px-4 py-3">QR Verification</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3 text-right">View NOC</th>
                 </tr>
               </thead>
               <tbody id="table-certificates" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
@@ -648,7 +650,7 @@
               <span id="rep-total-permits" class="text-2xl font-extrabold text-slate-900 mt-1 block">0</span>
             </div>
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Debris Hauled</span>
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Waste Hauled</span>
               <span id="rep-debris-hauled" class="text-2xl font-extrabold text-emerald-600 mt-1 block">0 MT</span>
             </div>
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
@@ -1250,7 +1252,7 @@
           </div>
           <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1 text-slate-700">
             <p><span class="font-bold">Premise Address:</span> ${app.address || 'Mysuru Site'}</p>
-            <p><span class="font-bold">Debris Material / Waste:</span> ${app.material || 'Demolition Waste'}</p>
+            <p><span class="font-bold">Waste Material / Category:</span> ${app.material || 'Demolition Waste'}</p>
             <p><span class="font-bold">Assigned Inspector:</span> ${app.assignedInspectorName || 'Pending'} (${app.assignedInspectorEmail || 'N/A'})</p>
           </div>
         </div>
@@ -2156,7 +2158,7 @@
             <div>
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
               <span class="font-bold text-emerald-800 font-mono text-sm block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
-              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Debris</span>
+              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Material</span>
             </div>
 
             <div>

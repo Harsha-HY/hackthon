@@ -3,8 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Admin Governance Hub — Smart Civic C&D Debris Routing Mysuru</title>
+  <title>Admin Governance Hub — Smart Civic C&D Waste Management Mysuru</title>
   
+  <!-- React 18 & ReactDOM CDN & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -297,58 +302,16 @@
       <div id="department-banner"></div>
 
       <!-- ===================================================================== -->
-      <!-- 1. DASHBOARD                                                          -->
+      <!-- 1. DASHBOARD (POWERED BY INTERACTIVE REACT PANCHAYAT ANALYTICS)        -->
       <!-- ===================================================================== -->
       <section id="panel-dashboard" class="panel-view active space-y-6">
-        
-        <!-- 5 Core Stats Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Total Applications</span>
-            <span id="dash-total-apps" class="text-3xl font-extrabold text-slate-900 mt-2 block">0</span>
-            <span class="text-[11px] text-blue-600 font-semibold mt-1 block">C&D Haulage & Clearance</span>
-          </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Pending Inspections</span>
-            <span id="dash-pending-insp" class="text-3xl font-extrabold text-amber-600 mt-2 block">0</span>
-            <span class="text-[11px] text-amber-700 font-semibold mt-1 block">Scheduled for field review</span>
-          </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Pending Debris</span>
-            <span id="dash-pending-debris" class="text-3xl font-extrabold text-rose-600 mt-2 block">0</span>
-            <span class="text-[11px] text-rose-700 font-semibold mt-1 block">Awaiting tipper dispatch</span>
-          </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Completed Collections</span>
-            <span id="dash-completed-coll" class="text-3xl font-extrabold text-emerald-600 mt-2 block">0</span>
-            <span class="text-[11px] text-emerald-700 font-semibold mt-1 block">Hauled to recycling yards</span>
-          </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs col-span-2 lg:col-span-1">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Active Officers</span>
-            <span id="dash-active-officers" class="text-3xl font-extrabold text-purple-600 mt-2 block">3</span>
-            <span class="text-[11px] text-purple-700 font-semibold mt-1 block">MCC + GP + TP squads</span>
+        <!-- React 18 Multi-Panchayat Analytics Dashboard Mount Point -->
+        <div id="react-panchayat-analytics-root">
+          <div class="p-8 text-center text-slate-400 bg-white rounded-3xl border border-slate-200">
+            <span class="inline-block size-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
+            <p class="text-xs font-semibold mt-2">Loading React Panchayat Analytics Dashboard...</p>
           </div>
         </div>
-
-
-
-        <!-- Debris Hotspot Map & Table -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                <span>📍</span> Debris Hotspot Map & Critical Dumping Zones
-              </h3>
-              <p class="text-xs text-slate-500">Live Mysuru arterial roads and ring-road hotspots flagged for heavy machinery clearance.</p>
-            </div>
-            <span id="dash-hotspots-count" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold font-mono">0 Active Hotspots</span>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="dash-hotspots-container">
-            <!-- Dynamic Hotspots Injected -->
-          </div>
-        </div>
-
       </section>
 
       <!-- ===================================================================== -->
@@ -642,7 +605,7 @@
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="border-b border-slate-100 pb-3">
             <h3 class="text-base font-bold text-slate-900">Site Inspection & Rubble Audit Management</h3>
-            <p class="text-xs text-slate-500">Application audits, debris estimations, inspection dates, and inspector remarks.</p>
+            <p class="text-xs text-slate-500">Application audits, site verifications, inspection dates, and inspector remarks.</p>
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -653,7 +616,7 @@
                   <th class="px-4 py-3">Location</th>
                   <th class="px-4 py-3">Inspector</th>
                   <th class="px-4 py-3">Inspection Date</th>
-                  <th class="px-4 py-3">Debris Type & Quantity</th>
+                  <th class="px-4 py-3">Material Category & Quantity</th>
                   <th class="px-4 py-3">Remarks</th>
                   <th class="px-4 py-3">Status</th>
                 </tr>
@@ -682,7 +645,7 @@
                   <th class="px-4 py-3">Property</th>
                   <th class="px-4 py-3">Location</th>
                   <th class="px-4 py-3">Applicant</th>
-                  <th class="px-4 py-3">Estimated Debris</th>
+                  <th class="px-4 py-3">Verified Material & Tonnage</th>
                   <th class="px-4 py-3">Documents/Photos</th>
                   <th class="px-4 py-3">Status</th>
                 </tr>
@@ -699,7 +662,7 @@
       <section id="panel-demolition_status" class="panel-view space-y-6">
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">Live Demolition & Debris Hauling Status</h3>
+            <h3 class="text-base font-bold text-slate-900">Live Demolition & Waste Hauling Status</h3>
             <p class="text-xs text-slate-500">Scheduled dates, before/after evidence photos, and recycling yard delivery confirmation.</p>
           </div>
 
@@ -711,7 +674,7 @@
                   <th class="px-4 py-3">Scheduled Date</th>
                   <th class="px-4 py-3">Completion Date</th>
                   <th class="px-4 py-3">Before/After Photos</th>
-                  <th class="px-4 py-3">Debris Quantity</th>
+                  <th class="px-4 py-3">Waste Tonnage</th>
                   <th class="px-4 py-3">Collection Status</th>
                 </tr>
               </thead>
@@ -2670,6 +2633,657 @@
     renderInspectorsTable();
     loadData();
     setInterval(loadData, 2000);
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- REACT 18 MULTI-PANCHAYAT ANALYTICS & 24H ROLLING COUNT COMPONENT          -->
+  <!-- ========================================================================= -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const JURISDICTION_PROFILES = {
+      all: {
+        key: 'all',
+        name: 'Central Mysuru Apex Command',
+        tag: 'Multi-Agency Oversight',
+        icon: '👑',
+        color: 'from-slate-900 to-slate-800',
+        badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+        headOfficer: 'Super Administrator (admin@mysuru.gov.in)',
+        inspectors: ['Rajesh Kumar', 'Seervi', 'Dimple', 'S. Nanjappa', 'M. Anand'],
+        pinRange: 'All Mysuru PINs (570001 to 571607)',
+        wards: '65 Urban Wards + 8 Rural Wards + 5 Town Zones',
+        desc: 'Unified administrative console consolidating Gram Panchayat, Town Panchayat, and MCC Urban operations.'
+      },
+      gp: {
+        key: 'gp',
+        name: 'Bogadi Gram Panchayat',
+        tag: 'Rural C&D Waste Administration',
+        icon: '🏛️',
+        color: 'from-emerald-900 to-teal-950',
+        badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+        headOfficer: 'Panchayat Development Officer (gp@gmail.com)',
+        inspectors: ['Seervi (q@gmail.com)', 'Dimple (dim@gmail.com)', 'S. Nanjappa (nanjappa.gp@gmail.com)'],
+        pinRange: '570026, 571130, 570028, 560079, 570021',
+        wards: 'Bogadi, Maratikyathanahalli, Rammanahalli, Rural Mysuru',
+        desc: 'Rural governance hub regulating agricultural land clearances, rural debris processing, and green haulage permits.'
+      },
+      tp: {
+        key: 'tp',
+        name: 'Hootagalli Town Panchayat',
+        tag: 'Peri-Urban & Industrial Administration',
+        icon: '🏢',
+        color: 'from-teal-900 to-cyan-950',
+        badgeColor: 'bg-teal-100 text-teal-900 border-teal-300',
+        headOfficer: 'Chief Officer (tp@gmail.com)',
+        inspectors: ['M. Anand (anand.tp@gmail.com)'],
+        pinRange: '570018, 570017, 570027, 571607, 571604, 571602',
+        wards: 'Hootagalli Industrial Hub, Belavadi, Koorgalli, Vijayanagar 4th Stage',
+        desc: 'Town Panchayat division supervising heavy manufacturing debris, industrial demolition, and peri-urban haulage routes.'
+      },
+      mcc: {
+        key: 'mcc',
+        name: 'Mysuru City Corporation (MCC)',
+        tag: 'Urban Municipal Corporation Headquarters',
+        icon: '🏙️',
+        color: 'from-blue-950 to-slate-900',
+        badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+        headOfficer: 'Executive Health Officer / Commissioner (mcc@gmail.com)',
+        inspectors: ['Rajesh Kumar (inspector.mcc@gmail.com)', 'Seervi (s@gmail.com)'],
+        pinRange: '570001, 570002, 570004, 570023, 570020, 570024',
+        wards: '65 Urban Municipal Wards (Zones 1 through 9)',
+        desc: 'Metropolitan municipal division governing core city structural dismantling, commercial permits, and public road clearance.'
+      }
+    };
+
+    const GP_PINS = ['570026', '571130', '570028', '560079', '570021', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+    const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610', '570016'];
+    const MCC_PINS = ['570001', '570002', '570004', '570008', '570010', '570020', '570023', '570024'];
+
+    function PanchayatDashboardAnalytics() {
+      const [selectedPanchayat, setSelectedPanchayat] = useState('all');
+      const [applications, setApplications] = useState([]);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [statusFilter, setStatusFilter] = useState('all');
+      const [currentTime, setCurrentTime] = useState(new Date());
+
+      // Live Ticking Clock (Updates countdown until 11:59:59 PM daily reset)
+      useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      // Real-Time Data Sync from Server & LocalStorage
+      const loadLiveApps = async () => {
+        try {
+          const res = await fetch('/api/applications');
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              setApplications(data);
+              localStorage.setItem('civic_applications', JSON.stringify(data));
+              return;
+            }
+          }
+        } catch(e) {}
+        const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+        setApplications(local);
+      };
+
+      useEffect(() => {
+        loadLiveApps();
+        const pollInterval = setInterval(loadLiveApps, 2000);
+
+        const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
+        if (syncChannel) {
+          syncChannel.onmessage = () => loadLiveApps();
+        }
+
+        const handleStorageChange = (e) => {
+          if (e.key === 'civic_applications') loadLiveApps();
+        };
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+          clearInterval(pollInterval);
+          if (syncChannel) syncChannel.close();
+          window.removeEventListener('storage', handleStorageChange);
+        };
+      }, []);
+
+      // 24-Hour Calendar Day Matcher (Calculates today within current date, auto-resets at 11:59:59 PM)
+      const isToday = (dateStr) => {
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return false;
+        const now = currentTime;
+        return d.getFullYear() === now.getFullYear() &&
+               d.getMonth() === now.getMonth() &&
+               d.getDate() === now.getDate();
+      };
+
+      // Filter applications matching selected Panchayat
+      const jurisdictionApps = useMemo(() => {
+        if (selectedPanchayat === 'all') return applications;
+        return applications.filter(app => {
+          const authKey = (app.authorityKey || '').toLowerCase().trim();
+          if (authKey) return authKey === selectedPanchayat;
+
+          const authStr = (app.authority || '').toLowerCase();
+          if (selectedPanchayat === 'gp' && (authStr.includes('gram') || authStr.includes('bogadi'))) return true;
+          if (selectedPanchayat === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli'))) return true;
+          if (selectedPanchayat === 'mcc' && (authStr.includes('mcc') || authStr.includes('corporation'))) return true;
+
+          const pin = String(app.pincode || app.pin || '').trim();
+          if (selectedPanchayat === 'gp') return GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin));
+          if (selectedPanchayat === 'tp') return TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin));
+          if (selectedPanchayat === 'mcc') return MCC_PINS.some(p => pin.startsWith(p) || p.startsWith(pin));
+          return false;
+        });
+      }, [selectedPanchayat, applications]);
+
+      // Status check helpers
+      const isSolved = (a) => {
+        const s = String(a.status || '').toLowerCase().trim();
+        return s === 'approved' || s === 'clearance approved' || s === 'certificate issued' || s === 'issued';
+      };
+
+      const isPending = (a) => {
+        const s = String(a.status || '').toLowerCase().trim();
+        return !isSolved(a) && s !== 'cancelled' && s !== 'rejected';
+      };
+
+      // ==========================================
+      // THE 7 AUTHORITATIVE METRIC CALCULATIONS
+      // ==========================================
+      const totalApplications = jurisdictionApps.length;
+      const todaysApplications = jurisdictionApps.filter(a => isToday(a.submittedAt || a.createdAt)).length;
+      const solvedOverall = jurisdictionApps.filter(isSolved).length;
+      const todaySolved = jurisdictionApps.filter(a => isSolved(a) && isToday(a.auditedAt || a.updatedAt || a.submittedAt)).length;
+      const pendingApplications = jurisdictionApps.filter(isPending).length;
+      const completedClearance = jurisdictionApps.filter(a => (a.certificateStatus === 'Issued' || isSolved(a))).length;
+      const solvedRate = totalApplications > 0 ? ((solvedOverall / totalApplications) * 100).toFixed(1) : '100.0';
+
+      // 24-Hour Reset Countdown Calculator (11:59:59 PM)
+      const midnight = new Date(currentTime);
+      midnight.setHours(23, 59, 59, 999);
+      const diffMs = Math.max(0, midnight - currentTime);
+      const hoursLeft = Math.floor(diffMs / 3600000);
+      const minsLeft = Math.floor((diffMs % 3600000) / 60000);
+      const secsLeft = Math.floor((diffMs % 60000) / 1000);
+      const resetCountdownStr = `${hoursLeft.toString().padStart(2, '0')}:${minsLeft.toString().padStart(2, '0')}:${secsLeft.toString().padStart(2, '0')}`;
+
+      // Filtered applications list for drilldown
+      const filteredList = useMemo(() => {
+        return jurisdictionApps.filter(a => {
+          if (statusFilter === 'today') {
+            if (!isToday(a.submittedAt || a.createdAt)) return false;
+          } else if (statusFilter === 'pending') {
+            if (!isPending(a)) return false;
+          } else if (statusFilter === 'solved') {
+            if (!isSolved(a)) return false;
+          }
+
+          if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase().trim();
+            const id = String(a.id || '').toLowerCase();
+            const name = String(a.applicantName || '').toLowerCase();
+            const phone = String(a.phone || '').toLowerCase();
+            const pin = String(a.pincode || a.pin || '').toLowerCase();
+            const status = String(a.status || '').toLowerCase();
+            return id.includes(q) || name.includes(q) || phone.includes(q) || pin.includes(q) || status.includes(q);
+          }
+          return true;
+        });
+      }, [jurisdictionApps, statusFilter, searchQuery, currentTime]);
+
+      const profile = JURISDICTION_PROFILES[selectedPanchayat] || JURISDICTION_PROFILES.all;
+
+      return (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          
+          {/* ========================================================================= */}
+          {/* 1. TOP INTERACTIVE PANCHAYAT SELECTION TABS                                */}
+          {/* ========================================================================= */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-3 sm:p-4 shadow-xs">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 font-bold block">
+                  Interactive Panchayat & Municipal Control Desk
+                </span>
+                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>🏛️</span> Select Panchayat / Corporation Dashboard
+                </h2>
+              </div>
+
+              {/* 24-Hour Reset Live Indicator */}
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-slate-900 text-white shadow-xs">
+                <span className="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div className="text-[11px] leading-tight font-mono">
+                  <span className="text-slate-400">24h Daily Reset in: </span>
+                  <strong className="text-amber-300 font-bold">{resetCountdownStr}</strong>
+                  <span className="text-[10px] text-slate-400 block sm:inline sm:ml-1.5">(at 11:59:59 PM)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Interactive Buttons */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+              
+              {/* Tab 1: Gram Panchayat */}
+              <button
+                type="button"
+                onClick={() => setSelectedPanchayat('gp')}
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 relative overflow-hidden ${
+                  selectedPanchayat === 'gp'
+                    ? 'bg-gradient-to-tr from-emerald-800 to-teal-900 text-white border-emerald-700 shadow-md shadow-emerald-900/20 ring-2 ring-emerald-500'
+                    : 'bg-slate-50/80 hover:bg-emerald-50/50 text-slate-800 border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">🏛️</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${selectedPanchayat === 'gp' ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' : 'bg-emerald-100 text-emerald-800'}`}>
+                    Rural Zone
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm leading-tight">Gram Panchayat</h4>
+                  <p className={`text-[10px] font-medium mt-0.5 ${selectedPanchayat === 'gp' ? 'text-emerald-200' : 'text-slate-500'}`}>
+                    Bogadi Rural · PIN 570026
+                  </p>
+                </div>
+              </button>
+
+              {/* Tab 2: Town Panchayat */}
+              <button
+                type="button"
+                onClick={() => setSelectedPanchayat('tp')}
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 relative overflow-hidden ${
+                  selectedPanchayat === 'tp'
+                    ? 'bg-gradient-to-tr from-teal-800 to-cyan-900 text-white border-teal-700 shadow-md shadow-teal-900/20 ring-2 ring-teal-500'
+                    : 'bg-slate-50/80 hover:bg-teal-50/50 text-slate-800 border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">🏢</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${selectedPanchayat === 'tp' ? 'bg-teal-500/30 text-teal-200 border border-teal-400/40' : 'bg-teal-100 text-teal-800'}`}>
+                    Town Zone
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm leading-tight">Town Panchayat</h4>
+                  <p className={`text-[10px] font-medium mt-0.5 ${selectedPanchayat === 'tp' ? 'text-teal-200' : 'text-slate-500'}`}>
+                    Hootagalli · PIN 570018
+                  </p>
+                </div>
+              </button>
+
+              {/* Tab 3: Mysuru City Corporation (MCC) */}
+              <button
+                type="button"
+                onClick={() => setSelectedPanchayat('mcc')}
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 relative overflow-hidden ${
+                  selectedPanchayat === 'mcc'
+                    ? 'bg-gradient-to-tr from-blue-900 to-indigo-950 text-white border-blue-700 shadow-md shadow-blue-900/20 ring-2 ring-blue-500'
+                    : 'bg-slate-50/80 hover:bg-blue-50/50 text-slate-800 border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">🏙️</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${selectedPanchayat === 'mcc' ? 'bg-blue-500/30 text-blue-200 border border-blue-400/40' : 'bg-blue-100 text-blue-800'}`}>
+                    Urban Corp
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm leading-tight">MCC Urban</h4>
+                  <p className={`text-[10px] font-medium mt-0.5 ${selectedPanchayat === 'mcc' ? 'text-blue-200' : 'text-slate-500'}`}>
+                    65 Wards · PIN 570001
+                  </p>
+                </div>
+              </button>
+
+              {/* Tab 4: All Jurisdictions Central Apex */}
+              <button
+                type="button"
+                onClick={() => setSelectedPanchayat('all')}
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 relative overflow-hidden ${
+                  selectedPanchayat === 'all'
+                    ? 'bg-gradient-to-tr from-slate-900 to-slate-800 text-white border-slate-700 shadow-md ring-2 ring-slate-400'
+                    : 'bg-slate-50/80 hover:bg-slate-100 text-slate-800 border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">⭐</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${selectedPanchayat === 'all' ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-200 text-slate-800'}`}>
+                    Central Overview
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm leading-tight">All Jurisdictions</h4>
+                  <p className={`text-[10px] font-medium mt-0.5 ${selectedPanchayat === 'all' ? 'text-slate-300' : 'text-slate-500'}`}>
+                    Consolidated Multi-Agency
+                  </p>
+                </div>
+              </button>
+
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* 2. JURISDICTION PROFILE HERO BANNER                                       */}
+          {/* ========================================================================= */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="size-13 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl font-bold shadow-md shrink-0">
+                {profile.icon}
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">{profile.name}</h3>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${profile.badgeColor}`}>
+                    {profile.tag}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  <strong>Authority Lead:</strong> {profile.headOfficer} · <strong>PIN Codes:</strong> {profile.pinRange}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  <strong>Assigned Field Inspectors:</strong> {profile.inspectors.join(' · ')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+              <button
+                type="button"
+                onClick={loadLiveApps}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+              >
+                <span>🔄</span> <span>Live Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* 3. THE 7 PRECISE REAL-TIME METRIC CARDS                                   */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+            
+            {/* 1. Total Applications */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">1. Total Apps</span>
+                  <span className="text-sm">📋</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-950 font-mono block">
+                  {totalApplications}
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold text-blue-600 mt-2 block">All-time lodged</span>
+            </div>
+
+            {/* 2. Today's Applications */}
+            <div className="bg-white rounded-2xl border-2 border-emerald-500/40 p-4 sm:p-5 shadow-xs flex flex-col justify-between bg-emerald-50/20">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">2. Today's Apps</span>
+                  <span className="text-sm">⚡</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-mono block">
+                  {todaysApplications}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-emerald-800 mt-2 block">Within 24h window</span>
+            </div>
+
+            {/* 3. Solved */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">3. Solved</span>
+                  <span className="text-sm">🏆</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono block">
+                  {solvedOverall}
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold text-emerald-700 mt-2 block">Approved & cleared</span>
+            </div>
+
+            {/* 4. Today Solved */}
+            <div className="bg-white rounded-2xl border-2 border-teal-500/40 p-4 sm:p-5 shadow-xs flex flex-col justify-between bg-teal-50/20">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider">4. Today Solved</span>
+                  <span className="text-sm">✨</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-teal-700 font-mono block">
+                  {todaySolved}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-teal-800 mt-2 block">Cleared today (24h)</span>
+            </div>
+
+            {/* 5. Pending */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">5. Pending</span>
+                  <span className="text-sm">⏳</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-mono block">
+                  {pendingApplications}
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold text-amber-700 mt-2 block">Field audit in queue</span>
+            </div>
+
+            {/* 6. Completed */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">6. Completed</span>
+                  <span className="text-sm">📜</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-purple-700 font-mono block">
+                  {completedClearance}
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold text-purple-700 mt-2 block">NOC issued</span>
+            </div>
+
+            {/* 7. Overall Rate */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between col-span-2 sm:col-span-2 lg:col-span-1">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">7. Overall Rate</span>
+                  <span className="text-sm">📊</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono block">
+                  {solvedRate}%
+                </span>
+              </div>
+              <div className="mt-2 space-y-1">
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, parseFloat(solvedRate))}%` }}></div>
+                </div>
+                <span className="text-[9px] font-mono text-slate-400 block text-right">Clearance efficiency</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ========================================================================= */}
+          {/* 4. LIVE COMPLAINTS DRILL-DOWN REGISTRY FOR CHOSEN PANCHAYAT                */}
+          {/* ========================================================================= */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span>📑</span> {profile.name} — Live Applications Registry
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Showing <strong>{filteredList.length}</strong> application(s) matching selected filters.
+                </p>
+              </div>
+
+              {/* Filter Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    statusFilter === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  All ({totalApplications})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('today')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    statusFilter === 'today' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                  }`}
+                >
+                  ⚡ Today's ({todaysApplications})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('pending')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    statusFilter === 'pending' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                  }`}
+                >
+                  ⏳ Pending ({pendingApplications})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('solved')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    statusFilter === 'solved' ? 'bg-teal-600 text-white' : 'bg-teal-50 text-teal-800 hover:bg-teal-100'
+                  }`}
+                >
+                  🏆 Solved ({solvedOverall})
+                </button>
+              </div>
+            </div>
+
+            {/* Search Box */}
+            <div className="relative">
+              <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by Application ID, Citizen Name, Mobile, Property ID, PIN Code, or Inspector..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
+              />
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3 font-mono">App ID</th>
+                    <th className="px-4 py-3">Applicant / Citizen</th>
+                    <th className="px-4 py-3">Property Site & PIN</th>
+                    <th className="px-4 py-3">Authority / Inspector</th>
+                    <th className="px-4 py-3">Submission Window</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {filteredList.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="px-4 py-8 text-center text-slate-400 font-medium">
+                        No applications found in {profile.name} matching current filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredList.map((app) => {
+                      const isAppSolved = isSolved(app);
+                      const isAppToday = isToday(app.submittedAt || app.createdAt);
+                      return (
+                        <tr key={app.id} className="hover:bg-slate-50 transition">
+                          <td className="px-4 py-3 font-mono font-bold text-emerald-800">
+                            {app.id}
+                            {isAppToday && (
+                              <span className="ml-1.5 inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                                TODAY
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-semibold text-slate-900 block">{app.applicantName || 'Citizen User'}</span>
+                            <span className="text-[11px] font-mono text-slate-500 block">{app.phone || '—'}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-semibold text-slate-900 block">{app.propertyId || 'Site Plot'}</span>
+                            <span className="text-[11px] text-slate-500 block">{app.address || 'Mysuru'} · <strong>PIN {app.pincode || app.pin}</strong></span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-bold text-slate-800 block">{app.authority || profile.name}</span>
+                            <span className="text-[10px] text-slate-500 block">👮 {app.assignedInspectorName || 'Ward Inspector'}</span>
+                          </td>
+                          <td className="px-4 py-3 font-mono text-[11px] text-slate-500">
+                            {app.submittedAt ? new Date(app.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                              isAppSolved
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                : (app.status === 'Cancelled' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800 border border-amber-200')
+                            }`}>
+                              ● {app.status || 'Pending Inspection'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {isAppSolved && (
+                                <button
+                                  type="button"
+                                  onClick={() => window.openCertificateModal ? window.openCertificateModal(app.id) : alert('NOC Certificate Issued for ' + app.id)}
+                                  className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs transition cursor-pointer flex items-center gap-1"
+                                >
+                                  <span>📜</span> <span>NOC</span>
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.viewApplicationModal) window.viewApplicationModal(app.id);
+                                  else if (window.adminApproveApplication && !isAppSolved) window.adminApproveApplication(app.id);
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition cursor-pointer"
+                              >
+                                View
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+        </div>
+      );
+    }
+
+    // Mount the React Component
+    const rootElement = document.getElementById('react-panchayat-analytics-root');
+    if (rootElement) {
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(<PanchayatDashboardAnalytics />);
+    }
   </script>
 </body>
 </html>

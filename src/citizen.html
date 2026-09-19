@@ -326,7 +326,7 @@
             <div>
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
               <span class="font-bold text-emerald-800 font-mono text-sm block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
-              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Debris</span>
+              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Material</span>
             </div>
 
             <div>
@@ -384,7 +384,7 @@
       </div>
       <div class="leading-tight">
         <span class="block font-extrabold text-sm text-white tracking-tight">Smart Civic C&D</span>
-        <span class="block text-[10px] text-emerald-400 font-mono tracking-wider uppercase font-bold">MYSURU DEBRIS HUB</span>
+        <span class="block text-[10px] text-emerald-400 font-mono tracking-wider uppercase font-bold">MYSURU CLEARANCE HUB</span>
       </div>
     </div>
 
@@ -619,7 +619,7 @@
                       📸
                     </div>
                     <div>
-                      <h4 class="font-bold text-slate-900 text-xs">Site Debris Photo Evidence</h4>
+                      <h4 class="font-bold text-slate-900 text-xs">Site Waste & Rubble Photo Evidence</h4>
                       <p class="text-[11px] text-slate-500">Capture live with your camera or select site photo from your gallery/device.</p>
                     </div>
                   </div>
@@ -1724,7 +1724,7 @@
         }
         if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>🟢</span> <span>Inspection Verified & Passed</span>';
-        if (alertDesc) alertDesc.innerText = `Physical site audit passed! Verified Tonnage: ${app.tonnage || 10} MT. Remarks: "${app.inspectorNotes || 'Debris verified for clearance.'}". Awaiting final Officer clearance approval.`;
+        if (alertDesc) alertDesc.innerText = `Physical site audit passed! Verified Tonnage: ${app.tonnage || 10} MT. Remarks: "${app.inspectorNotes || 'Site waste verified for clearance.'}". Awaiting final Officer clearance approval.`;
         setNodeActive(1, true);
         setNodeActive(2, true);
         setNodeActive(3, true);
@@ -1756,7 +1756,7 @@
         }
         if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>❌</span> <span>Complaint Cancelled / Rejected</span>';
-        if (alertDesc) alertDesc.innerText = `This complaint was closed/cancelled by officer: "${app.inspectorNotes || 'No debris detected or request withdrawn.'}". Lock has been released.`;
+        if (alertDesc) alertDesc.innerText = `This complaint was closed/cancelled by officer: "${app.inspectorNotes || 'Site requirements not met or request withdrawn.'}". Lock has been released.`;
         setNodeActive(1, true);
         if (progressFill) progressFill.style.width = '0%';
       } else if (status === 'Action Required') {
