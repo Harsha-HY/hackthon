@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Smart Civic Waste Routing — Mysuru</title>
-  <meta name="author" content="Mysuru City Corporation & Civic Waste Operations"/>
-  <meta name="description" content="Official smart civic waste routing platform for Mysuru. Automatically dispatching waste grievances across 65 wards, 9 administrative zones, and Zero Waste Management (ZWM) centers."/>
-  <meta property="og:title" content="Smart Civic Waste Routing — Mysuru"/>
-  <meta property="og:description" content="Real-time civic waste routing and grievance resolution across Mysuru City Corporation and peripheral zones."/>
+  <title>Smart Civic Construction & Demolition Routing — Mysuru</title>
+  <meta name="author" content="Mysuru City Corporation & C&D Waste Operations"/>
+  <meta name="description" content="Official smart civic Construction & Demolition (C&D) debris routing platform for Mysuru. Automatically dispatching C&D clearance requests across 65 wards, 9 administrative zones, and Material Recovery Facilities."/>
+  <meta property="og:title" content="Smart Civic Construction & Demolition Routing — Mysuru"/>
+  <meta property="og:description" content="Real-time civic construction & demolition debris routing and grievance resolution across Mysuru City Corporation and peripheral zones."/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary_large_image"/>
   
@@ -125,7 +125,7 @@
   <!-- Header -->
   <header class="absolute inset-x-0 top-0 z-30">
     <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
-      <a href="#top" class="flex items-center gap-3" aria-label="Smart Civic Waste Routing home">
+      <a href="#top" class="flex items-center gap-3" aria-label="Smart Civic Construction & Demolition Routing home">
         <span class="grid size-10 place-items-center rounded-md bg-primary text-primary-foreground shadow-mark">
           <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="6" cy="18" r="2" stroke="currentColor" stroke-width="1.8"></circle>
@@ -134,7 +134,7 @@
           </svg>
         </span>
         <span class="leading-tight">
-          <span class="block font-display text-sm font-bold text-foreground">Smart Civic Waste Routing</span>
+          <span class="block font-display text-sm font-bold text-foreground">Smart Civic Construction & Demolition</span>
           <span class="block font-mono text-[10px] uppercase text-muted-foreground">Mysuru City Corporation</span>
         </span>
       </a>
@@ -145,7 +145,7 @@
         <a class="nav-link" href="#governance">MCC Governance</a>
       </nav>
       <div class="flex items-center gap-3">
-        <a class="button button-light" href="#tracking">Track complaint</a>
+        <a class="button button-light" href="#tracking">Track clearance</a>
         <a class="button button-primary" href="auth.html">Sign In / Register</a>
       </div>
     </div>
@@ -158,7 +158,7 @@
       <!-- Photo Switcher Pill -->
       <div class="photo-switcher-badge">
         <button id="btn-palace-view" class="photo-btn active" onclick="switchHeroPhoto('palace')">🏛️ Mysuru Palace View</button>
-        <button id="btn-civic-view" class="photo-btn" onclick="switchHeroPhoto('civic')">🚛 Sanitation Operations</button>
+        <button id="btn-civic-view" class="photo-btn" onclick="switchHeroPhoto('civic')">🚛 Clearance Operations</button>
       </div>
 
       <!-- Hero Image: Updated with high-res iconic Mysuru Palace photo -->
@@ -177,29 +177,29 @@
           <div class="max-w-4xl animate-rise">
             <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-hero-line bg-hero-glass px-3.5 py-1.5 font-mono text-[11px] uppercase text-hero-foreground backdrop-blur-md">
               <span class="size-2 rounded-full bg-signal animate-pulse-soft"></span>
-              Swachh Mysuru · Integrated Civic Routing Platform
+              Swachh Mysuru · Integrated C&D Debris Routing Platform
             </div>
             <h1 id="hero-title" class="max-w-[14ch] font-display text-5xl font-extrabold leading-[0.98] text-hero-foreground sm:text-6xl lg:text-7xl">
-              Smart Civic Waste Routing — Mysuru
+              Smart Civic Construction & Demolition Routing — Mysuru
             </h1>
             <p class="mt-6 max-w-2xl text-lg leading-relaxed text-hero-muted sm:text-xl">
-              Citizens report civic waste. The intelligent routing system automatically directs each report to the designated Ward Health Inspector, ZWM plant, and field sanitation squad.
+              Citizens report construction & demolition debris. The intelligent routing system automatically directs each clearance request to the designated Ward C&D Inspector, recycling facility, and clearance squad.
             </p>
             <div class="mt-8 flex flex-wrap gap-3">
               <button onclick="openReportModal()" class="button button-primary cursor-pointer">
-                Report waste 
+                Report C&D Debris
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
               </button>
-              <a class="button button-glass" href="#tracking">Track a complaint</a>
+              <a class="button button-glass" href="#tracking">Track a clearance</a>
               <a class="button button-glass" href="auth.html">🔐 Portal Access</a>
             </div>
 
             <!-- Real City Metrics Strip -->
             <div class="mt-10 flex flex-wrap gap-3 text-hero-foreground">
               <div class="stats-pill">📍 65 MCC Wards Covered</div>
-              <div class="stats-pill">♻️ 9 Decentralized ZWM Plants</div>
+              <div class="stats-pill">♻️ 9 C&D Recycling Facilities</div>
               <div class="stats-pill">⏱️ Avg. 4.2 Hr Ward Resolution</div>
             </div>
           </div>
@@ -210,7 +210,7 @@
               <div class="flex items-center gap-3">
                 <span class="status-dot status-dot-active"></span>
                 <div>
-                  <p class="text-sm font-semibold" id="preview-status-title">Complaint #MCC-8419</p>
+                  <p class="text-sm font-semibold" id="preview-status-title">Request #MCC-8419</p>
                   <p class="font-mono text-xs text-hero-muted" id="preview-status-sub">PIN 570001 (Palace Zone) · 08:42</p>
                 </div>
               </div>
@@ -219,7 +219,7 @@
                 <span class="status-dot status-dot-signal"></span>
                 <div>
                   <p class="text-sm font-semibold" id="preview-route-body">Routed to MCC Zone 1</p>
-                  <p class="font-mono text-xs text-hero-muted" id="preview-route-ward">Ward 14 (Devaraja) · Kumbarakoppal ZWM</p>
+                  <p class="font-mono text-xs text-hero-muted" id="preview-route-ward">Ward 14 (Devaraja) · C&D Recycling Center</p>
                 </div>
               </div>
             </div>
@@ -237,7 +237,7 @@
             <h2 class="section-title">One report.<br/>The right desk.</h2>
           </div>
           <p class="max-w-2xl text-lg leading-relaxed text-muted-foreground lg:justify-self-end">
-            Citizens never need to navigate complex municipal jurisdictions. Precise geo-coordinates and Mysuru’s administrative boundary database automatically dispatch every ticket to the responsible health inspector and nearest Zero Waste Management facility.
+            Citizens never need to navigate complex municipal jurisdictions. Precise geo-coordinates and Mysuru’s administrative boundary database automatically dispatch every ticket to the responsible C&D inspector and nearest Material Recovery & Recycling facility.
           </p>
         </div>
         
@@ -254,7 +254,7 @@
               <span class="font-mono text-xs text-muted-foreground">01</span>
             </div>
             <h3 class="mt-8 font-display text-xl font-bold">Citizen Report</h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Geo-tagged photo, waste category (Dry, Wet, C&D), and landmark address.</p>
+            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Geo-tagged photo, C&D material category (Concrete, Rubble, Bricks), and site address.</p>
             <svg class="routing-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
@@ -309,7 +309,7 @@
               <span class="font-mono text-xs text-muted-foreground">04</span>
             </div>
             <h3 class="mt-8 font-display text-xl font-bold">Crew Assignment</h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Ward Health Inspector assigns the nearby Pourakarmika squad and collection tipper truck.</p>
+            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Ward C&D Inspector assigns the nearby clearance squad and debris tipper truck.</p>
             <svg class="routing-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
@@ -326,13 +326,13 @@
               <span class="font-mono text-xs text-muted-foreground">05</span>
             </div>
             <h3 class="mt-8 font-display text-xl font-bold">Verified Closure</h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Clearance photo evidence is uploaded and waste is delivered to the designated ZWM unit.</p>
+            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Clearance photo evidence is uploaded and debris is delivered to the designated C&D recycling unit.</p>
           </article>
         </div>
 
         <!-- Pipeline Sequence Indicator -->
         <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border pt-5 font-mono text-xs text-muted-foreground">
-          <span class="text-primary font-semibold">Citizen Grievance</span>
+          <span class="text-primary font-semibold">C&D Clearance Request</span>
           <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
           <span>PIN 570001–570032</span>
           <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
@@ -342,7 +342,7 @@
           <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
           <span>Field Squad Dispatch</span>
           <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
-          <span>ZWM Compost & Recovery</span>
+          <span>C&D Recycling & Recovery</span>
         </div>
       </div>
     </section>
@@ -354,7 +354,7 @@
           <p class="eyebrow">Built for evolving urban boundaries</p>
           <h2 class="section-title max-w-[14ch]">Jurisdiction changes. Accountability doesn't.</h2>
           <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            As Greater Mysuru expands, peripheral villages and Gram Panchayats merge into urban local bodies (like Hootagalli CMC and Kadakola). The routing engine stores effective boundary dates, routing new complaints accurately while archiving historical records for municipal audit.
+            As Greater Mysuru expands, peripheral villages and Gram Panchayats merge into urban local bodies (like Hootagalli CMC and Kadakola). The routing engine stores effective boundary dates, routing new clearance requests accurately while archiving historical records for municipal audit.
           </p>
           <div class="mt-8 grid gap-4 sm:grid-cols-3">
             <div class="border-t border-border pt-4">
@@ -391,7 +391,7 @@
                   <h3 class="font-semibold text-panel-foreground">Hootagalli Gram Panchayat</h3>
                   <span class="font-mono text-xs text-panel-muted">Rural Local Body Record (Historical)</span>
                 </div>
-                <p class="mt-2 text-sm text-panel-muted">Historical complaints, property tax links, and legacy disposal archives maintained intact.</p>
+                <p class="mt-2 text-sm text-panel-muted">Historical requests, property tax links, and legacy disposal archives maintained intact.</p>
               </div>
             </div>
 
@@ -402,7 +402,7 @@
                   <h3 class="font-semibold text-panel-foreground">Hootagalli CMC & MCC Extended Zone</h3>
                   <span class="font-mono text-xs text-signal">Active Urban Local Body</span>
                 </div>
-                <p class="mt-2 text-sm text-panel-muted">All active complaints route automatically to the upgraded municipal health officer and Kumbarakoppal ZWM processing plant.</p>
+                <p class="mt-2 text-sm text-panel-muted">All active clearance requests route automatically to the upgraded municipal C&D officer and Kumbarakoppal C&D recycling plant.</p>
               </div>
             </div>
           </div>
@@ -411,7 +411,7 @@
             <svg class="size-5 shrink-0 text-signal" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
-            Zero complaint drop-off across boundary reorganizations and municipal mergers.
+            Zero clearance request drop-off across boundary reorganizations and municipal mergers.
           </div>
         </div>
       </div>
@@ -486,27 +486,27 @@
           </div>
         </div>
 
-        <!-- Active Complaint Card -->
+        <!-- Active Clearance Card -->
         <div class="mx-auto mt-12 max-w-3xl border border-border bg-card p-6 shadow-soft sm:p-8 rounded-lg">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p class="font-mono text-xs uppercase text-muted-foreground">MCC Public Service Ticket</p>
-              <p class="mt-1 font-display text-2xl font-bold" id="card-complaint-id">MCC-SWM-2026-0842</p>
+              <p class="mt-1 font-display text-2xl font-bold" id="card-complaint-id">MCC-CND-2026-0842</p>
             </div>
             <span class="rounded-full bg-success-soft px-3 py-1.5 text-xs font-semibold text-success" id="card-complaint-badge">Resolved · Verified</span>
           </div>
           
           <div class="mt-6 grid gap-5 border-t border-border pt-6 sm:grid-cols-3">
             <div>
-              <p class="metric-label">Waste Classification</p>
-              <p class="metric-value" id="card-waste-type">Commercial Market Segregation Overflow</p>
+              <p class="metric-label">C&D Material Classification</p>
+              <p class="metric-value" id="card-waste-type">Reinforced Concrete & Demolition Rubble</p>
             </div>
             <div>
               <p class="metric-label">Responsible Zonal Office</p>
               <p class="metric-value" id="card-resp-body">MCC Zone 1 · Ward 14 (Devaraja)</p>
             </div>
             <div>
-              <p class="metric-label">Resolution & ZWM Proof</p>
+              <p class="metric-label">Resolution & Disposal Proof</p>
               <p class="metric-value flex items-center gap-2" id="card-resolution-proof">
                 <svg class="size-4 text-success" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -528,22 +528,22 @@
           <article class="role-cell">
             <span class="font-mono text-xs text-primary">01</span>
             <h3 class="mt-8 font-display text-xl font-bold">Mysuru Citizen</h3>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Report street litter, uncleared bins, or blackspots with instant photo upload and live status tracking.</p>
+            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Report unauthorized debris dumping, construction rubble, or demolition waste with instant photo upload and live status tracking.</p>
           </article>
           <article class="role-cell md:border-l">
             <span class="font-mono text-xs text-primary">02</span>
-            <h3 class="mt-8 font-display text-xl font-bold">Ward Health Inspector</h3>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Monitor the ward queue, verify waste categories, and dispatch nearest sanitary supervisors.</p>
+            <h3 class="mt-8 font-display text-xl font-bold">Ward C&D Inspector</h3>
+            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Monitor the ward queue, verify C&D debris categories, and dispatch nearest clearance squads.</p>
           </article>
           <article class="role-cell md:border-l">
             <span class="font-mono text-xs text-primary">03</span>
-            <h3 class="mt-8 font-display text-xl font-bold">Pourakarmika Squad</h3>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Receive precise GPS locations, clear the site, transport to ZWM units, and submit completion photos.</p>
+            <h3 class="mt-8 font-display text-xl font-bold">C&D Clearance Squad</h3>
+            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Receive precise GPS locations, clear the debris site, transport to C&D processing plants, and submit completion photos.</p>
           </article>
           <article class="role-cell md:border-l">
             <span class="font-mono text-xs text-primary">04</span>
-            <h3 class="mt-8 font-display text-xl font-bold">MCC Commissioner & Health Officer</h3>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Analyze city-wide heatmaps, oversee Swachh Survekshan benchmarks, and monitor ZWM compost output.</p>
+            <h3 class="mt-8 font-display text-xl font-bold">MCC Commissioner & C&D Cell</h3>
+            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">Analyze city-wide debris heatmaps, oversee C&D recycling benchmarks, and monitor processed aggregate output.</p>
           </article>
         </div>
       </div>
@@ -570,7 +570,7 @@
   <footer class="bg-footer py-10 text-footer-foreground">
     <div class="mx-auto flex max-w-7xl flex-col gap-8 px-5 sm:px-8 md:flex-row md:items-end md:justify-between">
       <div>
-        <a href="#top" class="flex items-center gap-3" aria-label="Smart Civic Waste Routing home">
+        <a href="#top" class="flex items-center gap-3" aria-label="Smart Civic Construction & Demolition Routing home">
           <span class="grid size-10 place-items-center rounded-md bg-primary text-primary-foreground shadow-mark">
             <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="6" cy="18" r="2" stroke="currentColor" stroke-width="1.8"></circle>
@@ -579,44 +579,44 @@
             </svg>
           </span>
           <span class="leading-tight">
-            <span class="block font-display text-sm font-bold text-foreground">Smart Civic Waste Routing</span>
+            <span class="block font-display text-sm font-bold text-foreground">Smart Civic Construction & Demolition</span>
             <span class="block font-mono text-[10px] uppercase text-muted-foreground">Mysuru City Corporation</span>
           </span>
         </a>
         <p class="mt-4 max-w-md text-sm leading-relaxed text-footer-muted">
-          Integrated municipal solid waste management and civic complaint routing platform for Mysuru City Corporation (MCC) and peripheral urban local bodies.
+          Integrated Construction & Demolition (C&D) debris routing and grievance resolution platform for Mysuru City Corporation (MCC) and peripheral local bodies.
         </p>
       </div>
       <p class="max-w-xl text-xs leading-relaxed text-footer-muted md:text-right">
-        Operationalized under the Swachh Bharat Mission (Urban) and Mysuru Municipal Solid Waste By-laws. Connected to MCC 9 Zonal Offices, 65 Wards, and decentralized Zero Waste Management (ZWM) centers.
+        Operationalized under the Construction & Demolition Waste Management Rules and Mysuru Municipal Corporation By-laws. Connected to MCC 9 Zonal Offices, 65 Wards, and decentralized C&D Material Recovery Facilities.
       </p>
     </div>
   </footer>
 </div>
 
-<!-- Interactive Waste Report Modal -->
+<!-- Interactive C&D Report Modal -->
 <div id="report-modal" class="modal-overlay" onclick="if(event.target===this) closeReportModal()">
   <div class="modal-card">
     <div class="p-6 border-b border-gray-100 flex items-center justify-between">
       <div>
-        <span class="font-mono text-xs uppercase text-primary font-bold">Mysuru City Corporation · SWM Portal</span>
-        <h3 class="text-xl font-bold font-display mt-0.5">Lodge Waste Complaint</h3>
+        <span class="font-mono text-xs uppercase text-primary font-bold">Mysuru City Corporation · C&D Management Portal</span>
+        <h3 class="text-xl font-bold font-display mt-0.5">Lodge Construction & Demolition Clearance Request</h3>
       </div>
       <button onclick="closeReportModal()" class="text-gray-400 hover:text-gray-700 text-xl font-bold leading-none p-1">&times;</button>
     </div>
     <form id="report-form" onsubmit="submitReport(event)" class="p-6 space-y-4">
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Waste Category</label>
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">C&D Material Category</label>
         <select id="report-waste-type" class="w-full px-3 py-2 border rounded-md text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary">
-          <option value="Roadside Litter / Blackspot">Roadside Litter / Open Blackspot</option>
-          <option value="Overflowing Community Bin">Overflowing Community Dumpster / Bin</option>
-          <option value="Construction & Demolition Debris">Construction & Demolition (C&D) Debris</option>
-          <option value="Commercial Market Waste">Commercial Market Waste (Devaraja / Mandi)</option>
-          <option value="Drainage Silt & Bio Blockage">Drainage Silt & Waste Blockage</option>
+          <option value="Demolition Rubble & Concrete">Demolition Rubble & Reinforced Concrete</option>
+          <option value="Excavation Earth & Surplus Soil">Excavation Earth & Surplus Foundation Soil</option>
+          <option value="Construction & Demolition Debris">Mixed Construction & Demolition Debris</option>
+          <option value="Tiles, Ceramic & Granite Scraps">Tiles, Ceramic, Marble & Granite Scraps</option>
+          <option value="Roadside Masonry & Rubble Dumping">Roadside Debris Dumping / Illegal Site</option>
         </select>
       </div>
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Mysuru Location / Landmark</label>
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Mysuru Location / Site Landmark</label>
         <input id="report-location" type="text" required placeholder="e.g. Near Mysore Palace North Gate / Sayyaji Rao Road" class="w-full px-3 py-2 border rounded-md text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary"/>
       </div>
       <div class="grid grid-cols-2 gap-3">
@@ -634,12 +634,12 @@
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Photo Attachment</label>
         <div class="border-2 border-dashed border-gray-200 rounded-md p-4 text-center text-xs text-gray-500 bg-gray-50">
-          📷 Site Photo Verified (GPS & Geostamp embedded)
+          📷 Site Rubble Photo Verified (GPS & Geostamp embedded)
         </div>
       </div>
       <div class="pt-2 flex gap-3">
         <button type="button" onclick="closeReportModal()" class="flex-1 py-2.5 px-4 text-sm font-medium border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
-        <button type="submit" class="flex-1 py-2.5 px-4 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 shadow-sm font-semibold">Submit Grievance</button>
+        <button type="submit" class="flex-1 py-2.5 px-4 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 shadow-sm font-semibold">Submit Clearance Request</button>
       </div>
     </form>
   </div>
@@ -659,7 +659,7 @@
       btnCivic.classList.remove('active');
     } else {
       heroImg.src = './assets/mysuru-civic-original.jpg';
-      heroImg.alt = 'Mysuru neighbourhood with municipal sanitation crew at work';
+      heroImg.alt = 'Mysuru neighbourhood with municipal clearance crew at work';
       btnCivic.classList.add('active');
       btnPalace.classList.remove('active');
     }
@@ -704,7 +704,7 @@
     const pin = document.getElementById('report-pin').value;
     const auth = document.getElementById('resolved-authority-display').innerText;
 
-    const newId = 'MCC-SWM-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const newId = 'MCC-CND-2026-' + Math.floor(1000 + Math.random() * 9000);
     closeReportModal();
 
     // Update live hero preview
@@ -713,7 +713,7 @@
     const previewBody = document.getElementById('preview-route-body');
     const previewWard = document.getElementById('preview-route-ward');
 
-    if (previewTitle) previewTitle.innerText = 'Complaint #' + newId;
+    if (previewTitle) previewTitle.innerText = 'Request #' + newId;
     if (previewSub) previewSub.innerText = 'PIN ' + pin + ' · Just now';
     if (previewBody) previewBody.innerText = 'Routed to ' + auth.split('·')[0].trim();
     if (previewWard) previewWard.innerText = auth;
@@ -732,7 +732,7 @@
       trackingElem.scrollIntoView({ behavior: 'smooth' });
     }
 
-    alert('Grievance logged successfully!\nComplaint Ticket: ' + newId + '\nAutomatically dispatched to: ' + auth + '.');
+    alert('Clearance request logged successfully!\nRequest Ticket: ' + newId + '\nAutomatically dispatched to: ' + auth + '.');
   }
 
   // Tracking search handler
