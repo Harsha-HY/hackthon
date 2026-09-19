@@ -1032,16 +1032,19 @@
       if (!app) return;
 
       const cleanId = (app.id || 'REQ-101').replace(/[^a-zA-Z0-9]/g, '');
-      const authTitle = document.getElementById('cert-authority-title');
-      if (authTitle) authTitle.innerText = app.authority || (currentAuthorityKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (currentAuthorityKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+      const deptKey = (app.authorityKey || (currentAuthorityKey || 'mcc')).toLowerCase();
+      const authorityName = app.authority || (deptKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (deptKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
 
-      const authPrefix = (app.authorityKey || (currentAuthorityKey || 'MCC')).toUpperCase();
+      const authTitle = document.getElementById('cert-authority-title');
+      if (authTitle) authTitle.innerText = authorityName.toUpperCase();
+
+      const authPrefix = deptKey.toUpperCase();
       const refNo = document.getElementById('cert-ref-no');
-      if (refNo) refNo.innerText = `NOC/${authPrefix}/${cleanId}`;
+      if (refNo) refNo.innerText = app.certificateNo || `NOC/${authPrefix}/${cleanId}`;
 
       const issueDate = document.getElementById('cert-issue-date');
       if (issueDate) {
-        issueDate.innerText = app.auditedAt ? new Date(app.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        issueDate.innerText = app.issueDate ? new Date(app.issueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : (app.auditedAt ? new Date(app.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }));
       }
 
       const applicantName = document.getElementById('cert-applicant-name');
@@ -1059,20 +1062,36 @@
       const tonnage = document.getElementById('cert-verified-tonnage');
       if (tonnage) tonnage.innerText = `${app.verifiedTonnage || app.tonnage || 10} MT (Metric Tonnes)`;
 
+      const materialEl = document.getElementById('cert-material-category');
+      if (materialEl) materialEl.innerText = `Waste Category: ${app.verifiedMaterial || app.material || 'Demolition Rubble & Masonry'}`;
+
       const lat = app.lat || 12.2958;
       const lng = app.lng || 76.6394;
       const gpsCoords = document.getElementById('cert-gps-coords');
       if (gpsCoords) gpsCoords.innerText = app.gpsLocation || `${lat}° N, ${lng}° E`;
 
-      // Inspector and Authority Signatures
+      // Inspector info
+      const inspectorName = app.assignedInspectorName || (currentUser ? currentUser.name : 'Field Officer');
+      const inspectorEmail = app.assignedInspectorEmail || (currentUser ? currentUser.email : 'inspector@mysuru.gov.in');
+
       const insName = document.getElementById('cert-inspector-name');
-      if (insName) insName.innerText = `Inspector ${app.assignedInspectorName || (currentUser ? currentUser.name : 'Field Officer')}`;
+      if (insName) insName.innerText = inspectorName;
 
       const insEmail = document.getElementById('cert-inspector-email');
-      if (insEmail) insEmail.innerText = app.assignedInspectorEmail || (currentUser ? currentUser.email : 'inspector@mysuru.gov.in');
+      if (insEmail) insEmail.innerText = inspectorEmail;
+
+      // Head of Department info
+      const headName = app.headName || (deptKey === 'gp' ? 'K. S. Manjunath (PDO)' : (deptKey === 'tp' ? 'S. Ramesh (Chief Officer)' : 'Dr. N. Chandrashekar, IAS'));
+      const headTitle = app.headTitle || (deptKey === 'gp' ? 'Panchayat Development Officer' : (deptKey === 'tp' ? 'Chief Officer' : 'MCC Commissioner'));
+
+      const headNameEl = document.getElementById('cert-head-name');
+      if (headNameEl) headNameEl.innerText = headName;
+
+      const headTitleEl = document.getElementById('cert-head-title');
+      if (headTitleEl) headTitleEl.innerText = headTitle;
 
       const panchayatSeal = document.getElementById('cert-panchayat-seal');
-      if (panchayatSeal) panchayatSeal.innerText = app.authority || (currentAuthorityKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (currentAuthorityKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+      if (panchayatSeal) panchayatSeal.innerText = authorityName;
 
       const modal = document.getElementById('noc-certificate-modal');
       if (modal) modal.classList.remove('hidden');
@@ -1241,12 +1260,19 @@
             </div>
           </div>
 
-          <!-- Inspector & Authority Signature Block -->
-          <div class="text-right space-y-0.5">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Authorized By Ward Inspector</span>
-            <span class="font-bold text-slate-900 text-sm block" id="cert-inspector-name">seervi</span>
-            <span class="text-[10px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
-            <span class="text-[10px] font-bold text-emerald-800 block" id="cert-panchayat-seal">Bogadi Gram Panchayat (Rural)</span>
+          <!-- Dual Signatures: Inspector + Head of Department -->
+          <div class="flex items-center gap-6 text-right">
+            <div class="space-y-0.5">
+              <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Verified By Inspector</span>
+              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">seervi</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+            </div>
+            <div class="space-y-0.5 border-l border-slate-200 pl-4">
+              <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Approved By Head / Officer</span>
+              <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">K. S. Manjunath (PDO)</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">Panchayat Development Officer</span>
+              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Bogadi Gram Panchayat</span>
+            </div>
           </div>
         </div>
 

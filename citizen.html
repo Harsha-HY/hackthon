@@ -2211,22 +2211,27 @@
         return;
       }
 
+      const cleanId = String(app.id || '2026934924').replace(/[^0-9]/g, '') || '2026934924';
+      const deptKey = (app.authorityKey || (app.authority && app.authority.toLowerCase().includes('panchayat') ? 'gp' : (app.authority && app.authority.toLowerCase().includes('town') ? 'tp' : 'mcc'))).toLowerCase();
+      const authorityName = app.authority || (deptKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (deptKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+
       // Populate Authority & Header
       const authTitle = document.getElementById('cert-authority-title');
-      if (authTitle) authTitle.innerText = (app.authority || 'Bogadi Gram Panchayat (Rural)').toUpperCase();
+      if (authTitle) authTitle.innerText = authorityName.toUpperCase();
+
+      const inspectorName = app.assignedInspectorName || (deptKey === 'gp' ? 'Seervi' : (deptKey === 'tp' ? 'M. Anand' : 'Rajesh Kumar'));
+      const inspectorEmail = app.assignedInspectorEmail || (deptKey === 'gp' ? 'q@gmail.com' : (deptKey === 'tp' ? 'anand.tp@gmail.com' : 'inspector.mcc@gmail.com'));
 
       const headerSub = document.getElementById('cert-modal-header-sub');
-      if (headerSub) headerSub.innerText = `Authorized by ${app.assignedInspectorName || 'Ward Inspector'} · ${app.authority || 'Panchayat'}`;
+      if (headerSub) headerSub.innerText = `Authorized by ${inspectorName} · ${authorityName}`;
 
-      const cleanId = String(app.id || '2026934924').replace(/[^0-9]/g, '') || '2026934924';
-      const authPrefix = (app.authorityKey || (app.authority && app.authority.toLowerCase().includes('panchayat') ? 'GP' : 'MCC')).toUpperCase();
-      
+      const authPrefix = deptKey.toUpperCase();
       const refNo = document.getElementById('cert-ref-no');
-      if (refNo) refNo.innerText = `NOC/${authPrefix}/${cleanId}`;
+      if (refNo) refNo.innerText = app.certificateNo || `NOC/${authPrefix}/${cleanId}`;
 
       const issueDate = document.getElementById('cert-issue-date');
       if (issueDate) {
-        issueDate.innerText = app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        issueDate.innerText = app.issueDate ? new Date(app.issueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : (app.auditedAt ? new Date(app.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : (app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })));
       }
 
       const applicantName = document.getElementById('cert-applicant-name');
@@ -2236,36 +2241,55 @@
       if (applicantPhone) applicantPhone.innerText = `Mobile: ${app.phone || '+91 98765 43210'}`;
 
       const propId = document.getElementById('cert-prop-id');
-      if (propId) propId.innerText = app.propertyId || 'PROP-MYS-8821';
+      if (propId) propId.innerText = app.propertyId || 'PROP-MYS-' + cleanId.slice(-4);
 
       const fullAddr = document.getElementById('cert-full-address');
       if (fullAddr) fullAddr.innerText = `${app.address || 'Mysuru'} · PIN ${app.pincode || app.pin || '570026'}`;
 
       const tonnage = document.getElementById('cert-verified-tonnage');
-      if (tonnage) tonnage.innerText = `${app.verifiedTonnage || 10} MT (Metric Tonnes)`;
+      if (tonnage) tonnage.innerText = `${app.verifiedTonnage || app.tonnage || 10} MT (Metric Tonnes)`;
+
+      const materialEl = document.getElementById('cert-material-category');
+      if (materialEl) materialEl.innerText = `Waste Category: ${app.verifiedMaterial || app.material || 'Demolition Rubble & Masonry'}`;
 
       const lat = app.lat || 12.2958;
       const lng = app.lng || 76.6394;
       const gpsCoords = document.getElementById('cert-gps-coords');
       if (gpsCoords) gpsCoords.innerText = app.gpsLocation || `${lat}° N, ${lng}° E`;
 
-      // Inspector and Authority Signatures
+      // Inspector Signatures
       const insName = document.getElementById('cert-inspector-name');
-      if (insName) insName.innerText = `Inspector ${app.assignedInspectorName || 'seervi'}`;
+      if (insName) insName.innerText = inspectorName;
 
       const insEmail = document.getElementById('cert-inspector-email');
-      if (insEmail) insEmail.innerText = app.assignedInspectorEmail || 'q@gmail.com';
+      if (insEmail) insEmail.innerText = inspectorEmail;
+
+      // Head of Department Signatures
+      const headName = app.headName || (deptKey === 'gp' ? 'K. S. Manjunath (PDO)' : (deptKey === 'tp' ? 'S. Ramesh (Chief Officer)' : 'Dr. N. Chandrashekar, IAS'));
+      const headTitle = app.headTitle || (deptKey === 'gp' ? 'Panchayat Development Officer' : (deptKey === 'tp' ? 'Chief Officer' : 'MCC Commissioner'));
+
+      const headNameEl = document.getElementById('cert-head-name');
+      if (headNameEl) headNameEl.innerText = headName;
+
+      const headTitleEl = document.getElementById('cert-head-title');
+      if (headTitleEl) headTitleEl.innerText = headTitle;
 
       const panchayatSeal = document.getElementById('cert-panchayat-seal');
-      if (panchayatSeal) panchayatSeal.innerText = app.authority || 'Bogadi Gram Panchayat (Rural)';
+      if (panchayatSeal) panchayatSeal.innerText = authorityName;
 
       const modal = document.getElementById('noc-certificate-modal');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
     }
 
     function closeCertificateModal() {
       const modal = document.getElementById('noc-certificate-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
     }
 
     // Render Applications History Table with Multi-Photo Thumbnails and Track Order Modal
@@ -2377,5 +2401,135 @@
 
     initDefaultValues();
   </script>
+  <!-- ========================================================================= -->
+  <!-- OFFICIAL MUNICIPAL & PANCHAYAT C&D CLEARANCE CERTIFICATE (NOC) MODAL       -->
+  <!-- ========================================================================= -->
+  <div id="noc-certificate-modal" class="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-emerald-600/30 overflow-hidden my-auto animate-in fade-in zoom-in duration-150">
+      
+      <!-- Certificate Action Header -->
+      <div class="p-4 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg">📜</span>
+          <div>
+            <h3 class="font-bold text-xs sm:text-sm text-white">Official Clearance Certificate (NOC)</h3>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="cert-modal-header-sub">Authorized by Ward Inspector & Panchayat</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1 shadow-xs">
+            <span>🖨️</span> <span>Print / Save PDF</span>
+          </button>
+          <button onclick="closeCertificateModal()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white text-base font-bold flex items-center justify-center transition cursor-pointer">
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Certificate Body -->
+      <div class="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1 bg-[#fcfdfd] text-slate-800 border-8 border-double border-emerald-800/20 m-3 rounded-2xl" id="printable-certificate-content">
+        
+        <!-- Govt Header & Seal -->
+        <div class="text-center space-y-1.5 border-b-2 border-emerald-800/30 pb-4">
+          <div class="inline-flex items-center justify-center size-12 rounded-full bg-emerald-900 text-amber-300 font-bold text-2xl shadow-md">
+            🏛️
+          </div>
+          <span class="block text-[11px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
+          <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
+          <h2 class="text-base sm:text-lg font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
+            Bogadi Gram Panchayat (Rural)
+          </h2>
+          <div class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs uppercase tracking-wider border border-emerald-300 mt-1">
+            Official C&D Waste Clearance No-Objection Certificate (NOC)
+          </div>
+        </div>
+
+        <!-- Reference & Date Strip -->
+        <div class="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-3">
+          <div>
+            <span class="text-slate-400 font-semibold">NOC Ref No:</span>
+            <span class="font-bold text-emerald-800 ml-1" id="cert-ref-no">NOC/GP/2026/934924</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold">Date of Clearance:</span>
+            <span class="font-bold text-slate-800 ml-1" id="cert-issue-date">19 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Clearance Statement & Details Grid -->
+        <div class="space-y-4 text-xs">
+          <p class="leading-relaxed text-slate-700">
+            This is to certify that physical site inspection, GPS verification, and rubble volume measurement have been completed in accordance with the <strong>Construction & Demolition Waste Management Rules</strong>. The applicant is hereby authorized for lawful haulage and disposal at the designated municipal processing facility.
+          </p>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Authorized Citizen / Applicant</span>
+              <span class="font-bold text-slate-900 text-sm block" id="cert-applicant-name">Citizen User</span>
+              <span class="text-slate-600 font-mono text-[11px] block" id="cert-applicant-phone">Mobile: +91 98765 43210</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-8821</span>
+              <span class="text-slate-600 text-[11px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
+              <span class="font-bold text-emerald-800 font-mono text-sm block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
+              <span class="text-slate-500 text-[10px] block" id="cert-material-category">Waste Category: Demolition Rubble & Masonry</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
+              <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
+              <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endorsement & Signatures -->
+        <div class="pt-4 border-t-2 border-emerald-800/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <!-- Digital QR Seal -->
+          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="size-12 rounded-lg bg-emerald-900 text-white flex flex-col items-center justify-center font-mono font-bold text-[9px] leading-tight text-center">
+              <span>QR</span>
+              <span class="text-[7px] text-emerald-300">VALID</span>
+            </div>
+            <div class="text-[10px] leading-tight">
+              <span class="font-bold text-emerald-950 block">Digital Verification Seal</span>
+              <span class="text-slate-500 font-mono block">Status: Official & Compliant</span>
+            </div>
+          </div>
+
+          <!-- Dual Signatures: Inspector + Head of Department -->
+          <div class="flex items-center gap-6 text-right">
+            <div class="space-y-0.5">
+              <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Verified By Inspector</span>
+              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">seervi</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+            </div>
+            <div class="space-y-0.5 border-l border-slate-200 pl-4">
+              <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Approved By Head / Officer</span>
+              <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">K. S. Manjunath (PDO)</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">Panchayat Development Officer</span>
+              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Bogadi Gram Panchayat</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2 shrink-0">
+        <button onclick="closeCertificateModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>
