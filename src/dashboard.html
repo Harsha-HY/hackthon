@@ -3582,20 +3582,20 @@
               <span class="badge-status ${item.status === 'Active' ? 'badge-approved' : 'badge-pending'}">${item.status || 'Active'}</span>
             </td>
             <td class="px-4 py-3.5 text-right">
-              `<div class="flex items-center justify-end gap-2">
-      <button onclick="launchOfficerPortal('${keys[index] || (index===0?'mcc':index===1?'gp':'tp')}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-xs flex items-center gap-1">
-        <span>🚀 Open Dashboard</span>
-      </button>
-      ${!isCustom ? `
-        <button onclick="selectDepartment('${keys[index]}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer">
-          Edit Form
-        </button>
-      ` : `
-        <button onclick="removeCustomOfficer(${index - 3})" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition cursor-pointer">
-          Delete
-        </button>
-      `}
-    </div>`
+              <div class="flex items-center justify-end gap-2">
+                <button onclick="launchOfficerPortal('${keys[index] || (index===0?'mcc':index===1?'gp':'tp')}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-xs flex items-center gap-1">
+                  <span>🚀 Open Dashboard</span>
+                </button>
+                ${!isCustom ? `
+                  <button onclick="selectDepartment('${keys[index]}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer">
+                    Edit Form
+                  </button>
+                ` : `
+                  <button onclick="removeCustomOfficer(${index - 3})" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition cursor-pointer">
+                    Delete
+                  </button>
+                `}
+              </div>
             </td>
           </tr>
         `;
