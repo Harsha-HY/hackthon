@@ -1095,6 +1095,49 @@
           `).join('');
         }
 
+        // Fetch All Registered Users & Officers from Supabase Database
+        try {
+          const resUsers = await fetch('/api/auth/users');
+          if (resUsers.ok) {
+            const allUsers = await resUsers.json();
+            if (Array.isArray(allUsers) && allUsers.length > 0) {
+              localStorage.setItem('civic_registered_users', JSON.stringify(allUsers));
+              
+              const gpOfficer = allUsers.find(u => (u.department || '').toLowerCase().includes('gp') || (u.departmentName || '').toLowerCase().includes('panchayat') || (u.department || '').toLowerCase().includes('panchayat') || (u.email || '').includes('gp@') || (u.email || '').includes('ga@'));
+              if (gpOfficer) {
+                if (gpOfficer.name) departmentsState.gp.headName = gpOfficer.name;
+                if (gpOfficer.email) departmentsState.gp.email = gpOfficer.email;
+                if (gpOfficer.phone) departmentsState.gp.phone = gpOfficer.phone;
+                if (gpOfficer.department || gpOfficer.departmentName) departmentsState.gp.organization = gpOfficer.departmentName || gpOfficer.department;
+                if (gpOfficer.assignedPin) departmentsState.gp.pinCodes = gpOfficer.assignedPin;
+              }
+
+              const tpOfficer = allUsers.find(u => (u.department || '').toLowerCase().includes('tp') || (u.departmentName || '').toLowerCase().includes('town') || (u.department || '').toLowerCase().includes('town') || (u.email || '').includes('tp@'));
+              if (tpOfficer) {
+                if (tpOfficer.name) departmentsState.tp.headName = tpOfficer.name;
+                if (tpOfficer.email) departmentsState.tp.email = tpOfficer.email;
+                if (tpOfficer.phone) departmentsState.tp.phone = tpOfficer.phone;
+                if (tpOfficer.department || tpOfficer.departmentName) departmentsState.tp.organization = tpOfficer.departmentName || tpOfficer.department;
+                if (tpOfficer.assignedPin) departmentsState.tp.pinCodes = tpOfficer.assignedPin;
+              }
+
+              const mccOfficer = allUsers.find(u => (u.email || '').includes('head@') || (u.email || '').includes('mcc@') || ((u.department || '').toLowerCase().includes('mcc') && u.role === 'admin'));
+              if (mccOfficer) {
+                if (mccOfficer.name) departmentsState.mcc.headName = mccOfficer.name;
+                if (mccOfficer.email) departmentsState.mcc.email = mccOfficer.email;
+                if (mccOfficer.phone) departmentsState.mcc.phone = mccOfficer.phone;
+              }
+
+              const inspectors = allUsers.filter(u => (u.role || '').toLowerCase() === 'inspector' || (u.authority || '').toLowerCase().includes('inspector'));
+              if (inspectors.length > 0) {
+                localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+              }
+
+              selectDepartment(currentSelectedDept);
+            }
+          }
+        } catch(e) {}
+
         // Sync Department Authorities Roster and Inspectors Console
         renderAuthoritiesTable();
         renderInspectorsTable();

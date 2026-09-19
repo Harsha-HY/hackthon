@@ -524,6 +524,27 @@
 
     async function loadInspectorData() {
       try {
+        const resUsers = await fetch('/api/auth/users');
+        if (resUsers.ok) {
+          const allUsers = await resUsers.json();
+          if (Array.isArray(allUsers) && allUsers.length > 0) {
+            localStorage.setItem('civic_registered_users', JSON.stringify(allUsers));
+            const inspectors = allUsers.filter(u => (u.role || '').toLowerCase() === 'inspector' || (u.authority || '').toLowerCase().includes('inspector'));
+            localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+            
+            if (currentUser && currentUser.email) {
+              const matched = allUsers.find(u => (u.email || '').toLowerCase() === currentUser.email.toLowerCase());
+              if (matched) {
+                currentUser = { ...currentUser, ...matched };
+                localStorage.setItem('current_user', JSON.stringify(currentUser));
+                initInspectorSession();
+              }
+            }
+          }
+        }
+      } catch(e) {}
+
+      try {
         const res = await fetch('/api/applications');
         if (res.ok) applicationsList = await res.json();
       } catch(e) {}

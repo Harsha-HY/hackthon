@@ -805,7 +805,29 @@
     async function loadData() {
       try {
         const res = await fetch('/api/auth/users');
-        if (res.ok) registeredUsers = await res.json();
+        if (res.ok) {
+          registeredUsers = await res.json();
+          localStorage.setItem('civic_registered_users', JSON.stringify(registeredUsers));
+
+          const deptOfficer = registeredUsers.find(u => {
+            const email = (u.email || '').toLowerCase();
+            const dept = (u.department || '').toLowerCase();
+            const deptName = (u.departmentName || '').toLowerCase();
+            if (currentAuthorityKey === 'gp') return email.includes('gp') || email.includes('ga@') || dept.includes('panchayat') || deptName.includes('panchayat');
+            if (currentAuthorityKey === 'tp') return email.includes('tp') || dept.includes('town') || deptName.includes('town');
+            if (currentAuthorityKey === 'mcc') return email.includes('mcc') || email.includes('head@') || dept.includes('mcc');
+            return false;
+          });
+
+          if (deptOfficer) {
+            const d = DEFAULT_DEPARTMENTS[currentAuthorityKey];
+            if (deptOfficer.name) d.headName = deptOfficer.name;
+            if (deptOfficer.email) d.email = deptOfficer.email;
+            if (deptOfficer.phone) d.phone = deptOfficer.phone;
+            if (deptOfficer.department || deptOfficer.departmentName) d.organization = deptOfficer.departmentName || deptOfficer.department;
+            if (deptOfficer.assignedPin) d.pinCodes = deptOfficer.assignedPin;
+          }
+        }
       } catch(e) {}
       if (!registeredUsers || registeredUsers.length === 0) {
         registeredUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
