@@ -376,6 +376,7 @@
                   <th class="px-4 py-3">Property Details</th>
                   <th class="px-4 py-3">Documents / Photos</th>
                   <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody id="table-applications" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
@@ -1031,7 +1032,7 @@
           if (apps.length === 0) {
             tableApps.innerHTML = `
               <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
+                <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
                   No applications lodged yet. Fresh applications submitted by citizens or via "+ New Application" will appear here.
                 </td>
               </tr>
@@ -1052,7 +1053,27 @@
                 </td>
                 <td class="px-4 py-3 text-slate-600">${a.propertyDetails || a.debrisType || 'Debris Clearance'}</td>
                 <td class="px-4 py-3 text-slate-500 font-mono text-[11px]">${a.documents || (a.photo ? '📸 Site Photo Attached' : 'Standard')}</td>
-                <td class="px-4 py-3"><span class="badge-status ${a.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${a.status}</span></td>
+                <td class="px-4 py-3">
+                  <span class="badge-status ${a.status === 'Approved' ? 'badge-approved' : (a.status === 'Cancelled' ? 'badge-revoked' : 'badge-pending')}">
+                    ${a.status}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  ${a.status === 'Approved' ? `
+                    <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">✓ Approved</span>
+                  ` : (a.status === 'Cancelled' ? `
+                    <span class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-bold text-[11px]">✗ Cancelled</span>
+                  ` : `
+                    <div class="flex items-center gap-1.5">
+                      <button onclick="adminApproveApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
+                        ✓ Agree
+                      </button>
+                      <button onclick="adminCancelApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
+                        ✗ Cancel
+                      </button>
+                    </div>
+                  `)}
+                </td>
               </tr>
             `).join('');
           }
@@ -2513,6 +2534,49 @@
           }
         }
       } catch(e) {}
+    }
+
+    async function adminApproveApplication(appId) {
+      try {
+        const res = await fetch('/api/applications');
+        const apps = await res.json();
+        const app = apps.find(a => a.id === appId);
+        if (app) {
+          app.status = 'Approved';
+          await fetch('/api/applications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(app)
+          });
+          showToast('Application #' + appId + ' approved by Administrator!', 'success');
+          loadData();
+        }
+      } catch(e) {
+        showToast('Failed to approve application', 'error');
+      }
+    }
+
+    async function adminCancelApplication(appId) {
+      const reason = prompt('Please enter cancellation reason:', 'Rejected by Central Administration');
+      if (reason === null) return;
+      try {
+        const res = await fetch('/api/applications');
+        const apps = await res.json();
+        const app = apps.find(a => a.id === appId);
+        if (app) {
+          app.status = 'Cancelled';
+          app.inspectorNotes = (app.inspectorNotes ? app.inspectorNotes + ' | ' : '') + 'Cancelled by Admin: ' + (reason || 'Disapproved');
+          await fetch('/api/applications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(app)
+          });
+          showToast('Application #' + appId + ' cancelled by Administrator.', 'error');
+          loadData();
+        }
+      } catch(e) {
+        showToast('Failed to cancel application', 'error');
+      }
     }
 
     syncAdminProfile();

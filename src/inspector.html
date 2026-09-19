@@ -791,9 +791,11 @@
               <select id="audit-decision" class="w-full px-3.5 py-2.5 rounded-xl bg-emerald-50/60 border border-emerald-300 font-bold text-xs text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 <option value="Visit Scheduled" ${app.status === 'Visit Scheduled' ? 'selected' : ''}>📅 1. Visit Scheduled (Date & Time Fixed)</option>
                 <option value="On-Site Audit In Progress" ${app.status === 'On-Site Audit In Progress' ? 'selected' : ''}>🚶 2. On-Site Audit In Progress</option>
-                <option value="Inspection Passed & Verified" ${app.status === 'Inspection Passed & Verified' || app.status === 'Approved' ? 'selected' : ''}>🟢 3. Inspection Passed & Verified (Ready for NOC)</option>
-                <option value="Action Required" ${app.status === 'Action Required' ? 'selected' : ''}>⚠️ 4. Action Required / Resubmission</option>
-                <option value="Flagged Violation" ${app.status === 'Flagged Violation' ? 'selected' : ''}>❌ 5. Flagged Violation</option>
+                <option value="Inspection Passed & Verified" ${app.status === 'Inspection Passed & Verified' ? 'selected' : ''}>🟢 3. Inspection Passed & Verified (Ready for NOC)</option>
+                <option value="Approved" ${app.status === 'Approved' ? 'selected' : ''}>🏆 4. Agree & Approve (Issue Certificate)</option>
+                <option value="Action Required" ${app.status === 'Action Required' ? 'selected' : ''}>⚠️ 5. Action Required / Resubmission</option>
+                <option value="Flagged Violation" ${app.status === 'Flagged Violation' ? 'selected' : ''}>❌ 6. Flagged Violation</option>
+                <option value="Cancelled" ${app.status === 'Cancelled' ? 'selected' : ''}>⛔ 7. Cancel / Reject Complaint</option>
               </select>
             </div>
           </div>

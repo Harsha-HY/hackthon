@@ -347,9 +347,42 @@ module.exports = async (req, res) => {
     if (method === 'POST') {
       getBody(async payload => {
         const item = payload || {};
-        item.id = item.id || ('#MCC' + new Date().getFullYear() + Math.floor(100000 + Math.random() * 900000));
         
-        const existingAppIdx = initialData.applications.findIndex(a => a.id === item.id);
+        const existingAppIdx = item.id ? initialData.applications.findIndex(a => a.id === item.id) : -1;
+
+        // Helper to check terminal/finalized status
+        const isFinalized = (st) => {
+          if (!st) return false;
+          const s = String(st).trim().toLowerCase();
+          return s === 'approved' || s === 'issued' || s === 'certificate issued' || s === 'cancelled' || s === 'rejected';
+        };
+
+        // If submitting a new complaint, enforce single active complaint rule
+        if (existingAppIdx < 0) {
+          const reqPhone = String(item.phone || '').trim();
+          const reqEmail = String(item.email || '').toLowerCase().trim();
+          const reqName = String(item.applicantName || '').toLowerCase().trim();
+
+          const activeExisting = (initialData.applications || []).find(a => {
+            if (isFinalized(a.status)) return false;
+            if (reqPhone && String(a.phone || '').trim() === reqPhone) return true;
+            if (reqEmail && String(a.email || '').toLowerCase().trim() === reqEmail) return true;
+            if (reqName && String(a.applicantName || '').toLowerCase().trim() === reqName) return true;
+            return false;
+          });
+
+          if (activeExisting) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Active complaint already in progress',
+              message: `You already have an active complaint (${activeExisting.id}) with status "${activeExisting.status || 'In Progress'}". You can only apply once until the inspector, panchayat officer, or admin approves or cancels it.`
+            }));
+            return;
+          }
+        }
+
+        item.id = item.id || ('#MCC' + new Date().getFullYear() + Math.floor(100000 + Math.random() * 900000));
         const baseApp = existingAppIdx >= 0 ? initialData.applications[existingAppIdx] : {};
         const mergedItem = { ...baseApp, ...item };
 

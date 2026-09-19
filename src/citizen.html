@@ -249,6 +249,10 @@
           
           <!-- LEFT / CENTER COLUMN: CUSTOMER APPLICATION FORM (7 or 8 Cols) -->
           <div class="lg:col-span-7 xl:col-span-8 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
+            
+            <!-- Active Request Lock Banner (Shown if user has an active application in progress) -->
+            <div id="active-lock-banner-container" class="hidden mb-6"></div>
+
             <form id="customer-main-form" onsubmit="handleCustomerFormSubmit(event)" class="space-y-6">
               
               <!-- 1. Customer Details -->
@@ -427,7 +431,7 @@
                   <span>🔄</span> <span>Reset</span>
                 </button>
 
-                <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer">
+                <button id="btn-submit-application" type="submit" class="px-6 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer">
                   <span>Submit Application</span>
                   <span>&rarr;</span>
                 </button>
@@ -978,9 +982,99 @@
       showToast('Copied Application ID: ' + text, 'success');
     }
 
+    // Check if a complaint status is finalized (meaning lock is released)
+    function isFinalizedStatus(status) {
+      if (!status) return false;
+      const s = String(status).trim().toLowerCase();
+      return s === 'approved' || s === 'issued' || s === 'certificate issued' || s === 'cancelled' || s === 'rejected';
+    }
+
+    // Find any currently active (non-finalized) application for the logged-in customer
+    function getActiveCustomerApplication() {
+      const user = JSON.parse(sessionStorage.getItem('current_user') || localStorage.getItem('current_user') || '{}');
+      const userEmail = (user.email || '').toLowerCase().trim();
+      const userPhone = (user.phone || '').trim();
+      const userName = (user.name || '').toLowerCase().trim();
+
+      const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+
+      const pool = [...myRequests];
+      allApps.forEach(a => {
+        if (!pool.some(p => p.id === a.id)) {
+          pool.push(a);
+        }
+      });
+
+      const userApps = pool.filter(app => {
+        if (userEmail && app.email && app.email.toLowerCase().trim() === userEmail) return true;
+        if (userPhone && app.phone && app.phone.trim() === userPhone) return true;
+        if (userName && app.applicantName && app.applicantName.toLowerCase().trim() === userName) return true;
+        if (myRequests.some(r => r.id === app.id)) return true;
+        return false;
+      });
+
+      return userApps.find(app => !isFinalizedStatus(app.status));
+    }
+
+    // Renders lock banner and disables submit button if an active complaint is in progress
+    function checkActiveApplicationLock() {
+      const activeApp = getActiveCustomerApplication();
+      const banner = document.getElementById('active-lock-banner-container');
+      const submitBtn = document.getElementById('btn-submit-application');
+
+      if (activeApp) {
+        if (banner) {
+          banner.className = 'mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
+          banner.innerHTML = `
+            <div class="flex items-start gap-3">
+              <span class="size-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base shrink-0 font-bold">🔒</span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-bold text-xs uppercase tracking-wider text-amber-900">Active Complaint In Progress</h4>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-950 font-mono text-[10px] font-bold">${activeApp.id}</span>
+                </div>
+                <p class="text-xs text-amber-800 mt-0.5">
+                  Current Status: <strong class="font-bold text-amber-950">${activeApp.status || 'Pending Inspection'}</strong>. You can only apply once until the Inspector, Panchayat Officer, or Admin agrees (Approves) or Cancels your existing request.
+                </p>
+              </div>
+            </div>
+            <button type="button" onclick="switchTab('tracking')" class="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition cursor-pointer">
+              Track Status &rarr;
+            </button>
+          `;
+          banner.classList.remove('hidden');
+        }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.className = 'px-6 py-2.5 rounded-xl bg-slate-300 text-slate-500 font-bold text-xs shadow-none flex items-center gap-2 cursor-not-allowed';
+          submitBtn.innerHTML = `<span>🔒 Active Complaint In Progress</span>`;
+        }
+      } else {
+        if (banner) {
+          banner.className = 'hidden mb-6';
+          banner.innerHTML = '';
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.className = 'px-6 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer';
+          submitBtn.innerHTML = `<span>Submit Application</span><span>&rarr;</span>`;
+        }
+      }
+    }
+
     // Submit Application to Backend & LocalStorage
     async function handleCustomerFormSubmit(e) {
       e.preventDefault();
+      
+      // Enforce single active complaint check
+      const activeApp = getActiveCustomerApplication();
+      if (activeApp) {
+        showToast(`⚠️ You already have an active complaint (${activeApp.id}) under process. You can only apply once until it is approved or cancelled.`, 'error');
+        checkActiveApplicationLock();
+        return;
+      }
+
       const user = JSON.parse(sessionStorage.getItem('current_user') || localStorage.getItem('current_user') || '{}');
       
       const custName = document.getElementById('form-cust-name').value.trim();
@@ -1019,6 +1113,7 @@
         id: appId,
         applicantName: custName,
         phone,
+        email: user.email || '',
         pincode: pin,
         pin,
         address,
@@ -1042,11 +1137,19 @@
 
       // 1. Post to Server Backend
       try {
-        await fetch('/api/applications', {
+        const postRes = await fetch('/api/applications', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newApplication)
         });
+        if (!postRes.ok) {
+          const resData = await postRes.json();
+          if (resData && resData.message) {
+            showToast('⚠️ ' + resData.message, 'error');
+            checkActiveApplicationLock();
+            return;
+          }
+        }
       } catch(err) {}
 
       // 2. Save in LocalStorage
@@ -1058,8 +1161,9 @@
       myRequests.unshift(newApplication);
       localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
 
-      // 3. Update UI Tracker Card
+      // 3. Update UI Tracker Card and Lock State
       updateLiveTrackerUI(newApplication);
+      checkActiveApplicationLock();
 
       showToast('🎉 Application ' + appId + ' lodged successfully and dispatched to ' + authority + '!', 'success');
       
@@ -1226,6 +1330,7 @@
               renderApplicationsHistory();
               renderCertificatesGrid();
             }
+            checkActiveApplicationLock();
           }
         }
       } catch(e) {}
@@ -1364,6 +1469,7 @@
       renderPhotoPreviewSlots();
       syncPreviewCards();
       autoDetectCustomerGPS();
+      checkActiveApplicationLock();
       syncLiveCustomerApplications();
       setInterval(syncLiveCustomerApplications, 3000);
     }

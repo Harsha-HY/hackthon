@@ -1193,14 +1193,25 @@
             </td>
             <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.tonnage || 10} MT</td>
             <td class="px-4 py-3">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (a.status === 'Cancelled' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200')}">
                 ${a.status || 'Pending Review'}
               </span>
             </td>
             <td class="px-4 py-3">
-              <button onclick="approveApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition cursor-pointer">
-                ✓ Approve
-              </button>
+              ${a.status === 'Approved' ? `
+                <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">✓ Approved</span>
+              ` : (a.status === 'Cancelled' ? `
+                <span class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-bold text-[11px]">✗ Cancelled</span>
+              ` : `
+                <div class="flex items-center gap-1.5">
+                  <button onclick="approveApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
+                    ✓ Agree
+                  </button>
+                  <button onclick="cancelApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
+                    ✗ Cancel
+                  </button>
+                </div>
+              `)}
             </td>
           </tr>
         `;
@@ -1710,6 +1721,37 @@
 
         renderAllTables();
         showToast('Application #' + appId + ' approved! Permit clearance & Green Certificate generated.', 'success');
+      }
+    }
+
+    async function cancelApplication(appId) {
+      const reason = prompt('Please enter reason for cancellation / rejection:', 'Disposal guidelines not met or site access issues.');
+      if (reason === null) return;
+
+      const app = applicationsList.find(a => a.id === appId);
+      if (app) {
+        app.status = 'Cancelled';
+        app.inspectorNotes = (app.inspectorNotes ? app.inspectorNotes + ' | ' : '') + 'Cancelled by Officer: ' + (reason || 'No specific reason');
+        
+        try {
+          await fetch('/api/applications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(app)
+          });
+        } catch(e) {}
+
+        localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
+        
+        const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
+        const custIdx = myRequests.findIndex(r => r.id === appId);
+        if (custIdx >= 0) {
+          myRequests[custIdx] = { ...myRequests[custIdx], ...app };
+          localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
+        }
+
+        renderAllTables();
+        showToast('Application #' + appId + ' cancelled. Citizen may now submit a new complaint if needed.', 'error');
       }
     }
 
