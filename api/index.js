@@ -427,13 +427,24 @@ module.exports = async (req, res) => {
         mergedItem.photo = mergedItem.photo || (mergedItem.photos && mergedItem.photos[0]) || null;
         mergedItem.submittedAt = mergedItem.submittedAt || new Date().toISOString();
 
-        // Fetch all inspectors from Supabase & memory
+        // Fetch all inspectors from Cloud, Supabase & memory
         let allInspectors = [];
+        try {
+          const cloudUsers = await fetchCloudUsers();
+          if (Array.isArray(cloudUsers)) {
+            cloudUsers.filter(u => u.role === 'inspector').forEach(ins => allInspectors.push(ins));
+          }
+        } catch(e) {}
+
         if (supabase) {
           try {
             const { data: suUsers } = await supabase.from('users').select('*');
             if (Array.isArray(suUsers)) {
-              allInspectors = suUsers.map(mapDbToUser).filter(u => u.role === 'inspector');
+              suUsers.map(mapDbToUser).filter(u => u.role === 'inspector').forEach(ins => {
+                if (!allInspectors.some(ai => (ai.email || '').toLowerCase() === (ins.email || '').toLowerCase())) {
+                  allInspectors.push(ins);
+                }
+              });
             }
           } catch(e) {}
         }
@@ -447,61 +458,69 @@ module.exports = async (req, res) => {
         const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
         const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
 
-        let resolvedAuthKey = 'mcc';
-        let resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
-        let resolvedInspName = 'Rajesh Kumar';
-        let resolvedInspEmail = 'inspector.mcc@gmail.com';
-        let resolvedOfficerEmail = 'mcc@gmail.com';
+        let resolvedAuthKey = item.authorityKey || baseApp.authorityKey || '';
+        let resolvedAuthName = item.authority || baseApp.authority || '';
+        let resolvedInspName = item.assignedInspectorName || baseApp.assignedInspectorName || '';
+        let resolvedInspEmail = item.assignedInspectorEmail || baseApp.assignedInspectorEmail || '';
+        let resolvedOfficerEmail = item.assignedOfficerEmail || baseApp.assignedOfficerEmail || '';
 
-        const isGp = GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
-        const isTp = TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
+        // If not already explicitly set by client, resolve based on PIN and inspector roster
+        if (!resolvedAuthKey || !resolvedInspEmail) {
+          resolvedAuthKey = 'mcc';
+          resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
+          resolvedInspName = 'Rajesh Kumar';
+          resolvedInspEmail = 'inspector.mcc@gmail.com';
+          resolvedOfficerEmail = 'mcc@gmail.com';
 
-        if (isGp) {
-          resolvedAuthKey = 'gp';
-          resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
-          resolvedInspName = 'S. Nanjappa';
-          resolvedInspEmail = 'nanjappa.gp@gmail.com';
-          resolvedOfficerEmail = 'gp@gmail.com';
-        } else if (isTp) {
-          resolvedAuthKey = 'tp';
-          resolvedAuthName = 'Hootagalli Town Panchayat';
-          resolvedInspName = 'M. Anand';
-          resolvedInspEmail = 'anand.tp@gmail.com';
-          resolvedOfficerEmail = 'tp@gmail.com';
-        }
+          const isGp = GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
+          const isTp = TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
 
-        // Check if a custom registered inspector has this PIN assigned
-        const customPinMatch = allInspectors.find(ins => {
-          const insPin = String(ins.assignedPin || ins.pin || '').trim();
-          if (!insPin) return false;
-          const pList = insPin.split(/[\s,]+/).map(p => p.trim());
-          return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
-        });
-
-        if (customPinMatch) {
-          const insDept = (customPinMatch.department || '').toLowerCase();
-          const insDeptName = (customPinMatch.departmentName || '').toLowerCase();
-          if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
+          if (isGp) {
             resolvedAuthKey = 'gp';
             resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
+            resolvedInspName = 'S. Nanjappa';
+            resolvedInspEmail = 'nanjappa.gp@gmail.com';
             resolvedOfficerEmail = 'gp@gmail.com';
-          } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
+          } else if (isTp) {
             resolvedAuthKey = 'tp';
             resolvedAuthName = 'Hootagalli Town Panchayat';
+            resolvedInspName = 'M. Anand';
+            resolvedInspEmail = 'anand.tp@gmail.com';
             resolvedOfficerEmail = 'tp@gmail.com';
           }
-          resolvedInspName = customPinMatch.name;
-          resolvedInspEmail = customPinMatch.email;
-        } else {
-          // Check if any registered inspector exists for this authority
-          const deptInspector = allInspectors.find(ins => {
-            const d = (ins.department || '').toLowerCase();
-            const dn = (ins.departmentName || '').toLowerCase();
-            return d === resolvedAuthKey || (resolvedAuthKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (resolvedAuthKey === 'tp' && (d.includes('town') || dn.includes('town')));
+
+          // Check if a custom registered inspector has this PIN assigned
+          const customPinMatch = allInspectors.find(ins => {
+            const insPin = String(ins.assignedPin || ins.pin || '').trim();
+            if (!insPin) return false;
+            const pList = insPin.split(/[\s,]+/).map(p => p.trim());
+            return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
           });
-          if (deptInspector) {
-            resolvedInspName = deptInspector.name;
-            resolvedInspEmail = deptInspector.email;
+
+          if (customPinMatch) {
+            const insDept = (customPinMatch.department || '').toLowerCase();
+            const insDeptName = (customPinMatch.departmentName || '').toLowerCase();
+            if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
+              resolvedAuthKey = 'gp';
+              resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
+              resolvedOfficerEmail = 'gp@gmail.com';
+            } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
+              resolvedAuthKey = 'tp';
+              resolvedAuthName = 'Hootagalli Town Panchayat';
+              resolvedOfficerEmail = 'tp@gmail.com';
+            }
+            resolvedInspName = customPinMatch.name;
+            resolvedInspEmail = customPinMatch.email;
+          } else {
+            const deptInspector = allInspectors.find(ins => {
+              const d = (ins.department || '').toLowerCase();
+              const dn = (ins.departmentName || '').toLowerCase();
+              return d === resolvedAuthKey || (resolvedAuthKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (resolvedAuthKey === 'tp' && (d.includes('town') || dn.includes('town')));
+            });
+            if (deptInspector) {
+              resolvedInspName = deptInspector.name;
+              resolvedInspEmail = deptInspector.email;
+            }
           }
         }
 
@@ -510,6 +529,16 @@ module.exports = async (req, res) => {
         mergedItem.assignedInspectorName = resolvedInspName;
         mergedItem.assignedInspectorEmail = resolvedInspEmail;
         mergedItem.assignedOfficerEmail = resolvedOfficerEmail;
+
+        // Ensure bulk photos array is strictly preserved
+        if (Array.isArray(item.photos) && item.photos.length > 0) {
+          mergedItem.photos = item.photos;
+        } else if (item.photo) {
+          mergedItem.photos = [item.photo];
+        } else if (!mergedItem.photos || !Array.isArray(mergedItem.photos)) {
+          mergedItem.photos = mergedItem.photo ? [mergedItem.photo] : [];
+        }
+        mergedItem.photo = (mergedItem.photos && mergedItem.photos[0]) || mergedItem.photo || null;
 
         // Upsert to Supabase
         if (supabase) {

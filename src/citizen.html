@@ -105,7 +105,7 @@
     <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200">
       <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
         <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-          <span>📷</span> Live Camera Capture
+          <span>📷</span> Live Camera Capture <span id="camera-photo-counter" class="text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-mono font-bold">0/5</span>
         </h4>
         <button onclick="closeCameraModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
       </div>
@@ -118,8 +118,8 @@
           </div>
         </div>
         <div class="mt-4 flex items-center gap-3 w-full">
-          <button type="button" onclick="closeCameraModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200">Cancel</button>
-          <button type="button" onclick="snapPhoto()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5">
+          <button type="button" onclick="closeCameraModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200">Done / Close</button>
+          <button type="button" onclick="snapPhoto()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 cursor-pointer">
             <span>📸 Snap Photo</span>
           </button>
         </div>
@@ -915,11 +915,14 @@
       autoDetectCustomerGPS();
     }
 
-    // Photo Capture & Upload Handling (Strict Camera-Only)
+    // Photo Capture & Upload Handling (Supports live camera & bulk multi-file uploads)
     function triggerCameraCapture() {
       const modal = document.getElementById('camera-modal');
       const video = document.getElementById('camera-stream');
       const loading = document.getElementById('camera-loading');
+      const counter = document.getElementById('camera-photo-counter');
+      if (counter) counter.innerText = `${uploadedPhotos.length}/5`;
+
       modal.classList.remove('hidden');
       if (loading) loading.classList.remove('hidden');
 
@@ -951,7 +954,7 @@
       }
     }
 
-    function snapPhoto() {
+    function snapPhoto(closeAfterSnap = false) {
       const video = document.getElementById('camera-stream');
       const canvas = document.getElementById('camera-canvas');
       if (!video) return;
@@ -963,37 +966,58 @@
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
       if (uploadedPhotos.length >= 5) {
-        showToast('Maximum of 5 photos allowed.', 'error');
+        showToast('Maximum of 5 photos reached.', 'error');
         closeCameraModal();
         return;
       }
 
       uploadedPhotos.push(dataUrl);
-      closeCameraModal();
       renderPhotoPreviewSlots();
-      showToast('Photo captured successfully! (' + uploadedPhotos.length + '/5)', 'success');
+      showToast(`Photo #${uploadedPhotos.length} captured! (${uploadedPhotos.length}/5)`, 'success');
+
+      const counter = document.getElementById('camera-photo-counter');
+      if (counter) counter.innerText = `${uploadedPhotos.length}/5`;
+
+      if (uploadedPhotos.length >= 5 || closeAfterSnap) {
+        closeCameraModal();
+      }
     }
 
-    function handleFileSelect(event) {
-      const files = event.target.files;
+    async function handleFileSelect(event) {
+      const files = Array.from(event.target.files || []);
       if (!files || files.length === 0) return;
 
-      for (let i = 0; i < files.length; i++) {
-        if (uploadedPhotos.length >= 5) {
-          showToast('Maximum of 5 photos reached.', 'error');
-          break;
-        }
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (uploadedPhotos.length < 5) {
-            uploadedPhotos.push(e.target.result);
-            renderPhotoPreviewSlots();
-          }
-        };
-        reader.readAsDataURL(file);
+      const remainingSlots = 5 - uploadedPhotos.length;
+      if (remainingSlots <= 0) {
+        showToast('Maximum of 5 photos reached.', 'error');
+        event.target.value = '';
+        return;
       }
-      showToast('Photo captured successfully!', 'success');
+
+      const filesToProcess = files.slice(0, remainingSlots);
+      if (files.length > remainingSlots) {
+        showToast(`Adding first ${remainingSlots} photos (maximum 5 limit).`, 'info');
+      }
+
+      const readPromises = filesToProcess.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const results = await Promise.all(readPromises);
+      results.forEach(res => {
+        if (res && uploadedPhotos.length < 5) {
+          uploadedPhotos.push(res);
+        }
+      });
+
+      event.target.value = '';
+      renderPhotoPreviewSlots();
+      showToast(`Uploaded ${uploadedPhotos.length}/5 site photo(s) successfully!`, 'success');
     }
 
     function removePhoto(index) {
