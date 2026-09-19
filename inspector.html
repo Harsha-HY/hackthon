@@ -857,8 +857,21 @@
             </div>
 
             <div>
-              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">📅 Inspection Date & Time</label>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">📅 Inspection Time</label>
               <input id="audit-datetime" type="datetime-local" value="${nowFormatted}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+          </div>
+
+          <!-- Scheduled Date & Completion Date Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">📅 Scheduled Date</label>
+              <input id="audit-scheduled-date" type="date" value="${app.scheduledDate || (app.inspectionDate ? app.inspectionDate.split('T')[0] : new Date().toISOString().split('T')[0])}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">🏁 Target / Completion Date</label>
+              <input id="audit-completion-date" type="date" value="${app.completionDate && !app.completionDate.includes('Pending') && !app.completionDate.includes('Progress') ? app.completionDate : ''}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
           </div>
 
@@ -955,12 +968,18 @@
       if (app) {
         const gps = document.getElementById('audit-gps').value.trim();
         const datetime = document.getElementById('audit-datetime').value;
+        const scheduledDate = document.getElementById('audit-scheduled-date').value || (datetime ? datetime.split('T')[0] : new Date().toISOString().split('T')[0]);
+        const compDateInput = document.getElementById('audit-completion-date').value;
         const tonnage = document.getElementById('audit-tonnage').value;
         const decision = document.getElementById('audit-decision').value;
         const remarks = document.getElementById('audit-remarks').value.trim();
 
+        const completionDate = compDateInput || ((decision === 'Approved' || decision === 'Inspection Passed & Verified') ? new Date().toISOString().split('T')[0] : 'In Progress');
+
         app.gpsLocation = gps;
         app.inspectionTime = datetime;
+        app.scheduledDate = scheduledDate;
+        app.completionDate = completionDate;
         app.tonnage = tonnage;
         app.verifiedTonnage = tonnage;
         app.status = decision;

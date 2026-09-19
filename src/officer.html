@@ -527,7 +527,9 @@
                   <th class="px-4 py-3">Request ID</th>
                   <th class="px-4 py-3">Structure Details</th>
                   <th class="px-4 py-3">Location & PIN</th>
-                  <th class="px-4 py-3">Submission Date</th>
+                  <th class="px-4 py-3">Scheduled Date</th>
+                  <th class="px-4 py-3">Completion Date</th>
+                  <th class="px-4 py-3">Photos</th>
                   <th class="px-4 py-3">Review Status</th>
                   <th class="px-4 py-3">Action</th>
                 </tr>
@@ -1697,7 +1699,7 @@
       if (apps.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
               No pending demolition clearance requests in this authority queue.
             </td>
           </tr>
@@ -1710,7 +1712,10 @@
         const isAudited = isApproved || a.status === 'Inspection Passed & Verified' || a.status === 'Site Audit Done' || a.status === 'Audited';
         const isScheduled = a.status === 'Visit Scheduled' || a.status === 'On-Site Audit In Progress';
         const isViolation = a.status === 'Flagged Violation' || a.status === 'Cancelled' || a.status === 'Rejected';
-        const formattedDate = a.submittedAt || a.createdAt || a.issueDate ? new Date(a.submittedAt || a.createdAt || a.issueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent';
+        
+        const scheduledDateStr = a.scheduledDate || a.inspectionDate || (a.submittedAt ? new Date(a.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Scheduled');
+        const completionDateStr = isApproved ? (a.completionDate || (a.auditedAt ? new Date(a.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Completed')) : (a.completionDate && !a.completionDate.includes('Pending') ? a.completionDate : '⏳ In Progress');
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
@@ -1726,7 +1731,21 @@
                 <a href="${a.mapUrl || 'https://www.google.com/maps?q=' + (a.lat||12.2958) + ',' + (a.lng||76.6394)}" target="_blank" class="text-[10px] font-mono text-emerald-600 hover:underline">📍 Live GPS ↗</a>
               </div>
             </td>
-            <td class="px-4 py-3 font-mono text-slate-600 text-[11px]">${formattedDate}</td>
+            <td class="px-4 py-3 font-mono text-slate-700 text-xs font-semibold whitespace-nowrap">
+              <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">📅 ${scheduledDateStr}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-xs whitespace-nowrap">
+              ${isApproved ? `<span class="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-bold">🏁 ${completionDateStr}</span>` : `<span class="bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 text-[11px]">⏳ In Progress</span>`}
+            </td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <div class="flex items-center gap-1 flex-wrap max-w-[140px]">
+                  ${photos.map((p, idx) => `
+                    <img src="${p}" onclick="openPhotoModal('${a.id}')" alt="Photo ${idx+1}" title="Photo ${idx+1}" class="size-7 rounded object-cover border border-slate-300 cursor-pointer hover:scale-105 transition"/>
+                  `).join('')}
+                </div>
+              ` : '<span class="text-slate-400 font-mono text-[11px]">No Photos</span>'}
+            </td>
             <td class="px-4 py-3">
               <div class="space-y-0.5">
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono inline-block ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (isViolation ? 'bg-rose-100 text-rose-800 border border-rose-200' : (isAudited ? 'bg-teal-100 text-teal-800 border border-teal-200' : 'bg-blue-100 text-blue-800 border border-blue-200'))}">

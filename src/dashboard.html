@@ -215,10 +215,6 @@
             <span class="icon-box bg-orange-500/10 text-orange-400">🏗️</span>
             <span>6. Demolition Requests</span>
           </button>
-          <button onclick="switchView('demolition_status')" id="btn-demolition_status" class="nav-btn">
-            <span class="icon-box bg-rose-500/10 text-rose-400">⏳</span>
-            <span>7. Demolition Status</span>
-          </button>
         </div>
       </div>
 
@@ -228,15 +224,15 @@
         <div class="space-y-1">
           <button onclick="switchView('certificates')" id="btn-certificates" class="nav-btn">
             <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
-            <span>8. Certificates</span>
+            <span>7. Certificates</span>
           </button>
           <button onclick="switchView('utilities')" id="btn-utilities" class="nav-btn">
             <span class="icon-box bg-yellow-500/10 text-yellow-400">💡</span>
-            <span>9. Water / Electricity</span>
+            <span>8. Water / Electricity</span>
           </button>
           <button onclick="switchView('reports')" id="btn-reports" class="nav-btn">
             <span class="icon-box bg-violet-500/10 text-violet-400">📈</span>
-            <span>10. Reports & Analytics</span>
+            <span>9. Reports & Analytics</span>
           </button>
         </div>
       </div>
@@ -247,7 +243,7 @@
         <div class="space-y-1">
           <button onclick="switchView('users')" id="btn-users" class="nav-btn">
             <span class="icon-box bg-slate-500/10 text-slate-400">👥</span>
-            <span>11. Users</span>
+            <span>10. Users</span>
           </button>
         </div>
       </div>
@@ -746,40 +742,14 @@
                   <th class="px-4 py-3">Property</th>
                   <th class="px-4 py-3">Location</th>
                   <th class="px-4 py-3">Applicant</th>
+                  <th class="px-4 py-3">Scheduled Date</th>
+                  <th class="px-4 py-3">Completion Date</th>
                   <th class="px-4 py-3">Verified Material & Tonnage</th>
                   <th class="px-4 py-3">Documents / Photos</th>
                   <th class="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody id="table-demolition-requests" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 8. DEMOLITION STATUS                                                  -->
-      <!-- ===================================================================== -->
-      <section id="panel-demolition_status" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">Live Demolition & Waste Hauling Status</h3>
-            <p class="text-xs text-slate-500">Scheduled dates, before/after evidence photos, and recycling yard delivery confirmation.</p>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Request ID</th>
-                  <th class="px-4 py-3">Scheduled Date</th>
-                  <th class="px-4 py-3">Completion Date</th>
-                  <th class="px-4 py-3">Before/After Photos</th>
-                  <th class="px-4 py-3">Waste Tonnage</th>
-                  <th class="px-4 py-3">Collection Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-demolition-status" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
             </table>
           </div>
         </div>
@@ -999,25 +969,24 @@
     
     const views = [
       'dashboard', 'applications', 'pinmapping', 'authorities',
-      'inspectors', 'inspections', 'demolition_requests', 'demolition_status',
+      'inspectors', 'inspections', 'demolition_requests',
       'certificates', 'utilities', 'notifications', 'reports', 'users', 'settings'
     ];
 
     const viewTitles = {
       'dashboard': '1. Dashboard Overview',
-      'applications': '2. Applications Registry',
+      'applications': '2. Demolition Applications Registry',
       'pinmapping': '3. PIN Code & Area Mapping Engine',
       'authorities': '4. Corporations & Civic Authorities',
       'inspectors': '5. Inspectors & Field Officers',
       'inspections': '6. Inspection Management',
-      'demolition_requests': '7. Demolition Requests Intake',
-      'demolition_status': '8. Demolition Status Tracker',
-      'certificates': '9. Green Disposal Certificates',
-      'utilities': '10. Water / Electricity Benefits Desk',
-      'notifications': '11. Notifications Dispatch Center',
-      'reports': '12. Reports & City Analytics',
-      'users': '13. System Users & Access Control',
-      'settings': '14. System Configurations & Settings'
+      'demolition_requests': '6. Demolition Requests & Intake',
+      'certificates': '7. Green Disposal Certificates',
+      'utilities': '8. Water / Electricity Benefits Desk',
+      'notifications': '9. Notifications Dispatch Center',
+      'reports': '10. Reports & City Analytics',
+      'users': '11. System Users & Access Control',
+      'settings': '12. System Configurations & Settings'
     };
 
     function switchView(viewName) {
@@ -1183,37 +1152,9 @@
           }
         }
 
-        // Sync Live Real-Time Demolition Requests & Status from actual submissions
+        // Sync Live Real-Time Demolition Requests & Certificates from actual submissions
         renderDemolitionRequestsTable();
-        renderDemolitionStatusTable();
         renderCertificatesTable();
-
-        // Fetch Demolition Status
-        const resDemStatus = await fetch('/api/demolition-status');
-        if (resDemStatus.ok) {
-          const stats = await resDemStatus.json();
-          const tableStatus = document.getElementById('table-demolition-status');
-          if (stats.length === 0) {
-            tableStatus.innerHTML = `
-              <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
-                  No active demolition hauling operations in progress.
-                </td>
-              </tr>
-            `;
-          } else {
-            tableStatus.innerHTML = stats.map(s => `
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-mono font-bold text-emerald-700">${s.requestId}</td>
-                <td class="px-4 py-3 font-mono text-slate-600">${s.scheduledDate}</td>
-                <td class="px-4 py-3 font-mono text-emerald-700 font-bold">${s.completionDate}</td>
-                <td class="px-4 py-3 text-slate-500 font-mono text-[11px]">${s.beforePhoto}, ${s.afterPhoto}</td>
-                <td class="px-4 py-3 font-bold text-slate-900">${s.debrisQuantity}</td>
-                <td class="px-4 py-3"><span class="badge-status badge-approved">${s.collectionStatus}</span></td>
-              </tr>
-            `).join('');
-          }
-        }
 
         // Fetch Certificates
         const resCerts = await fetch('/api/certificates');
@@ -1732,7 +1673,13 @@
     let activeModalIndex = 0;
 
     function openPhotoModal(appId, photoIdx = 0) {
-      const app = (cachedApplications || []).find(a => String(a.id) === String(appId));
+      const allApps = getOriginalDemolitionApplications();
+      let app = allApps.find(a => String(a.id || a.requestId) === String(appId));
+      if (!app) {
+        const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+        app = local.find(a => String(a.id || a.requestId) === String(appId));
+      }
+      if (!app) app = (cachedApplications || []).find(a => String(a.id || a.requestId) === String(appId));
       if (!app) return;
       const photos = getAppPhotos(app);
       if (photos.length === 0) {
@@ -1838,7 +1785,7 @@
         if (!uniqueMap.has(id)) {
           uniqueMap.set(id, a);
         } else {
-          // Merge to keep newest updates (photos, notes, status)
+          // Merge to keep newest updates (photos, notes, status, dates)
           const prev = uniqueMap.get(id);
           uniqueMap.set(id, { ...prev, ...a });
         }
@@ -1878,12 +1825,30 @@
           ? `${a.verifiedMaterial || a.material || 'Demolition Rubble'}${a.verifiedTonnage ? ' (' + a.verifiedTonnage + ' MT Verified)' : (a.tonnage || a.estimatedTonnage ? ' (' + (a.tonnage || a.estimatedTonnage) + ')' : '')}`
           : `${a.material || a.debrisType || a.propertyDetails || 'Concrete Rubble & Masonry'}${a.tonnage || a.estimatedTonnage ? ' (' + (a.tonnage || a.estimatedTonnage) + ')' : ' (Est: 12 MT)'}`;
 
+        const isApproved = (a.status || '').toLowerCase().includes('approved') || (a.status || '').toLowerCase().includes('clearance') || (a.status || '').toLowerCase().includes('completed') || (a.status || '').toLowerCase().includes('issued');
+
+        const scheduledDateStr = a.scheduledDate || a.inspectionDate || a.inspectionTime 
+          ? (String(a.scheduledDate || a.inspectionDate || a.inspectionTime).split('T')[0]) 
+          : (a.submittedAt ? String(a.submittedAt).split('T')[0] : '2026-09-19');
+
+        let completionDateStr = a.completionDate;
+        if (!completionDateStr || completionDateStr === 'Pending Final Clearance') {
+          if (isApproved) {
+            completionDateStr = a.auditedAt ? String(a.auditedAt).split('T')[0] : (a.issueDate ? String(a.issueDate).split('T')[0] : 'Completed');
+          } else {
+            completionDateStr = 'In Progress';
+          }
+        }
+
         return {
           id: id,
           originalAppId: id,
           property: propertyText,
           location: `${a.address || 'Mysuru Premise'}${pin ? ' (PIN: ' + pin + ')' : ''}`,
           applicant: `${a.applicantName || 'Citizen Applicant'}${a.phone ? ' · ' + a.phone : ''}`,
+          scheduledDate: scheduledDateStr,
+          completionDate: completionDateStr,
+          isApproved: isApproved,
           verifiedMaterial: materialTonnage,
           photos: photos,
           status: a.status || 'Pending Inspection',
@@ -1914,7 +1879,7 @@
       if (displayed.length === 0) {
         tableDem.innerHTML = `
           <tr>
-            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
               No building demolition clearance requests found for this jurisdiction.
             </td>
           </tr>
@@ -1924,7 +1889,7 @@
 
       tableDem.innerHTML = displayed.map(d => {
         const photos = d.photos || [];
-        const isApproved = (d.status || '').toLowerCase().includes('approved') || (d.status || '').toLowerCase().includes('clearance') || (d.status || '').toLowerCase().includes('completed') || (d.status || '').toLowerCase().includes('issued');
+        const isApproved = d.isApproved;
         const isCancelled = (d.status || '').toLowerCase().includes('cancel') || (d.status || '').toLowerCase().includes('reject');
 
         const statusBadge = isApproved 
@@ -1937,15 +1902,31 @@
             <td class="px-4 py-3 font-bold text-slate-900">${d.property}</td>
             <td class="px-4 py-3 text-slate-700">${d.location}</td>
             <td class="px-4 py-3 font-medium text-slate-800">${d.applicant}</td>
+            <td class="px-4 py-3 font-mono text-slate-700 text-xs font-semibold whitespace-nowrap">
+              <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                📅 ${d.scheduledDate}
+              </span>
+            </td>
+            <td class="px-4 py-3 font-mono text-xs whitespace-nowrap">
+              ${isApproved ? `
+                <span class="inline-flex items-center gap-1 font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200">
+                  🏁 ${d.completionDate}
+                </span>
+              ` : `
+                <span class="inline-flex items-center gap-1 text-amber-800 font-medium bg-amber-50 px-2 py-1 rounded-lg border border-amber-200 text-[11px]">
+                  ⏳ In Progress
+                </span>
+              `}
+            </td>
             <td class="px-4 py-3 font-semibold text-amber-900 bg-amber-50/50 px-2.5 py-1 rounded-xl">${d.verifiedMaterial}</td>
             <td class="px-4 py-3">
               ${photos.length > 0 ? `
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  ${photos.slice(0, 2).map((p, pIdx) => `
-                    <img src="${p}" onclick="openPhotoModal('${d.originalAppId}', ${pIdx})" alt="Photo" class="size-7 rounded-lg object-cover border border-slate-300 hover:border-emerald-500 cursor-pointer hover:scale-110 transition"/>
+                <div class="flex items-center gap-1.5 flex-wrap max-w-[200px]">
+                  ${photos.map((p, pIdx) => `
+                    <img src="${p}" onclick="openPhotoModal('${d.originalAppId}', ${pIdx})" alt="Photo ${pIdx+1}" title="Click to view full photo ${pIdx+1}" class="size-8 rounded-lg object-cover border-2 border-slate-300 hover:border-emerald-500 cursor-pointer hover:scale-110 transition shadow-2xs"/>
                   `).join('')}
-                  <button onclick="openPhotoModal('${d.originalAppId}', 0)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer">
-                    📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+                  <button onclick="openPhotoModal('${d.originalAppId}', 0)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-300 hover:bg-emerald-100 transition cursor-pointer">
+                    📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''} ↗
                   </button>
                 </div>
               ` : `
@@ -1957,52 +1938,7 @@
                 <span class="size-1.5 rounded-full ${isApproved ? 'bg-emerald-500' : (isCancelled ? 'bg-rose-500' : 'bg-amber-500 animate-pulse')}"></span>
                 <span>${d.status}</span>
               </span>
-              ${d.assignedInspector ? `<span class="block text-[9px] text-slate-500 mt-0.5">👮 ${d.assignedInspector}</span>` : ''}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderDemolitionStatusTable() {
-      const tableStatus = document.getElementById('table-demolition-status');
-      if (!tableStatus) return;
-
-      const allApps = getOriginalDemolitionApplications();
-      if (allApps.length === 0) {
-        tableStatus.innerHTML = `
-          <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No active demolition hauling operations in progress.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tableStatus.innerHTML = allApps.map(s => {
-        const photos = s.photos || [];
-        const isApproved = (s.status || '').toLowerCase().includes('approved') || (s.status || '').toLowerCase().includes('clearance') || (s.status || '').toLowerCase().includes('completed');
-        const formattedDate = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '2026-09-19';
-
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-700">${s.id}</td>
-            <td class="px-4 py-3 font-mono text-slate-600">${formattedDate}</td>
-            <td class="px-4 py-3 font-mono text-emerald-700 font-bold">${isApproved ? 'Completed & Verified' : 'In Progress'}</td>
-            <td class="px-4 py-3">
-              ${photos.length > 0 ? `
-                <div class="flex items-center gap-1">
-                  ${photos.slice(0, 2).map((p, pIdx) => `
-                    <img src="${p}" onclick="openPhotoModal('${s.originalAppId}', ${pIdx})" alt="Photo" class="size-6 rounded object-cover border border-slate-300 cursor-pointer"/>
-                  `).join('')}
-                  <span class="text-[10px] text-slate-500 font-mono">(${photos.length} photos)</span>
-                </div>
-              ` : '<span class="text-slate-400 font-mono text-xs">Awaiting Photos</span>'}
-            </td>
-            <td class="px-4 py-3 font-bold text-slate-900">${s.verifiedMaterial}</td>
-            <td class="px-4 py-3">
-              <span class="badge-status ${isApproved ? 'badge-approved' : 'badge-pending'}">${s.status}</span>
+              ${d.assignedInspector ? `<span class="block text-[9px] text-slate-500 mt-0.5 font-medium">👮 ${d.assignedInspector}</span>` : ''}
             </td>
           </tr>
         `;
@@ -3308,7 +3244,6 @@
         renderPinMappingInspectors();
         renderApplicationsTable();
         renderDemolitionRequestsTable();
-        renderDemolitionStatusTable();
         renderCertificatesTable();
       };
     }
@@ -3320,7 +3255,6 @@
         renderPinMappingInspectors();
         renderApplicationsTable();
         renderDemolitionRequestsTable();
-        renderDemolitionStatusTable();
         renderCertificatesTable();
       }
     });
