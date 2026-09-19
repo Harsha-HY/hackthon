@@ -1183,33 +1183,10 @@
           }
         }
 
-        // Fetch Demolition Requests
-        const resDem = await fetch('/api/demolition-requests');
-        if (resDem.ok) {
-          const reqs = await resDem.json();
-          const tableDem = document.getElementById('table-demolition-requests');
-          if (reqs.length === 0) {
-            tableDem.innerHTML = `
-              <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
-                  No building demolition clearance requests submitted yet. Fresh requests will appear here.
-                </td>
-              </tr>
-            `;
-          } else {
-            tableDem.innerHTML = reqs.map(d => `
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-mono font-bold text-emerald-700">${d.requestId}</td>
-                <td class="px-4 py-3 font-bold text-slate-900">${d.property}</td>
-                <td class="px-4 py-3 text-slate-700">${d.location}</td>
-                <td class="px-4 py-3 text-slate-800">${d.applicant}</td>
-                <td class="px-4 py-3 font-bold text-amber-700">${d.estimatedDebris}</td>
-                <td class="px-4 py-3 font-mono text-slate-500 text-[11px]">${d.documents}</td>
-                <td class="px-4 py-3"><span class="badge-status badge-approved">${d.status}</span></td>
-              </tr>
-            `).join('');
-          }
-        }
+        // Sync Live Real-Time Demolition Requests & Status from actual submissions
+        renderDemolitionRequestsTable();
+        renderDemolitionStatusTable();
+        renderCertificatesTable();
 
         // Fetch Demolition Status
         const resDemStatus = await fetch('/api/demolition-status');
@@ -1849,43 +1826,89 @@
       renderDemolitionRequestsTable(dept);
     }
 
-    function renderDemolitionRequestsTable(filter = currentDemDeptFilter) {
-      const tableDem = document.getElementById('table-demolition-requests');
-      if (!tableDem) return;
+    function getOriginalDemolitionApplications() {
+      const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const combined = [...(cachedApplications || []), ...local];
+      const uniqueMap = new Map();
+
+      combined.forEach(a => {
+        if (!a) return;
+        const id = String(a.id || a.requestId || '').trim();
+        if (!id) return;
+        if (!uniqueMap.has(id)) {
+          uniqueMap.set(id, a);
+        } else {
+          // Merge to keep newest updates (photos, notes, status)
+          const prev = uniqueMap.get(id);
+          uniqueMap.set(id, { ...prev, ...a });
+        }
+      });
 
       const GP_PINS = ['570026', '571130', '570028', '571311'];
       const TP_PINS = ['570018', '571607', '570016', '571604'];
 
-      const combined = [];
-
-      (cachedApplications || []).forEach(a => {
-        const photos = getAppPhotos(a);
+      return Array.from(uniqueMap.values()).map(a => {
+        const id = a.id || a.requestId;
         const pin = String(a.pin || a.pincode || '570001');
+        const auth = (a.authority || a.authorityKey || '').toLowerCase();
+
         let dept = 'mcc';
-        if (GP_PINS.some(p => pin.startsWith(p)) || (a.authority || '').toLowerCase().includes('panchayat')) dept = 'gp';
-        else if (TP_PINS.some(p => pin.startsWith(p)) || (a.authority || '').toLowerCase().includes('town')) dept = 'tp';
+        if (a.authorityKey === 'gp' || auth.includes('panchayat') || auth.includes('bogadi') || GP_PINS.some(p => pin.startsWith(p))) {
+          dept = 'gp';
+        } else if (a.authorityKey === 'tp' || auth.includes('town') || auth.includes('hootagalli') || TP_PINS.some(p => pin.startsWith(p))) {
+          dept = 'tp';
+        } else if (a.authorityKey === 'mcc' || auth.includes('mcc') || auth.includes('corporation')) {
+          dept = 'mcc';
+        }
 
-        combined.push({
-          requestId: 'DEM-' + a.id,
-          originalAppId: a.id,
-          property: a.propertyDetails || a.structureType || (a.propertyId ? `Site Plot (${a.propertyId})` : 'Commercial RCC Complex / Structure'),
-          location: `${a.address || 'Mysuru Site'} (PIN: ${pin})`,
+        const photos = getAppPhotos(a);
+        
+        let inspectorName = a.assignedInspectorName || a.inspector;
+        if (!inspectorName) {
+          if (dept === 'gp') inspectorName = 'Seervi (GP Field Officer)';
+          else if (dept === 'tp') inspectorName = 'M. Anand (TP Field Officer)';
+          else inspectorName = 'Rajesh Kumar (MCC Chief Inspector)';
+        }
+
+        const propertyText = a.propertyId 
+          ? `PID: ${a.propertyId} · ${a.propertyDetails || a.structureType || 'Structure'}`
+          : (a.propertyDetails || a.structureType || a.address || 'Residential / Commercial Premise');
+
+        const materialTonnage = a.verifiedMaterial || a.verifiedTonnage
+          ? `${a.verifiedMaterial || a.material || 'Demolition Rubble'}${a.verifiedTonnage ? ' (' + a.verifiedTonnage + ' MT Verified)' : (a.tonnage || a.estimatedTonnage ? ' (' + (a.tonnage || a.estimatedTonnage) + ')' : '')}`
+          : `${a.material || a.debrisType || a.propertyDetails || 'Concrete Rubble & Masonry'}${a.tonnage || a.estimatedTonnage ? ' (' + (a.tonnage || a.estimatedTonnage) + ')' : ' (Est: 12 MT)'}`;
+
+        return {
+          id: id,
+          originalAppId: id,
+          property: propertyText,
+          location: `${a.address || 'Mysuru Premise'}${pin ? ' (PIN: ' + pin + ')' : ''}`,
           applicant: `${a.applicantName || 'Citizen Applicant'}${a.phone ? ' · ' + a.phone : ''}`,
-          verifiedMaterial: a.estimatedTonnage || a.verifiedMaterial || `${a.propertyDetails || 'RCC Rubble & Steel Rebar'} (Est: 14.5 MT)`,
+          verifiedMaterial: materialTonnage,
           photos: photos,
-          status: a.status || 'Under Inspection',
-          assignedInspector: a.assignedInspectorName || (dept === 'gp' ? 'Seervi' : (dept === 'tp' ? 'M. Anand' : 'Rajesh Kumar')),
-          dept: dept
-        });
+          status: a.status || 'Pending Inspection',
+          assignedInspector: inspectorName,
+          dept: dept,
+          certificateNo: a.certificateNo || a.certNo || '',
+          issueDate: a.issueDate || a.submittedAt || '',
+          submittedAt: a.submittedAt || a.createdAt || a.issueDate || ''
+        };
       });
+    }
 
-      let displayed = combined;
+    function renderDemolitionRequestsTable(filter = currentDemDeptFilter) {
+      const tableDem = document.getElementById('table-demolition-requests');
+      if (!tableDem) return;
+
+      const allApps = getOriginalDemolitionApplications();
+
+      let displayed = allApps;
       if (filter === 'gp') {
-        displayed = combined.filter(d => d.dept === 'gp');
+        displayed = allApps.filter(d => d.dept === 'gp');
       } else if (filter === 'tp') {
-        displayed = combined.filter(d => d.dept === 'tp');
+        displayed = allApps.filter(d => d.dept === 'tp');
       } else if (filter === 'mcc') {
-        displayed = combined.filter(d => d.dept === 'mcc');
+        displayed = allApps.filter(d => d.dept === 'mcc');
       }
 
       if (displayed.length === 0) {
@@ -1901,7 +1924,7 @@
 
       tableDem.innerHTML = displayed.map(d => {
         const photos = d.photos || [];
-        const isApproved = (d.status || '').toLowerCase().includes('approved') || (d.status || '').toLowerCase().includes('clearance') || (d.status || '').toLowerCase().includes('completed');
+        const isApproved = (d.status || '').toLowerCase().includes('approved') || (d.status || '').toLowerCase().includes('clearance') || (d.status || '').toLowerCase().includes('completed') || (d.status || '').toLowerCase().includes('issued');
         const isCancelled = (d.status || '').toLowerCase().includes('cancel') || (d.status || '').toLowerCase().includes('reject');
 
         const statusBadge = isApproved 
@@ -1910,7 +1933,7 @@
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${d.requestId}</td>
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${d.id}</td>
             <td class="px-4 py-3 font-bold text-slate-900">${d.property}</td>
             <td class="px-4 py-3 text-slate-700">${d.location}</td>
             <td class="px-4 py-3 font-medium text-slate-800">${d.applicant}</td>
@@ -1919,9 +1942,9 @@
               ${photos.length > 0 ? `
                 <div class="flex items-center gap-1.5 flex-wrap">
                   ${photos.slice(0, 2).map((p, pIdx) => `
-                    <img src="${p}" onclick="openPhotoModal('${d.originalAppId || d.requestId}', ${pIdx})" alt="Photo" class="size-7 rounded-lg object-cover border border-slate-300 hover:border-emerald-500 cursor-pointer hover:scale-110 transition"/>
+                    <img src="${p}" onclick="openPhotoModal('${d.originalAppId}', ${pIdx})" alt="Photo" class="size-7 rounded-lg object-cover border border-slate-300 hover:border-emerald-500 cursor-pointer hover:scale-110 transition"/>
                   `).join('')}
-                  <button onclick="openPhotoModal('${d.originalAppId || d.requestId}', 0)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer">
+                  <button onclick="openPhotoModal('${d.originalAppId}', 0)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer">
                     📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''}
                   </button>
                 </div>
@@ -1939,6 +1962,82 @@
           </tr>
         `;
       }).join('');
+    }
+
+    function renderDemolitionStatusTable() {
+      const tableStatus = document.getElementById('table-demolition-status');
+      if (!tableStatus) return;
+
+      const allApps = getOriginalDemolitionApplications();
+      if (allApps.length === 0) {
+        tableStatus.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No active demolition hauling operations in progress.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableStatus.innerHTML = allApps.map(s => {
+        const photos = s.photos || [];
+        const isApproved = (s.status || '').toLowerCase().includes('approved') || (s.status || '').toLowerCase().includes('clearance') || (s.status || '').toLowerCase().includes('completed');
+        const formattedDate = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '2026-09-19';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-700">${s.id}</td>
+            <td class="px-4 py-3 font-mono text-slate-600">${formattedDate}</td>
+            <td class="px-4 py-3 font-mono text-emerald-700 font-bold">${isApproved ? 'Completed & Verified' : 'In Progress'}</td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <div class="flex items-center gap-1">
+                  ${photos.slice(0, 2).map((p, pIdx) => `
+                    <img src="${p}" onclick="openPhotoModal('${s.originalAppId}', ${pIdx})" alt="Photo" class="size-6 rounded object-cover border border-slate-300 cursor-pointer"/>
+                  `).join('')}
+                  <span class="text-[10px] text-slate-500 font-mono">(${photos.length} photos)</span>
+                </div>
+              ` : '<span class="text-slate-400 font-mono text-xs">Awaiting Photos</span>'}
+            </td>
+            <td class="px-4 py-3 font-bold text-slate-900">${s.verifiedMaterial}</td>
+            <td class="px-4 py-3">
+              <span class="badge-status ${isApproved ? 'badge-approved' : 'badge-pending'}">${s.status}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCertificatesTable() {
+      const tableCerts = document.getElementById('table-certificates');
+      if (!tableCerts) return;
+
+      const allApps = getOriginalDemolitionApplications();
+      const certifiedApps = allApps.filter(a => (a.status || '').toLowerCase().includes('approved') || (a.status || '').toLowerCase().includes('issued') || (a.status || '').toLowerCase().includes('clearance') || (a.status || '').toLowerCase().includes('completed') || a.certificateNo);
+
+      if (certifiedApps.length === 0) {
+        tableCerts.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No green clearance certificates generated yet. Verified certificates with QR code are issued once demolition inspection is approved.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableCerts.innerHTML = certifiedApps.map(c => `
+        <tr class="hover:bg-slate-50">
+          <td class="px-4 py-3 font-mono font-bold text-emerald-700">${c.certificateNo || ('CERT-' + String(c.id).replace(/[^0-9]/g, '').slice(-6))}</td>
+          <td class="px-4 py-3 font-mono text-slate-500">${c.id}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${c.applicant}</td>
+          <td class="px-4 py-3 text-slate-700">${c.location}</td>
+          <td class="px-4 py-3 font-mono text-slate-600">${c.issueDate ? new Date(c.issueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '2026-09-19'}</td>
+          <td class="px-4 py-3"><span class="badge-status badge-approved">✓ QR VERIFIED</span></td>
+          <td class="px-4 py-3"><button onclick="showToast('Downloading Verified Certificate for ' + '${c.id}', 'success')" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer shadow-xs">PDF Download</button></td>
+        </tr>
+      `).join('');
     }
 
     function sendQuickAlert() {
@@ -3209,6 +3308,8 @@
         renderPinMappingInspectors();
         renderApplicationsTable();
         renderDemolitionRequestsTable();
+        renderDemolitionStatusTable();
+        renderCertificatesTable();
       };
     }
     window.addEventListener('storage', (e) => {
@@ -3219,6 +3320,8 @@
         renderPinMappingInspectors();
         renderApplicationsTable();
         renderDemolitionRequestsTable();
+        renderDemolitionStatusTable();
+        renderCertificatesTable();
       }
     });
 

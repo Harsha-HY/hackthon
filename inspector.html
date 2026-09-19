@@ -544,13 +544,25 @@
         }
       } catch(e) {}
 
+      let fetched = [];
       try {
         const res = await fetch('/api/applications');
-        if (res.ok) applicationsList = await res.json();
+        if (res.ok) fetched = await res.json();
       } catch(e) {}
-      if (!applicationsList || applicationsList.length === 0) {
-        applicationsList = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-      }
+      const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const combined = [...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : [])];
+      const uniqueMap = new Map();
+      combined.forEach(a => {
+        if (!a) return;
+        const id = String(a.id || a.requestId || '').trim();
+        if (!id) return;
+        if (!uniqueMap.has(id)) {
+          uniqueMap.set(id, a);
+        } else {
+          uniqueMap.set(id, { ...uniqueMap.get(id), ...a });
+        }
+      });
+      applicationsList = Array.from(uniqueMap.values());
 
       renderAllPanels();
     }

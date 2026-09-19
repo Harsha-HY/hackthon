@@ -838,13 +838,25 @@
         registeredUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       }
 
+      let fetched = [];
       try {
         const res = await fetch('/api/applications');
-        if (res.ok) applicationsList = await res.json();
+        if (res.ok) fetched = await res.json();
       } catch(e) {}
-      if (!applicationsList || applicationsList.length === 0) {
-        applicationsList = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-      }
+      const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const combined = [...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : [])];
+      const uniqueMap = new Map();
+      combined.forEach(a => {
+        if (!a) return;
+        const id = String(a.id || a.requestId || '').trim();
+        if (!id) return;
+        if (!uniqueMap.has(id)) {
+          uniqueMap.set(id, a);
+        } else {
+          uniqueMap.set(id, { ...uniqueMap.get(id), ...a });
+        }
+      });
+      applicationsList = Array.from(uniqueMap.values());
 
       renderCurrentAuthorityUI();
       renderAllTables();
@@ -1702,7 +1714,7 @@
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id || ('DEM-REQ-' + String(i+501))}</td>
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id || a.requestId || ('REQ-' + (i+1))}</td>
             <td class="px-4 py-3">
               <span class="font-bold text-slate-900 block">${a.propertyId || 'Residential Building Structure'}</span>
               <span class="text-[11px] text-slate-600 block">${a.verifiedTonnage || a.tonnage || 10} MT Rubble · ${a.propertyType || 'Masonry & Concrete'}</span>
