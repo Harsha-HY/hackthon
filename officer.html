@@ -942,7 +942,7 @@
         tag: 'Gram Panchayat Field Hub',
         title: 'Gram Panchayat Authority — Mysuru Rural',
         sub: 'Rural and peripheral village jurisdictions under Mysuru Taluk Panchayat',
-        organization: 'Bogadi Gram Panchayat',
+        organization: 'Gram Panchayat (Bogadi Rural)',
         headName: 'Gram Panchayat PDO',
         designation: 'Panchayat Development Officer (PDO)',
         empId: 'GP-PDO-201',
@@ -962,7 +962,7 @@
         tag: 'Town Panchayat Command Desk',
         title: 'Town Panchayat Authority — Mysuru Sub-Urban',
         sub: 'Sub-urban municipal bodies & Town Panchayat development areas',
-        organization: 'Hootagalli Town Municipal Council (TMC)',
+        organization: 'Town Panchayat (Hootagalli Town)',
         headName: 'Town Panchayat Chief Officer',
         designation: 'Chief Officer (Group-B Gazetted)',
         empId: 'TP-CO-301',
@@ -3343,14 +3343,14 @@
           inspectorEmail: 'inspector.mcc@gmail.com'
         },
         gp: {
-          org: 'Bogadi Gram Panchayat',
+          org: 'Gram Panchayat (Bogadi Rural)',
           head: 'K. S. Manjunath (PDO)',
           title: 'Panchayat Development Officer',
           inspector: 'Seervi',
           inspectorEmail: 'q@gmail.com'
         },
         tp: {
-          org: 'Hootagalli Town Panchayat',
+          org: 'Town Panchayat (Hootagalli Town)',
           head: 'S. Ramesh (Chief Officer)',
           title: 'Chief Officer',
           inspector: 'M. Anand',
@@ -3393,7 +3393,7 @@
       document.getElementById('edit-cert-material').value = app.verifiedMaterial || app.material || 'Demolition Rubble & Masonry';
       document.getElementById('edit-cert-inspector').value = app.assignedInspectorName || (deptKey === 'gp' ? 'Seervi' : (deptKey === 'tp' ? 'M. Anand' : 'Rajesh Kumar'));
       document.getElementById('edit-cert-inspector-email').value = app.assignedInspectorEmail || (deptKey === 'gp' ? 'q@gmail.com' : (deptKey === 'tp' ? 'anand.tp@gmail.com' : 'inspector.mcc@gmail.com'));
-      document.getElementById('edit-cert-authority').value = app.authority || app.organization || (deptKey === 'gp' ? 'Bogadi Gram Panchayat' : (deptKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+      document.getElementById('edit-cert-authority').value = app.authority || app.organization || (deptKey === 'gp' ? 'Gram Panchayat (Bogadi Rural)' : (deptKey === 'tp' ? 'Town Panchayat (Hootagalli Town)' : 'Mysuru City Corporation (MCC)'));
       document.getElementById('edit-cert-head').value = app.headName || (deptKey === 'gp' ? 'K. S. Manjunath (PDO)' : (deptKey === 'tp' ? 'S. Ramesh (Chief Officer)' : 'Dr. N. Chandrashekar, IAS'));
       document.getElementById('edit-cert-head-title').value = app.headTitle || (deptKey === 'gp' ? 'Panchayat Development Officer' : (deptKey === 'tp' ? 'Chief Officer' : 'MCC Commissioner'));
       document.getElementById('edit-cert-date').value = app.issueDate ? String(app.issueDate).split('T')[0] : new Date().toISOString().split('T')[0];
@@ -3560,7 +3560,7 @@
           <span class="block text-[11px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
           <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
           <h2 class="text-base sm:text-lg font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
-            Bogadi Gram Panchayat (Rural)
+            Gram Panchayat (Bogadi Rural)
           </h2>
           <div class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs uppercase tracking-wider border border-emerald-300 mt-1">
             Official C&D Waste Clearance No-Objection Certificate (NOC)
@@ -3637,7 +3637,7 @@
               <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Approved By Head / Officer</span>
               <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">K. S. Manjunath (PDO)</span>
               <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">Panchayat Development Officer</span>
-              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Bogadi Gram Panchayat</span>
+              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Gram Panchayat (Bogadi Rural)</span>
             </div>
           </div>
         </div>
@@ -3739,8 +3739,8 @@
               <label class="block font-semibold text-slate-700 text-[10px] mb-1">🏛️ Quick Select Panchayat Authority</label>
               <select id="edit-cert-dept-select" onchange="handleCertDeptSelect(this.value)" class="w-full px-3 py-2 rounded-xl bg-white border border-blue-300 font-bold text-blue-950 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 <option value="mcc">🏛️ Mysuru City Corporation (MCC)</option>
-                <option value="gp">🏡 Bogadi Gram Panchayat (Rural)</option>
-                <option value="tp">🏭 Hootagalli Town Panchayat (CMC)</option>
+                <option value="gp">🏡 Gram Panchayat (Bogadi Rural)</option>
+                <option value="tp">🏭 Town Panchayat (Hootagalli Town)</option>
               </select>
             </div>
             <div>

@@ -436,7 +436,7 @@
               <span id="dept-badge-gp" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">Rural Desk</span>
             </div>
             <h4 class="font-bold text-slate-900 text-sm">🏡 Gram Panchayat — Head/Admin</h4>
-            <p class="text-xs text-slate-600 font-medium">Bogadi Gram Panchayat</p>
+            <p class="text-xs text-slate-600 font-medium">Gram Panchayat (Bogadi Rural)</p>
             <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
               <span>4 GP Wards / Villages</span>
               <span class="text-amber-700 font-bold">PIN: 570026+</span>
@@ -447,10 +447,10 @@
           <div onclick="selectDepartment('tp')" id="dept-card-tp" class="dept-card p-5 rounded-3xl border border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50 cursor-pointer transition-all shadow-xs">
             <div class="flex items-center justify-between mb-3">
               <span class="size-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">🏭</span>
-              <span id="dept-badge-tp" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">Suburban Desk</span>
+              <span id="dept-badge-tp" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">Town Desk</span>
             </div>
             <h4 class="font-bold text-slate-900 text-sm">Town Panchayat — Head/Admin</h4>
-            <p class="text-xs text-slate-600 font-medium">Hootagalli Town Panchayat</p>
+            <p class="text-xs text-slate-600 font-medium">Town Panchayat (Hootagalli Town)</p>
             <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
               <span>8 TP Wards / Industrial</span>
               <span class="text-blue-700 font-bold">PIN: 570018+</span>
@@ -725,10 +725,10 @@
                 ⭐ All Jurisdictions
               </button>
               <button onclick="filterCertificatesByDept('gp')" id="btn-certfilter-gp" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏡 Bogadi GP
+                🏡 Gram Panchayat
               </button>
               <button onclick="filterCertificatesByDept('tp')" id="btn-certfilter-tp" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏭 Hootagalli TP
+                🏭 Town Panchayat
               </button>
               <button onclick="filterCertificatesByDept('mcc')" id="btn-certfilter-mcc" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
                 🏛️ MCC Urban
@@ -2976,7 +2976,7 @@
         icon: '🏡',
         rolePill: 'Role: Panchayat Admin',
         badgeColor: 'bg-amber-100 text-amber-800',
-        organization: 'Bogadi Gram Panchayat',
+        organization: 'Gram Panchayat (Bogadi Rural)',
         gpId: 'GP-KA-MYS-042',
         headName: 'Gram Panchayat PDO',
         designation: 'Panchayat Development Officer (PDO)',
@@ -3000,7 +3000,7 @@
         icon: '🏭',
         rolePill: 'Role: Town Panchayat Admin',
         badgeColor: 'bg-blue-100 text-blue-800',
-        organization: 'Hootagalli Town Panchayat (CMC)',
+        organization: 'Town Panchayat (Hootagalli Town)',
         tpId: 'TP-KA-MYS-018',
         headName: 'Town Panchayat Chief Officer',
         designation: 'Chief Officer / Zonal Superintendent',
@@ -3815,8 +3815,8 @@
         authTitle = 'Gram Panchayat Panel — Entities';
         authBadge = '🏡 Gram Panchayat Rural Panel';
         badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
-        scopeSub = 'Official registry of entities under Bogadi Gram Panchayat rural jurisdiction. Click any entity to access its live data table.';
-        authorityName = dGp.organization || 'Bogadi Gram Panchayat';
+        scopeSub = 'Official registry of entities under Gram Panchayat (Bogadi Rural) jurisdiction. Click any entity to access its live data table.';
+        authorityName = dGp.organization || 'Gram Panchayat (Bogadi Rural)';
         wardsText = '4 GP Wards (Wards 1-4)';
         areasText = 'Bogadi Village, Maratikyathanahalli, Belavadi Rural, Rammanahalli';
         pinsText = dGp.pinCodes || '570026, 571130, 570028';
@@ -3826,8 +3826,8 @@
         authTitle = 'Town Panchayat Panel — Entities';
         authBadge = '🏭 Town Panchayat Suburban Panel';
         badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
-        scopeSub = 'Official registry of entities under Hootagalli Town Panchayat suburban jurisdiction. Click any entity to access its live data table.';
-        authorityName = dTp.organization || 'Hootagalli Town Panchayat (CMC)';
+        scopeSub = 'Official registry of entities under Town Panchayat (Hootagalli) jurisdiction. Click any entity to access its live data table.';
+        authorityName = dTp.organization || 'Town Panchayat (Hootagalli Town)';
         wardsText = '8 TP Wards (Wards 1-8)';
         areasText = 'Hootagalli Town, Belagola KIADB, Koorgalli Industrial Sectors';
         pinsText = dTp.pinCodes || '570018, 571607, 570016';
@@ -4050,11 +4050,11 @@
           if (roleLower.includes('panchayat') || userEmail.includes('gp')) {
             currentAuthorityScope = 'gp';
             if (brandName) brandName.innerText = 'Gram Panchayat Portal';
-            if (brandSub) brandSub.innerText = 'Bogadi Rural Desk';
+            if (brandSub) brandSub.innerText = 'Gram Panchayat Rural Desk';
             if (brandIcon) brandIcon.innerText = '🏡';
             if (adminAvatar) adminAvatar.innerText = '🏡';
             if (topbarTitle) topbarTitle.innerText = '🏡 Gram Panchayat Officer Dashboard';
-            if (topbarSub) topbarSub.innerText = 'Bogadi Gram Panchayat · Rural Wards & Debris Operations Console';
+            if (topbarSub) topbarSub.innerText = 'Gram Panchayat (Bogadi Rural) · Operations Console';
             if (scopeTabs) {
               scopeTabs.innerHTML = `
                 <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
@@ -4070,8 +4070,8 @@
                       🏡
                     </div>
                     <div>
-                      <h4 class="font-extrabold text-sm text-amber-900">Bogadi Gram Panchayat Rural Solid & C&D Waste Management Portal</h4>
-                      <p class="text-xs text-amber-700">Logged in as <strong>${userName}</strong> (${userRole}) · Assigned Jurisdiction: <strong>Bogadi & Rural Wards (PIN 570026, 571130)</strong></p>
+                      <h4 class="font-extrabold text-sm text-amber-900">Gram Panchayat Rural Solid & C&D Waste Management Portal</h4>
+                      <p class="text-xs text-amber-700">Logged in as <strong>${userName}</strong> (${userRole}) · Assigned Jurisdiction: <strong>Gram Panchayat Rural Wards (PIN 570026, 571130)</strong></p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
@@ -4085,11 +4085,11 @@
           } else if (roleLower.includes('town') || userEmail.includes('tp')) {
             currentAuthorityScope = 'tp';
             if (brandName) brandName.innerText = 'Town Panchayat Portal';
-            if (brandSub) brandSub.innerText = 'Hootagalli Suburban Hub';
+            if (brandSub) brandSub.innerText = 'Town Panchayat Town Desk';
             if (brandIcon) brandIcon.innerText = '🏭';
             if (adminAvatar) adminAvatar.innerText = '🏭';
             if (topbarTitle) topbarTitle.innerText = '🏭 Town Panchayat Officer Dashboard';
-            if (topbarSub) topbarSub.innerText = 'Hootagalli Town Panchayat · Suburban Wards & Debris Operations Console';
+            if (topbarSub) topbarSub.innerText = 'Town Panchayat (Hootagalli Town) · Operations Console';
             if (scopeTabs) {
               scopeTabs.innerHTML = `
                 <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-100 text-blue-900 border border-blue-300 flex items-center gap-1.5">
@@ -4105,13 +4105,13 @@
                       🏭
                     </div>
                     <div>
-                      <h4 class="font-extrabold text-sm text-blue-900">Hootagalli Town Panchayat Suburban C&D Waste Regulatory Desk</h4>
-                      <p class="text-xs text-blue-700">Logged in as <strong>${userName}</strong> (${userRole}) · Assigned Jurisdiction: <strong>Hootagalli CMC & Industrial Hubs (PIN 570018, 571607)</strong></p>
+                      <h4 class="font-extrabold text-sm text-blue-900">Town Panchayat C&D Waste Regulatory Desk</h4>
+                      <p class="text-xs text-blue-700">Logged in as <strong>${userName}</strong> (${userRole}) · Assigned Jurisdiction: <strong>Town Panchayat & Industrial Hubs (PIN 570018, 571607)</strong></p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-200/80 text-blue-900 border border-blue-300">
-                      🏭 Suburban Desk Active
+                      🏭 Town Desk Active
                     </span>
                   </div>
                 </div>
@@ -4271,7 +4271,7 @@
       
       const dConfig = (departmentsState && departmentsState[deptKey]) || DEFAULT_DEPARTMENTS_CONFIG[deptKey] || DEFAULT_DEPARTMENTS_CONFIG.mcc;
 
-      const authorityName = app.authority || app.organization || dConfig.organization || (deptKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (deptKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+      const authorityName = app.authority || app.organization || dConfig.organization || (deptKey === 'gp' ? 'Gram Panchayat (Bogadi Rural)' : (deptKey === 'tp' ? 'Town Panchayat (Hootagalli Town)' : 'Mysuru City Corporation (MCC)'));
       const authPrefix = deptKey.toUpperCase();
       const refNo = app.certificateNo || `NOC/${authPrefix}/${cleanId}`;
       const issueDateStr = app.issueDate ? new Date(app.issueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : (app.auditedAt ? new Date(app.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }));
@@ -4356,14 +4356,14 @@
 
       if (deptKey === 'gp') {
         document.getElementById('edit-cert-ref-no').value = `NOC/GP/${cleanId}`;
-        document.getElementById('edit-cert-authority').value = dConfig.organization || 'Bogadi Gram Panchayat';
+        document.getElementById('edit-cert-authority').value = dConfig.organization || 'Gram Panchayat (Bogadi Rural)';
         document.getElementById('edit-cert-inspector').value = 'Seervi';
         document.getElementById('edit-cert-inspector-email').value = 'q@gmail.com';
         document.getElementById('edit-cert-head').value = dConfig.headName || 'K. S. Manjunath (PDO)';
         document.getElementById('edit-cert-head-title').value = dConfig.designation || 'Panchayat Development Officer (PDO)';
       } else if (deptKey === 'tp') {
         document.getElementById('edit-cert-ref-no').value = `NOC/TP/${cleanId}`;
-        document.getElementById('edit-cert-authority').value = dConfig.organization || 'Hootagalli Town Panchayat (CMC)';
+        document.getElementById('edit-cert-authority').value = dConfig.organization || 'Town Panchayat (Hootagalli Town)';
         document.getElementById('edit-cert-inspector').value = 'M. Anand';
         document.getElementById('edit-cert-inspector-email').value = 'anand.tp@gmail.com';
         document.getElementById('edit-cert-head').value = dConfig.headName || 'S. Ramesh (Chief Officer)';
@@ -4399,7 +4399,7 @@
       document.getElementById('edit-cert-material').value = app.verifiedMaterial || app.material || 'Demolition Rubble & Masonry';
       document.getElementById('edit-cert-inspector').value = app.assignedInspectorName || (deptKey === 'gp' ? 'Seervi' : (deptKey === 'tp' ? 'M. Anand' : 'Rajesh Kumar'));
       document.getElementById('edit-cert-inspector-email').value = app.assignedInspectorEmail || (deptKey === 'gp' ? 'q@gmail.com' : (deptKey === 'tp' ? 'anand.tp@gmail.com' : 'inspector.mcc@gmail.com'));
-      document.getElementById('edit-cert-authority').value = app.authority || dConfig.organization || (deptKey === 'gp' ? 'Bogadi Gram Panchayat' : (deptKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+      document.getElementById('edit-cert-authority').value = app.authority || dConfig.organization || (deptKey === 'gp' ? 'Gram Panchayat (Bogadi Rural)' : (deptKey === 'tp' ? 'Town Panchayat (Hootagalli Town)' : 'Mysuru City Corporation (MCC)'));
       document.getElementById('edit-cert-head').value = app.headName || dConfig.headName || (deptKey === 'gp' ? 'K. S. Manjunath (PDO)' : (deptKey === 'tp' ? 'S. Ramesh (Chief Officer)' : 'Dr. N. Chandrashekar, IAS (MCC Commissioner)'));
       document.getElementById('edit-cert-head-title').value = app.headTitle || dConfig.designation || 'Head of Department / Commissioner';
       document.getElementById('edit-cert-date').value = app.issueDate ? String(app.issueDate).split('T')[0] : new Date().toISOString().split('T')[0];
@@ -4535,7 +4535,7 @@
       },
       gp: {
         key: 'gp',
-        name: 'Bogadi Gram Panchayat',
+        name: 'Gram Panchayat (Bogadi Rural)',
         tag: 'Rural C&D Waste Administration',
         icon: '🏛️',
         color: 'from-emerald-900 to-teal-950',
@@ -4548,7 +4548,7 @@
       },
       tp: {
         key: 'tp',
-        name: 'Hootagalli Town Panchayat',
+        name: 'Town Panchayat (Hootagalli Town)',
         tag: 'Peri-Urban & Industrial Administration',
         icon: '🏢',
         color: 'from-teal-900 to-cyan-950',
@@ -4767,7 +4767,7 @@
                 <div>
                   <h4 className="font-extrabold text-xs sm:text-sm leading-tight">Gram Panchayat</h4>
                   <p className={`text-[10px] font-medium mt-0.5 ${selectedPanchayat === 'gp' ? 'text-emerald-200' : 'text-slate-500'}`}>
-                    Bogadi Rural · PIN 570026
+                    Gram Panchayat (Bogadi) · PIN 570026
                   </p>
                 </div>
               </button>
@@ -4791,7 +4791,7 @@
                 <div>
                   <h4 className="font-extrabold text-xs sm:text-sm leading-tight">Town Panchayat</h4>
                   <p className={`text-[10px] font-medium mt-0.5 ${selectedPanchayat === 'tp' ? 'text-teal-200' : 'text-slate-500'}`}>
-                    Hootagalli · PIN 570018
+                    Town Panchayat (Hootagalli) · PIN 570018
                   </p>
                 </div>
               </button>
@@ -5427,8 +5427,8 @@
               <label class="block font-semibold text-slate-700 text-[10px] mb-1">🏛️ Quick Select Panchayat Authority</label>
               <select id="edit-cert-dept-select" onchange="handleCertDeptSelect(this.value)" class="w-full px-3 py-2 rounded-xl bg-white border border-blue-300 font-bold text-blue-950 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 <option value="mcc">🏛️ Mysuru City Corporation (MCC)</option>
-                <option value="gp">🏡 Bogadi Gram Panchayat (Rural)</option>
-                <option value="tp">🏭 Hootagalli Town Panchayat (CMC)</option>
+                <option value="gp">🏡 Gram Panchayat (Bogadi Rural)</option>
+                <option value="tp">🏭 Town Panchayat (Hootagalli Town)</option>
               </select>
             </div>
             <div>
