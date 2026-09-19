@@ -940,24 +940,36 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Strict Authority Isolation: Only show applications belonging to this officer's authority
+    // Strict Authority Isolation: Show applications belonging to this officer's authority
     function getAuthorityApplications() {
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570024'];
 
       return applicationsList.filter(app => {
         const appPin = String(app.pincode || app.pin || '').trim();
         const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
-        const authStr = (app.authority || '').toLowerCase();
+        const authStr = (app.authority || '').toLowerCase().trim();
+        const inspEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
 
-        // 1. If explicit authorityKey matches
+        // 1. Explicit authorityKey match
         if (appAuthKey) {
-          return appAuthKey === currentAuthorityKey.toLowerCase();
+          if (appAuthKey === currentAuthorityKey.toLowerCase()) return true;
         }
-        
-        // 2. If authority string matches
-        if (currentAuthorityKey === 'gp' && (authStr.includes('panchayat') || authStr.includes('rural') || authStr.includes('bogadi') || GP_PINS.some(p => appPin.startsWith(p)))) return true;
-        if (currentAuthorityKey === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli') || TP_PINS.some(p => appPin.startsWith(p)))) return true;
+
+        // 2. Assigned inspector belonging to this authority
+        if (currentAuthorityKey === 'gp' && (inspEmail.includes('gp') || inspEmail === 'q@gmail.com' || inspEmail.includes('seervi') || inspEmail.includes('nanjappa'))) return true;
+        if (currentAuthorityKey === 'tp' && (inspEmail.includes('tp') || inspEmail.includes('anand'))) return true;
+        if (currentAuthorityKey === 'mcc' && (inspEmail.includes('mcc') || inspEmail.includes('rajesh'))) return true;
+
+        // 3. PIN code match
+        if (currentAuthorityKey === 'gp' && GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
+        if (currentAuthorityKey === 'tp' && TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
+        if (currentAuthorityKey === 'mcc' && MCC_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
+
+        // 4. Authority text description match
+        if (currentAuthorityKey === 'gp' && (authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('rural') || authStr.includes('bogadi'))) return true;
+        if (currentAuthorityKey === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli'))) return true;
         if (currentAuthorityKey === 'mcc' && (authStr.includes('mcc') || authStr.includes('mysuru urban') || authStr.includes('city') || (!GP_PINS.some(p => appPin.startsWith(p)) && !TP_PINS.some(p => appPin.startsWith(p))))) return true;
 
         return false;
@@ -1083,8 +1095,36 @@
     function renderCitizensTable() {
       const tbody = document.getElementById('table-citizens');
       const badge = document.getElementById('citizens-count-badge');
-      const citizens = registeredUsers.filter(u => (u.role || '').toLowerCase() === 'citizen' || (u.authority || '').toLowerCase() === 'customer');
+      const authApps = getAuthorityApplications();
+      
+      const citizenMap = new Map();
+      
+      registeredUsers.filter(u => (u.role || '').toLowerCase() === 'citizen' || (u.authority || '').toLowerCase() === 'customer').forEach(c => {
+        citizenMap.set((c.email || c.name || '').toLowerCase(), {
+          name: c.name || 'Citizen User',
+          email: c.email || 'citizen@mysuru.gov.in',
+          phone: c.phone || '+91 98450 11005',
+          createdAt: c.createdAt || new Date().toISOString(),
+          permits: 0
+        });
+      });
 
+      authApps.forEach(a => {
+        const key = (a.applicantEmail || a.applicantName || 'applicant').toLowerCase();
+        if (!citizenMap.has(key)) {
+          citizenMap.set(key, {
+            name: a.applicantName || 'Citizen Applicant',
+            email: a.applicantEmail || `${(a.applicantName || 'user').toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+            phone: a.phone || '+91 98765 43210',
+            createdAt: a.createdAt || a.date || new Date().toISOString(),
+            permits: 1
+          });
+        } else {
+          citizenMap.get(key).permits += 1;
+        }
+      });
+
+      const citizens = Array.from(citizenMap.values());
       badge.innerText = citizens.length + ' Registered Citizens';
 
       if (citizens.length === 0) {
@@ -1103,10 +1143,10 @@
           <td class="px-4 py-3 font-mono font-bold text-slate-500">CITZ-${String(i+1).padStart(3, '0')}</td>
           <td class="px-4 py-3 font-bold text-slate-900">${c.name}</td>
           <td class="px-4 py-3 font-mono text-slate-600">${c.email}</td>
-          <td class="px-4 py-3 font-mono text-slate-700">${c.phone || '+91 98450 XXXXX'}</td>
+          <td class="px-4 py-3 font-mono text-slate-700">${c.phone}</td>
           <td class="px-4 py-3 text-slate-500 font-mono text-[11px]">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Active Member'}</td>
           <td class="px-4 py-3 font-mono font-bold text-emerald-700">
-            ${applicationsList.filter(a => (a.applicantName || '').toLowerCase() === (c.name || '').toLowerCase()).length} Permit(s)
+            ${c.permits || 1} Permit(s)
           </td>
         </tr>
       `).join('');
@@ -1129,13 +1169,13 @@
 
       tbody.innerHTML = apps.map((a, i) => `
         <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">PID-MYS-${String(i+101)}</td>
+          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.propertyId || ('PID-MYS-' + String(i+101))}</td>
           <td class="px-4 py-3 font-semibold text-slate-900">${a.address || 'Mysuru Site Premise'}</td>
           <td class="px-4 py-3 text-slate-600">${a.propertyType || 'Residential Structure'}</td>
-          <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.tonnage || a.wasteVolume || '15'} MT Estimated</td>
+          <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.verifiedTonnage || a.tonnage || a.wasteVolume || '15'} MT Estimated</td>
           <td class="px-4 py-3 font-bold text-slate-800">${a.applicantName || 'Applicant'}</td>
           <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
               ${a.status || 'Under Review'}
             </span>
           </td>
@@ -1145,7 +1185,10 @@
 
     function viewPhoto(appId) {
       const app = applicationsList.find(a => a.id === appId);
-      if (!app || !app.photo) return;
+      if (!app) return;
+      const photos = (app.photos && Array.isArray(app.photos) && app.photos.length > 0) ? app.photos : (app.photo ? [app.photo] : []);
+      if (photos.length === 0) return;
+
       const modalContainer = document.getElementById('modal-container');
       const backdrop = document.getElementById('modal-backdrop');
 
@@ -1153,15 +1196,26 @@
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-              <span>📸</span> Customer Uploaded Site Evidence
+              <span>📸</span> Customer Uploaded Site Evidence (${photos.length} Photo${photos.length > 1 ? 's' : ''})
             </h3>
             <p class="text-xs text-slate-500 font-mono">App ID: ${app.id} · PIN: ${app.pincode || app.pin || ''} · ${app.applicantName || 'Citizen'}</p>
           </div>
           <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold cursor-pointer">&times;</button>
         </div>
         <div class="space-y-3">
-          <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-96 flex items-center justify-center bg-slate-950">
-            <img src="${app.photo}" alt="Site Photo" class="max-h-96 w-auto object-contain"/>
+          <div class="space-y-2">
+            <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-80 flex items-center justify-center bg-slate-950">
+              <img id="officer-active-photo-img" src="${photos[0]}" alt="Site Photo" class="max-h-80 w-auto object-contain"/>
+            </div>
+            ${photos.length > 1 ? `
+              <div class="flex items-center gap-2 overflow-x-auto py-1">
+                ${photos.map((p, idx) => `
+                  <button type="button" onclick="document.getElementById('officer-active-photo-img').src='${p}'" class="size-14 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-emerald-500 shrink-0 cursor-pointer">
+                    <img src="${p}" class="size-full object-cover"/>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
           <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1 text-slate-700">
             <p><span class="font-bold">Premise Address:</span> ${app.address || 'Mysuru Site'}</p>
@@ -1192,12 +1246,25 @@
       }
 
       tbody.innerHTML = apps.map(a => {
-        const photoHtml = a.photo ? `
-          <button onclick="viewPhoto('${a.id}')" class="group relative block size-12 rounded-xl overflow-hidden border border-emerald-300 shadow-xs hover:ring-2 hover:ring-emerald-500 transition cursor-pointer">
-            <img src="${a.photo}" alt="Site Photo" class="w-full h-full object-cover group-hover:scale-110 transition duration-300"/>
-            <span class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition">🔍</span>
-          </button>
-        ` : `<span class="text-[11px] text-slate-400 font-mono italic">No photo</span>`;
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        let photoHtml = `<span class="text-[11px] text-slate-400 font-mono italic">No photo</span>`;
+
+        if (photos.length > 0) {
+          photoHtml = `
+            <div class="flex items-center gap-1.5">
+              <div class="flex -space-x-2 overflow-hidden py-1">
+                ${photos.slice(0, 3).map((p, idx) => `
+                  <img src="${p}" class="inline-block size-8 rounded-lg ring-2 ring-white object-cover cursor-pointer hover:scale-110 transition shadow-2xs" onclick="viewPhoto('${a.id}')" title="Photo ${idx+1}"/>
+                `).join('')}
+              </div>
+              <span class="font-mono text-[11px] font-bold text-slate-700 ml-1">
+                ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+              </span>
+            </div>
+          `;
+        }
+
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
@@ -1219,15 +1286,20 @@
             <td class="px-4 py-3">
               ${photoHtml}
             </td>
-            <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.tonnage || 10} MT</td>
+            <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.verifiedTonnage || a.tonnage || 10} MT</td>
             <td class="px-4 py-3">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (a.status === 'Cancelled' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200')}">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (a.status === 'Cancelled' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200')}">
                 ${a.status || 'Pending Review'}
               </span>
             </td>
             <td class="px-4 py-3">
-              ${a.status === 'Approved' ? `
-                <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">✓ Approved</span>
+              ${isApproved ? `
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">✓ Approved</span>
+                  <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px] transition cursor-pointer flex items-center gap-1 shadow-2xs" title="View Official NOC Certificate">
+                    <span>📜</span> <span>NOC</span>
+                  </button>
+                </div>
               ` : (a.status === 'Cancelled' ? `
                 <span class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-bold text-[11px]">✗ Cancelled</span>
               ` : `
@@ -1261,26 +1333,29 @@
         return;
       }
 
-      tbody.innerHTML = apps.map((a, i) => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-semibold text-slate-900 flex items-center gap-2">
-            <span>${a.photo ? '📸' : '📄'}</span> ${a.photo ? 'Site Verification Photo Evidence' : 'Khatta Certificate & Site Blueprint'} #${i+1}
-          </td>
-          <td class="px-4 py-3 font-mono text-slate-600">${a.photo ? 'Image / JPG' : 'PDF Blueprint'}</td>
-          <td class="px-4 py-3 font-mono font-bold text-emerald-700">${a.id}</td>
-          <td class="px-4 py-3 font-semibold text-slate-800">${a.applicantName || 'Applicant'}</td>
-          <td class="px-4 py-3 font-mono text-[11px] text-slate-500">${a.date || 'Today'}</td>
-          <td class="px-4 py-3">
-            ${a.photo ? `
-              <button onclick="viewPhoto('${a.id}')" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono hover:bg-emerald-200">
-                🔍 View Evidence
-              </button>
-            ` : `
-              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">✓ Validated</span>
-            `}
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = apps.map((a, i) => {
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-semibold text-slate-900 flex items-center gap-2">
+              <span>${photos.length > 0 ? '📸' : '📄'}</span> ${photos.length > 0 ? `Site Verification Photo Evidence (${photos.length} files)` : 'Khatta Certificate & Site Blueprint'} #${i+1}
+            </td>
+            <td class="px-4 py-3 font-mono text-slate-600">${photos.length > 0 ? 'Image / JPG' : 'PDF Blueprint'}</td>
+            <td class="px-4 py-3 font-mono font-bold text-emerald-700">${a.id}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">${a.applicantName || 'Applicant'}</td>
+            <td class="px-4 py-3 font-mono text-[11px] text-slate-500">${a.date || 'Today'}</td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <button onclick="viewPhoto('${a.id}')" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono hover:bg-emerald-200">
+                  🔍 View Evidence (${photos.length})
+                </button>
+              ` : `
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">✓ Validated</span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function openCreateInspectorModal() {
@@ -1516,27 +1591,42 @@
       if (apps.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No field inspections scheduled yet.
+            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No field inspections scheduled yet. Fresh applications will list inspection tasks here.
             </td>
           </tr>
         `;
         return;
       }
 
-      tbody.innerHTML = apps.map((a, i) => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">INSP-${String(i+201)}</td>
-          <td class="px-4 py-3 font-mono text-slate-700 font-semibold">${a.id}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">${a.assignedInspectorName || a.auditedBy || 'Field Officer'}</td>
-          <td class="px-4 py-3 font-mono text-slate-600 text-[11px]">${a.inspectionTime ? new Date(a.inspectionTime).toLocaleString() : 'Scheduled'}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} text-[10px] font-bold font-mono">
-              ${a.status || 'Active Audit'}
-            </span>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = apps.map((a, i) => {
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">INSP-${String(i+201)}</td>
+            <td class="px-4 py-3 font-mono text-slate-700 font-semibold">${a.id}</td>
+            <td class="px-4 py-3">
+              <span class="font-semibold text-slate-900 block">${a.assignedInspectorName || a.auditedBy || 'Assigned Inspector'}</span>
+              <span class="text-[10px] font-mono text-slate-500 block">${a.assignedInspectorEmail || ''}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-slate-600 text-[11px]">${a.inspectionTime || a.auditedAt ? new Date(a.auditedAt || a.inspectionTime).toLocaleString() : 'Scheduled On-Site'}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded-full ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} text-[10px] font-bold font-mono">
+                ${a.status || 'Active Audit'}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              ${isApproved ? `
+                <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                  <span>📜 View NOC</span>
+                </button>
+              ` : `
+                <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Review Application &rarr;</button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderDemolitionRequestsTable() {
@@ -1546,7 +1636,7 @@
       if (apps.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
               No pending demolition clearance requests in this authority queue.
             </td>
           </tr>
@@ -1558,12 +1648,18 @@
         <tr class="hover:bg-slate-50/80 transition">
           <td class="px-4 py-3 font-mono font-bold text-emerald-800">DEM-REQ-${String(i+501)}</td>
           <td class="px-4 py-3 font-semibold text-slate-900">${a.propertyType || 'Residential Building (G+2)'}</td>
-          <td class="px-4 py-3 text-slate-700">${a.address || 'Mysuru Premise'}</td>
-          <td class="px-4 py-3 font-mono text-slate-500 text-[11px]">Recent</td>
+          <td class="px-4 py-3 text-slate-700">
+            <span class="block">${a.address || 'Mysuru Premise'}</span>
+            <span class="text-[10px] font-mono text-emerald-700 font-bold">PIN: ${a.pincode || a.pin || '570001'}</span>
+          </td>
+          <td class="px-4 py-3 font-mono text-slate-500 text-[11px]">${a.date || 'Recent'}</td>
           <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
-              Under Structural Audit
+            <span class="px-2 py-0.5 rounded-full ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} text-[10px] font-bold font-mono">
+              ${a.status || 'Under Structural Audit'}
             </span>
+          </td>
+          <td class="px-4 py-3">
+            <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Process &rarr;</button>
           </td>
         </tr>
       `).join('');
@@ -1571,7 +1667,7 @@
 
     function renderDemolitionCasesTable() {
       const tbody = document.getElementById('table-demolition_cases');
-      const apps = getAuthorityApplications().filter(a => a.status === 'Approved');
+      const apps = getAuthorityApplications();
 
       if (apps.length === 0) {
         tbody.innerHTML = `
@@ -1584,46 +1680,62 @@
         return;
       }
 
-      tbody.innerHTML = apps.map((a, i) => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">CASE-${String(i+701)}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">${a.address || 'Mysuru Site'}</td>
-          <td class="px-4 py-3 font-mono text-slate-700">KA-09-EA-4412 (10-Ton Tipper)</td>
-          <td class="px-4 py-3 text-slate-600">Kumbarakoppal Recycling Yard</td>
-          <td class="px-4 py-3">
-            <div class="w-28 bg-slate-200 rounded-full h-2 overflow-hidden">
-              <div class="bg-emerald-500 h-2 rounded-full" style="width: 75%"></div>
-            </div>
-            <span class="text-[10px] font-mono font-bold text-emerald-700 mt-0.5 block">75% Cleared</span>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = apps.map((a, i) => {
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
+        const progress = isApproved ? '100' : '50';
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">CASE-${String(i+701)}</td>
+            <td class="px-4 py-3 font-semibold text-slate-900">${a.address || 'Mysuru Site'}</td>
+            <td class="px-4 py-3 font-mono text-slate-700">KA-09-EA-4412 (10-Ton Tipper)</td>
+            <td class="px-4 py-3 text-slate-600">${currentAuthorityKey === 'gp' ? 'Bogadi Rural Processing Facility' : (currentAuthorityKey === 'tp' ? 'Koorgalli Heavy C&D Yard' : 'Kumbarakoppal Recycling Plant')}</td>
+            <td class="px-4 py-3">
+              <div class="w-28 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width: ${progress}%"></div>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-emerald-700 mt-0.5 block">${progress}% Cleared (${isApproved ? 'Complete' : 'In Progress'})</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderCertificatesTable() {
       const tbody = document.getElementById('table-certificates');
-      const apps = getAuthorityApplications().filter(a => a.status === 'Approved');
+      const apps = getAuthorityApplications().filter(a => a.status === 'Approved' || a.certificateStatus === 'Issued');
 
       if (apps.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No certificates generated yet. Issue certificates upon verified waste recycling.
+            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No certificates generated yet. Issue certificates upon approving clearance requests.
             </td>
           </tr>
         `;
         return;
       }
 
-      tbody.innerHTML = apps.map((a, i) => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">MYS-GREEN-${String(i+1001)}</td>
-          <td class="px-4 py-3 font-bold text-slate-900">${a.applicantName || 'Citizen'}</td>
-          <td class="px-4 py-3 text-slate-700">${a.address || 'Mysuru Site'}</td>
-          <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.tonnage || 12} MT Recycled</td>
-          <td class="px-4 py-3 font-mono text-[11px] text-slate-500">Issued Today</td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = apps.map((a, i) => {
+        const cleanId = (a.id || 'REQ-101').replace(/[^a-zA-Z0-9]/g, '');
+        const authPrefix = (a.authorityKey || currentAuthorityKey || 'MCC').toUpperCase();
+        const certNo = `NOC/${authPrefix}/${cleanId}`;
+        const issueDate = a.auditedAt ? new Date(a.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${certNo}</td>
+            <td class="px-4 py-3 font-bold text-slate-900">${a.applicantName || 'Citizen'}</td>
+            <td class="px-4 py-3 text-slate-700">${a.address || 'Mysuru Site'}</td>
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.verifiedTonnage || a.tonnage || 10} MT Recycled</td>
+            <td class="px-4 py-3 font-mono text-[11px] text-slate-500">${issueDate}</td>
+            <td class="px-4 py-3">
+              <button onclick="openCertificateModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                <span>📜 View Certificate</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderWaterTable() {
@@ -1708,7 +1820,7 @@
       const apps = getAuthorityApplications();
       const totalPermits = apps.length;
       let totalTonnage = 0;
-      apps.forEach(a => { totalTonnage += Number(a.tonnage || 10); });
+      apps.forEach(a => { totalTonnage += Number(a.verifiedTonnage || a.tonnage || 10); });
 
       document.getElementById('rep-total-permits').innerText = totalPermits;
       document.getElementById('rep-debris-hauled').innerText = totalTonnage + ' MT';
@@ -1738,7 +1850,12 @@
     async function approveApplication(appId) {
       const app = applicationsList.find(a => a.id === appId);
       if (app) {
+        const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
         app.status = 'Approved';
+        app.certificateStatus = 'Issued';
+        app.verifiedTonnage = app.verifiedTonnage || app.tonnage || 10;
+        app.auditedBy = dept.headName || 'Authority Officer';
+        app.auditedAt = new Date().toISOString();
         
         try {
           await fetch('/api/applications', {
@@ -1758,7 +1875,7 @@
         }
 
         renderAllTables();
-        showToast('Application #' + appId + ' approved! Permit clearance & Green Certificate generated.', 'success');
+        showToast('Application #' + appId + ' approved! Official NOC Clearance Certificate generated.', 'success');
       }
     }
 
@@ -1793,6 +1910,65 @@
       }
     }
 
+    // Official NOC Certificate View in Officer Console
+    function openCertificateModal(appId) {
+      const app = applicationsList.find(a => a.id === appId);
+      if (!app) return;
+
+      const cleanId = (app.id || 'REQ-101').replace(/[^a-zA-Z0-9]/g, '');
+      const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
+      
+      const authTitle = document.getElementById('cert-authority-title');
+      if (authTitle) authTitle.innerText = app.authority || dept.name;
+
+      const authPrefix = (app.authorityKey || currentAuthorityKey || 'MCC').toUpperCase();
+      const refNo = document.getElementById('cert-ref-no');
+      if (refNo) refNo.innerText = `NOC/${authPrefix}/${cleanId}`;
+
+      const issueDate = document.getElementById('cert-issue-date');
+      if (issueDate) {
+        issueDate.innerText = app.auditedAt ? new Date(app.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      const applicantName = document.getElementById('cert-applicant-name');
+      if (applicantName) applicantName.innerText = app.applicantName || 'Citizen User';
+
+      const applicantPhone = document.getElementById('cert-applicant-phone');
+      if (applicantPhone) applicantPhone.innerText = `Mobile: ${app.phone || '+91 98765 43210'}`;
+
+      const propId = document.getElementById('cert-prop-id');
+      if (propId) propId.innerText = app.propertyId || 'PROP-MYS-' + cleanId.slice(-4);
+
+      const fullAddr = document.getElementById('cert-full-address');
+      if (fullAddr) fullAddr.innerText = `${app.address || 'Mysuru'} · PIN ${app.pincode || app.pin || '570001'}`;
+
+      const tonnage = document.getElementById('cert-verified-tonnage');
+      if (tonnage) tonnage.innerText = `${app.verifiedTonnage || app.tonnage || 10} MT (Metric Tonnes)`;
+
+      const lat = app.lat || 12.2958;
+      const lng = app.lng || 76.6394;
+      const gpsCoords = document.getElementById('cert-gps-coords');
+      if (gpsCoords) gpsCoords.innerText = app.gpsLocation || `${lat}° N, ${lng}° E`;
+
+      // Inspector and Authority Signatures
+      const insName = document.getElementById('cert-inspector-name');
+      if (insName) insName.innerText = `Inspector ${app.assignedInspectorName || (currentAuthorityKey === 'gp' ? 'seervi' : (currentAuthorityKey === 'tp' ? 'M. Anand' : 'Rajesh Kumar'))}`;
+
+      const insEmail = document.getElementById('cert-inspector-email');
+      if (insEmail) insEmail.innerText = app.assignedInspectorEmail || (currentAuthorityKey === 'gp' ? 'q@gmail.com' : (currentAuthorityKey === 'tp' ? 'anand.tp@gmail.com' : 'inspector.mcc@gmail.com'));
+
+      const panchayatSeal = document.getElementById('cert-panchayat-seal');
+      if (panchayatSeal) panchayatSeal.innerText = app.authority || dept.name;
+
+      const modal = document.getElementById('noc-certificate-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeCertificateModal() {
+      const modal = document.getElementById('noc-certificate-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
     function showToast(msg, type = 'success') {
       const container = document.getElementById('toast-container');
       const item = document.createElement('div');
@@ -1815,5 +1991,128 @@
     initOfficerSession();
     loadData();
   </script>
+
+  <!-- ========================================================================= -->
+  <!-- OFFICIAL MUNICIPAL & PANCHAYAT C&D CLEARANCE CERTIFICATE (NOC) MODAL       -->
+  <!-- ========================================================================= -->
+  <div id="noc-certificate-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-emerald-600/30 overflow-hidden my-auto animate-in fade-in zoom-in duration-150">
+      
+      <!-- Certificate Action Header -->
+      <div class="p-4 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg">📜</span>
+          <div>
+            <h3 class="font-bold text-xs sm:text-sm text-white">Official Clearance Certificate (NOC)</h3>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="cert-modal-header-sub">Authorized by Ward Inspector & Panchayat</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1 shadow-xs">
+            <span>🖨️</span> <span>Print / Save PDF</span>
+          </button>
+          <button onclick="closeCertificateModal()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white text-base font-bold flex items-center justify-center transition cursor-pointer">
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Certificate Body -->
+      <div class="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1 bg-[#fcfdfd] text-slate-800 border-8 border-double border-emerald-800/20 m-3 rounded-2xl" id="printable-certificate-content">
+        
+        <!-- Govt Header & Seal -->
+        <div class="text-center space-y-1.5 border-b-2 border-emerald-800/30 pb-4">
+          <div class="inline-flex items-center justify-center size-12 rounded-full bg-emerald-900 text-amber-300 font-bold text-2xl shadow-md">
+            🏛️
+          </div>
+          <span class="block text-[11px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
+          <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
+          <h2 class="text-base sm:text-lg font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
+            Bogadi Gram Panchayat (Rural)
+          </h2>
+          <div class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs uppercase tracking-wider border border-emerald-300 mt-1">
+            Official C&D Waste Clearance No-Objection Certificate (NOC)
+          </div>
+        </div>
+
+        <!-- Reference & Date Strip -->
+        <div class="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-3">
+          <div>
+            <span class="text-slate-400 font-semibold">NOC Ref No:</span>
+            <span class="font-bold text-emerald-800 ml-1" id="cert-ref-no">NOC/GP/2026/934924</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold">Date of Clearance:</span>
+            <span class="font-bold text-slate-800 ml-1" id="cert-issue-date">19 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Clearance Statement & Details Grid -->
+        <div class="space-y-4 text-xs">
+          <p class="leading-relaxed text-slate-700">
+            This is to certify that physical site inspection, GPS verification, and rubble volume measurement have been completed in accordance with the <strong>Construction & Demolition Waste Management Rules</strong>. The applicant is hereby authorized for lawful haulage and disposal at the designated municipal processing facility.
+          </p>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Authorized Citizen / Applicant</span>
+              <span class="font-bold text-slate-900 text-sm block" id="cert-applicant-name">Citizen User</span>
+              <span class="text-slate-600 font-mono text-[11px] block" id="cert-applicant-phone">Mobile: +91 98765 43210</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-8821</span>
+              <span class="text-slate-600 text-[11px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
+              <span class="font-bold text-emerald-800 font-mono text-sm block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
+              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Debris</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
+              <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
+              <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endorsement & Signatures -->
+        <div class="pt-4 border-t-2 border-emerald-800/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <!-- Digital QR Seal -->
+          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="size-12 rounded-lg bg-emerald-900 text-white flex flex-col items-center justify-center font-mono font-bold text-[9px] leading-tight text-center">
+              <span>QR</span>
+              <span class="text-[7px] text-emerald-300">VALID</span>
+            </div>
+            <div class="text-[10px] leading-tight">
+              <span class="font-bold text-emerald-950 block">Digital Verification Seal</span>
+              <span class="text-slate-500 font-mono block">Status: Official & Compliant</span>
+            </div>
+          </div>
+
+          <!-- Inspector & Authority Signature Block -->
+          <div class="text-right space-y-0.5">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Authorized By Ward Inspector</span>
+            <span class="font-bold text-slate-900 text-sm block" id="cert-inspector-name">seervi</span>
+            <span class="text-[10px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+            <span class="text-[10px] font-bold text-emerald-800 block" id="cert-panchayat-seal">Bogadi Gram Panchayat (Rural)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2 shrink-0">
+        <button onclick="closeCertificateModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
 </body>
 </html>

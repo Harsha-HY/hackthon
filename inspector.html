@@ -560,36 +560,45 @@
       if (!currentUser) return [];
       const myPin = String(currentUser.assignedPin || currentUser.pin || '').trim();
       const myEmail = (currentUser.email || '').toLowerCase().trim();
+      const myName = (currentUser.name || '').toLowerCase().trim();
 
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570024'];
 
       return applicationsList.filter(app => {
         const appPin = String(app.pincode || app.pin || '').trim();
         const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
         const appInspectorEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
+        const appInspectorName = (app.assignedInspectorName || '').toLowerCase().trim();
+        const auditedBy = (app.auditedBy || '').toLowerCase().trim();
+        const authStr = (app.authority || '').toLowerCase().trim();
 
         // 1. Direct inspector email assignment match
-        if (appInspectorEmail && appInspectorEmail === myEmail) return true;
+        if (appInspectorEmail && myEmail && (appInspectorEmail === myEmail || myEmail.includes(appInspectorEmail) || appInspectorEmail.includes(myEmail))) return true;
 
-        // 2. Strict Authority Isolation: Gram Panchayat inspector ONLY gets GP applications
+        // 2. Direct inspector name assignment match
+        if (appInspectorName && myName && (appInspectorName === myName || myName.includes(appInspectorName) || appInspectorName.includes(myName))) return true;
+        if (auditedBy && myName && (auditedBy === myName || myName.includes(auditedBy))) return true;
+
+        // 3. Strict Authority Isolation
         let appTargetAuth = appAuthKey;
         if (!appTargetAuth) {
-          if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) appTargetAuth = 'gp';
-          else if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) appTargetAuth = 'tp';
+          if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) appTargetAuth = 'gp';
+          else if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('town') || authStr.includes('hootagalli')) appTargetAuth = 'tp';
           else appTargetAuth = 'mcc';
         }
 
         // Must match the inspector's authority
         if (appTargetAuth !== currentAuthorityKey) return false;
 
-        // 3. Assigned PIN code exact or substring match
+        // 4. Assigned PIN code exact or substring match
         if (myPin && appPin) {
           const pinList = myPin.split(/[\s,]+/).map(p => p.trim());
           if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
         }
 
-        // 4. Default authority fallback (e.g. all unassigned GP complaints route to GP inspector)
+        // 5. Default authority fallback (all unassigned complaints in this jurisdiction route to authority inspectors)
         return true;
       });
     }
@@ -625,6 +634,7 @@
         const gpsText = a.gpsLocation || (a.lat ? `Lat: ${a.lat}° N, Lng: ${a.lng}° E` : `Lat: 12.29581° N, Lng: 76.63942° E`);
         const mapUrl = a.mapUrl || (a.lat ? `https://www.google.com/maps?q=${a.lat},${a.lng}` : `https://www.google.com/maps?q=12.29581,76.63942`);
         const inspectTime = a.inspectionTime || a.auditedAt ? new Date(a.auditedAt || a.inspectionTime).toLocaleString() : 'Pending On-Site Audit';
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
@@ -649,14 +659,21 @@
               ${inspectTime}
             </td>
             <td class="px-4 py-3">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
                 ${a.status || 'Pending Verification'}
               </span>
             </td>
             <td class="px-4 py-3">
-              <button onclick="openInspectionModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1">
-                <span>📋 Audit Site</span>
-              </button>
+              <div class="flex items-center gap-1.5">
+                ${isApproved ? `
+                  <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs shadow-2xs transition cursor-pointer flex items-center gap-1" title="View Official NOC Certificate">
+                    <span>📜</span> <span>NOC</span>
+                  </button>
+                ` : ''}
+                <button onclick="openInspectionModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1">
+                  <span>📋 Audit Site</span>
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -678,14 +695,26 @@
       }
 
       tbody.innerHTML = myApps.map(a => {
-        const photoHtml = a.photo ? `
-          <button onclick="viewPhoto('${a.id}')" class="group relative block size-14 rounded-xl overflow-hidden border border-emerald-300 shadow-xs hover:ring-2 hover:ring-emerald-500 transition cursor-pointer">
-            <img src="${a.photo}" alt="Site Photo" class="w-full h-full object-cover group-hover:scale-110 transition duration-300"/>
-            <span class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition">🔍 Zoom</span>
-          </button>
-        ` : `<span class="text-[11px] text-slate-400 font-mono italic">No photo uploaded</span>`;
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        let photoHtml = `<span class="text-[11px] text-slate-400 font-mono italic">No photo uploaded</span>`;
+
+        if (photos.length > 0) {
+          photoHtml = `
+            <div class="flex items-center gap-1.5">
+              <div class="flex -space-x-2 overflow-hidden py-1">
+                ${photos.slice(0, 3).map((p, idx) => `
+                  <img src="${p}" class="inline-block size-8 rounded-lg ring-2 ring-white object-cover cursor-pointer hover:scale-110 transition shadow-2xs" onclick="viewPhoto('${a.id}')" title="Photo ${idx+1}"/>
+                `).join('')}
+              </div>
+              <span class="font-mono text-[11px] font-bold text-slate-700 ml-1">
+                ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+              </span>
+            </div>
+          `;
+        }
 
         const remarksText = a.inspectorNotes || (a.status === 'Approved' ? 'Structural site verified for 10-ton tipper vehicle access. Safety sheets installed.' : 'Site visit pending. Visual inspection of debris required.');
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
@@ -699,7 +728,7 @@
                   ✓ Khatta & Deed Validated
                 </span>
                 <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 font-mono text-[10px] font-bold block w-fit border border-blue-200">
-                  ✓ Blueprint Verified (${a.tonnage || 10} MT)
+                  ✓ Blueprint Verified (${a.verifiedTonnage || a.tonnage || 10} MT)
                 </span>
               </div>
             </td>
@@ -711,19 +740,29 @@
               <p class="text-xs text-slate-700 italic line-clamp-2">"${remarksText}"</p>
             </td>
             <td class="px-4 py-3">
-              <button onclick="openInspectionModal('${a.id}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">
-                Edit Remarks &rarr;
-              </button>
+              <div class="flex items-center gap-1.5">
+                ${isApproved ? `
+                  <button onclick="openCertificateModal('${a.id}')" class="text-xs font-bold text-amber-700 hover:text-amber-800 cursor-pointer flex items-center gap-0.5">
+                    <span>📜 Certificate</span>
+                  </button>
+                ` : ''}
+                <button onclick="openInspectionModal('${a.id}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">
+                  Edit Remarks &rarr;
+                </button>
+              </div>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    // Modal Photo Zoom
+    // Modal Multi-Photo Zoom
     function viewPhoto(appId) {
       const app = applicationsList.find(a => a.id === appId);
-      if (!app || !app.photo) return;
+      if (!app) return;
+      const photos = (app.photos && Array.isArray(app.photos) && app.photos.length > 0) ? app.photos : (app.photo ? [app.photo] : []);
+      if (photos.length === 0) return;
+
       const modalContainer = document.getElementById('modal-container');
       const backdrop = document.getElementById('modal-backdrop');
 
@@ -731,15 +770,26 @@
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-              <span>📸</span> Customer Uploaded Live Site Photo Evidence
+              <span>📸</span> Customer Uploaded Live Site Photo Evidence (${photos.length} Photo${photos.length > 1 ? 's' : ''})
             </h3>
             <p class="text-xs text-slate-500 font-mono">App ID: ${app.id} · PIN: ${app.pincode || app.pin || ''} · ${app.applicantName || 'Citizen'}</p>
           </div>
           <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold cursor-pointer">&times;</button>
         </div>
         <div class="space-y-3">
-          <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-96 flex items-center justify-center bg-slate-950">
-            <img src="${app.photo}" alt="Site Photo" class="max-h-96 w-auto object-contain"/>
+          <div class="space-y-2">
+            <div id="inspector-active-photo-box" class="rounded-2xl overflow-hidden border border-slate-200 max-h-80 flex items-center justify-center bg-slate-950">
+              <img id="inspector-active-photo-img" src="${photos[0]}" alt="Site Photo" class="max-h-80 w-auto object-contain"/>
+            </div>
+            ${photos.length > 1 ? `
+              <div class="flex items-center gap-2 overflow-x-auto py-1">
+                ${photos.map((p, idx) => `
+                  <button type="button" onclick="document.getElementById('inspector-active-photo-img').src='${p}'" class="size-14 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-emerald-500 shrink-0 cursor-pointer">
+                    <img src="${p}" class="size-full object-cover"/>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
           <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1 text-slate-700">
             <p><span class="font-bold">Site Location:</span> ${app.address || 'Mysuru Site'}</p>
@@ -759,6 +809,7 @@
       const app = applicationsList.find(a => a.id === appId);
       if (!app) return;
 
+      const photos = (app.photos && Array.isArray(app.photos) && app.photos.length > 0) ? app.photos : (app.photo ? [app.photo] : []);
       const modalContainer = document.getElementById('modal-container');
       const backdrop = document.getElementById('modal-backdrop');
       const nowFormatted = new Date().toISOString().slice(0, 16);
@@ -801,14 +852,18 @@
           </div>
 
           <!-- Photo Evidence Preview & Verification -->
-          ${app.photo ? `
+          ${photos.length > 0 ? `
             <div class="p-3 bg-slate-900 rounded-2xl text-white space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Customer Live Camera Photo Evidence</span>
+                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Customer Live Camera Photo Evidence (${photos.length})</span>
                 <button type="button" onclick="viewPhoto('${app.id}')" class="text-[10px] text-emerald-300 underline font-bold cursor-pointer">Enlarge &rarr;</button>
               </div>
-              <div class="h-32 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center">
-                <img src="${app.photo}" alt="Site Photo" class="h-full w-auto object-contain cursor-pointer" onclick="viewPhoto('${app.id}')"/>
+              <div class="flex items-center gap-2 overflow-x-auto py-1">
+                ${photos.map((p, idx) => `
+                  <div class="h-28 w-28 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center shrink-0 border border-slate-700">
+                    <img src="${p}" alt="Site Photo ${idx+1}" class="h-full w-full object-cover cursor-pointer hover:scale-105 transition" onclick="viewPhoto('${app.id}')"/>
+                  </div>
+                `).join('')}
               </div>
             </div>
           ` : `
@@ -821,7 +876,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Verified Tonnage (MT)</label>
-              <input id="audit-tonnage" type="number" value="${app.tonnage || ''}" placeholder="e.g. 10" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <input id="audit-tonnage" type="number" value="${app.verifiedTonnage || app.tonnage || '10'}" placeholder="e.g. 10" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
 
             <div>
@@ -830,7 +885,7 @@
                 <option value="Visit Scheduled" ${app.status === 'Visit Scheduled' ? 'selected' : ''}>📅 1. Visit Scheduled (Date & Time Fixed)</option>
                 <option value="On-Site Audit In Progress" ${app.status === 'On-Site Audit In Progress' ? 'selected' : ''}>🚶 2. On-Site Audit In Progress</option>
                 <option value="Inspection Passed & Verified" ${app.status === 'Inspection Passed & Verified' ? 'selected' : ''}>🟢 3. Inspection Passed & Verified (Ready for NOC)</option>
-                <option value="Approved" ${app.status === 'Approved' ? 'selected' : ''}>🏆 4. Agree & Approve (Issue Certificate)</option>
+                <option value="Approved" ${app.status === 'Approved' ? 'selected' : ''}>🏆 4. Agree & Approve (Issue Official NOC Certificate)</option>
                 <option value="Action Required" ${app.status === 'Action Required' ? 'selected' : ''}>⚠️ 5. Action Required / Resubmission</option>
                 <option value="Flagged Violation" ${app.status === 'Flagged Violation' ? 'selected' : ''}>❌ 6. Flagged Violation</option>
                 <option value="Cancelled" ${app.status === 'Cancelled' ? 'selected' : ''}>⛔ 7. Cancel / Reject Complaint</option>
@@ -848,7 +903,7 @@
           <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
             <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Cancel</button>
             <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 cursor-pointer flex items-center gap-1.5">
-              <span>✓ Update Status & Notify Portals</span>
+              <span>✓ Update Status & Generate NOC</span>
             </button>
           </div>
 
@@ -896,10 +951,17 @@
         app.gpsLocation = gps;
         app.inspectionTime = datetime;
         app.tonnage = tonnage;
+        app.verifiedTonnage = tonnage;
         app.status = decision;
         app.inspectorNotes = remarks;
-        app.auditedBy = currentUser.name || 'Field Inspector';
+        app.auditedBy = currentUser ? (currentUser.name || 'Field Inspector') : 'Field Inspector';
+        app.assignedInspectorName = currentUser ? (currentUser.name || app.assignedInspectorName) : app.assignedInspectorName;
+        app.assignedInspectorEmail = currentUser ? (currentUser.email || app.assignedInspectorEmail) : app.assignedInspectorEmail;
         app.auditedAt = new Date().toISOString();
+
+        if (decision === 'Approved' || decision === 'Inspection Passed & Verified') {
+          app.certificateStatus = 'Issued';
+        }
 
         // 1. Post updated status to Server Backend API
         try {
@@ -923,8 +985,65 @@
 
         closeModal();
         renderAllPanels();
-        showToast('🎉 Status updated to "' + decision + '" for ' + appId + '! Customer, Officer & Admin notified.', 'success');
+        showToast('🎉 Status updated to "' + decision + '" for ' + appId + '! Official NOC Certificate generated.', 'success');
       }
+    }
+
+    // Official NOC Certificate View in Inspector Console
+    function openCertificateModal(appId) {
+      const app = applicationsList.find(a => a.id === appId);
+      if (!app) return;
+
+      const cleanId = (app.id || 'REQ-101').replace(/[^a-zA-Z0-9]/g, '');
+      const authTitle = document.getElementById('cert-authority-title');
+      if (authTitle) authTitle.innerText = app.authority || (currentAuthorityKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (currentAuthorityKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+
+      const authPrefix = (app.authorityKey || (currentAuthorityKey || 'MCC')).toUpperCase();
+      const refNo = document.getElementById('cert-ref-no');
+      if (refNo) refNo.innerText = `NOC/${authPrefix}/${cleanId}`;
+
+      const issueDate = document.getElementById('cert-issue-date');
+      if (issueDate) {
+        issueDate.innerText = app.auditedAt ? new Date(app.auditedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      const applicantName = document.getElementById('cert-applicant-name');
+      if (applicantName) applicantName.innerText = app.applicantName || 'Citizen User';
+
+      const applicantPhone = document.getElementById('cert-applicant-phone');
+      if (applicantPhone) applicantPhone.innerText = `Mobile: ${app.phone || '+91 98765 43210'}`;
+
+      const propId = document.getElementById('cert-prop-id');
+      if (propId) propId.innerText = app.propertyId || 'PROP-MYS-' + cleanId.slice(-4);
+
+      const fullAddr = document.getElementById('cert-full-address');
+      if (fullAddr) fullAddr.innerText = `${app.address || 'Mysuru'} · PIN ${app.pincode || app.pin || '570001'}`;
+
+      const tonnage = document.getElementById('cert-verified-tonnage');
+      if (tonnage) tonnage.innerText = `${app.verifiedTonnage || app.tonnage || 10} MT (Metric Tonnes)`;
+
+      const lat = app.lat || 12.2958;
+      const lng = app.lng || 76.6394;
+      const gpsCoords = document.getElementById('cert-gps-coords');
+      if (gpsCoords) gpsCoords.innerText = app.gpsLocation || `${lat}° N, ${lng}° E`;
+
+      // Inspector and Authority Signatures
+      const insName = document.getElementById('cert-inspector-name');
+      if (insName) insName.innerText = `Inspector ${app.assignedInspectorName || (currentUser ? currentUser.name : 'Field Officer')}`;
+
+      const insEmail = document.getElementById('cert-inspector-email');
+      if (insEmail) insEmail.innerText = app.assignedInspectorEmail || (currentUser ? currentUser.email : 'inspector@mysuru.gov.in');
+
+      const panchayatSeal = document.getElementById('cert-panchayat-seal');
+      if (panchayatSeal) panchayatSeal.innerText = app.authority || (currentAuthorityKey === 'gp' ? 'Bogadi Gram Panchayat (Rural)' : (currentAuthorityKey === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)'));
+
+      const modal = document.getElementById('noc-certificate-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeCertificateModal() {
+      const modal = document.getElementById('noc-certificate-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
     function switchInspectorTab(tabId) {
@@ -962,5 +1081,128 @@
     initInspectorSession();
     loadInspectorData();
   </script>
+
+  <!-- ========================================================================= -->
+  <!-- OFFICIAL MUNICIPAL & PANCHAYAT C&D CLEARANCE CERTIFICATE (NOC) MODAL       -->
+  <!-- ========================================================================= -->
+  <div id="noc-certificate-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-emerald-600/30 overflow-hidden my-auto animate-in fade-in zoom-in duration-150">
+      
+      <!-- Certificate Action Header -->
+      <div class="p-4 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg">📜</span>
+          <div>
+            <h3 class="font-bold text-xs sm:text-sm text-white">Official Clearance Certificate (NOC)</h3>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="cert-modal-header-sub">Authorized by Ward Inspector & Panchayat</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1 shadow-xs">
+            <span>🖨️</span> <span>Print / Save PDF</span>
+          </button>
+          <button onclick="closeCertificateModal()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white text-base font-bold flex items-center justify-center transition cursor-pointer">
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Certificate Body -->
+      <div class="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1 bg-[#fcfdfd] text-slate-800 border-8 border-double border-emerald-800/20 m-3 rounded-2xl" id="printable-certificate-content">
+        
+        <!-- Govt Header & Seal -->
+        <div class="text-center space-y-1.5 border-b-2 border-emerald-800/30 pb-4">
+          <div class="inline-flex items-center justify-center size-12 rounded-full bg-emerald-900 text-amber-300 font-bold text-2xl shadow-md">
+            🏛️
+          </div>
+          <span class="block text-[11px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
+          <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
+          <h2 class="text-base sm:text-lg font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
+            Bogadi Gram Panchayat (Rural)
+          </h2>
+          <div class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs uppercase tracking-wider border border-emerald-300 mt-1">
+            Official C&D Waste Clearance No-Objection Certificate (NOC)
+          </div>
+        </div>
+
+        <!-- Reference & Date Strip -->
+        <div class="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-3">
+          <div>
+            <span class="text-slate-400 font-semibold">NOC Ref No:</span>
+            <span class="font-bold text-emerald-800 ml-1" id="cert-ref-no">NOC/GP/2026/934924</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold">Date of Clearance:</span>
+            <span class="font-bold text-slate-800 ml-1" id="cert-issue-date">19 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Clearance Statement & Details Grid -->
+        <div class="space-y-4 text-xs">
+          <p class="leading-relaxed text-slate-700">
+            This is to certify that physical site inspection, GPS verification, and rubble volume measurement have been completed in accordance with the <strong>Construction & Demolition Waste Management Rules</strong>. The applicant is hereby authorized for lawful haulage and disposal at the designated municipal processing facility.
+          </p>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Authorized Citizen / Applicant</span>
+              <span class="font-bold text-slate-900 text-sm block" id="cert-applicant-name">Citizen User</span>
+              <span class="text-slate-600 font-mono text-[11px] block" id="cert-applicant-phone">Mobile: +91 98765 43210</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-8821</span>
+              <span class="text-slate-600 text-[11px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
+              <span class="font-bold text-emerald-800 font-mono text-sm block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
+              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Debris</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
+              <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
+              <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endorsement & Signatures -->
+        <div class="pt-4 border-t-2 border-emerald-800/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <!-- Digital QR Seal -->
+          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="size-12 rounded-lg bg-emerald-900 text-white flex flex-col items-center justify-center font-mono font-bold text-[9px] leading-tight text-center">
+              <span>QR</span>
+              <span class="text-[7px] text-emerald-300">VALID</span>
+            </div>
+            <div class="text-[10px] leading-tight">
+              <span class="font-bold text-emerald-950 block">Digital Verification Seal</span>
+              <span class="text-slate-500 font-mono block">Status: Official & Compliant</span>
+            </div>
+          </div>
+
+          <!-- Inspector & Authority Signature Block -->
+          <div class="text-right space-y-0.5">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Authorized By Ward Inspector</span>
+            <span class="font-bold text-slate-900 text-sm block" id="cert-inspector-name">seervi</span>
+            <span class="text-[10px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+            <span class="text-[10px] font-bold text-emerald-800 block" id="cert-panchayat-seal">Bogadi Gram Panchayat (Rural)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2 shrink-0">
+        <button onclick="closeCertificateModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
 </body>
 </html>
