@@ -2059,8 +2059,24 @@
       }, 400);
     }
 
+    // Real-Time High Speed Synchronization
+    const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
+    if (civicSyncChannel) {
+      civicSyncChannel.onmessage = (event) => {
+        if (event && event.data) {
+          loadData();
+        }
+      };
+    }
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'civic_applications' || e.key === 'civic_registered_users') {
+        loadData();
+      }
+    });
+
     initOfficerSession();
     loadData();
+    setInterval(loadData, 2000);
   </script>
 
   <!-- ========================================================================= -->

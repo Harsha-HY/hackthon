@@ -509,20 +509,25 @@
                 </div>
               </div>
 
-              <!-- 2. Location Details -->
+              <!-- 2. Location & Jurisdiction Routing Details -->
               <div class="space-y-3 pt-2">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div class="flex items-center gap-2">
                     <span class="size-6 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center">2</span>
-                    <h3 class="font-bold text-slate-900 text-sm">Location & Geotag Details</h3>
+                    <h3 class="font-bold text-slate-900 text-sm">Location, GPS & Jurisdiction Routing</h3>
                   </div>
-                  <button type="button" onclick="autoDetectCustomerGPS()" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 transition cursor-pointer">
-                    <span>🔄</span> <span>Auto-Detect Live GPS</span>
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="autoDetectCustomerGPS(true)" class="text-xs text-white hover:bg-emerald-700 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 border border-emerald-500 shadow-xs transition cursor-pointer">
+                      <span>📍</span> <span>Autofill Address & PIN by GPS</span>
+                    </button>
+                    <button type="button" onclick="autoDetectCustomerGPS(false)" class="text-xs text-emerald-800 hover:text-emerald-900 font-bold flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 transition cursor-pointer">
+                      <span>🔄</span> <span>Refresh GPS</span>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Live GPS Geotag Banner -->
-                <div class="p-3 bg-emerald-50/80 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="p-3.5 bg-emerald-50/80 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div class="flex items-center gap-2.5">
                     <span class="size-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shrink-0">📍</span>
                     <div>
@@ -530,29 +535,49 @@
                       <span id="live-gps-display" class="font-mono text-xs font-bold text-slate-900">Lat: 12.29581° N, Lng: 76.63942° E</span>
                     </div>
                   </div>
-                  <a id="live-gps-map-link" href="https://www.google.com/maps?q=12.29581,76.63942" target="_blank" class="px-3 py-1.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition w-fit">
-                    <span>Google Maps</span> <span>↗</span>
-                  </a>
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="autoDetectCustomerGPS(true)" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-[11px] flex items-center gap-1 shadow-2xs transition">
+                      <span>⚡ Autofill Form</span>
+                    </button>
+                    <a id="live-gps-map-link" href="https://www.google.com/maps?q=12.29581,76.63942" target="_blank" class="px-3 py-1.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition w-fit">
+                      <span>Google Maps</span> <span>↗</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Code <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Jurisdiction / Panchayat <span class="text-rose-500">*</span></label>
                     <div class="relative">
-                      <span class="absolute left-3.5 top-3 text-slate-400 text-sm">📍</span>
-                      <input id="form-cust-pin" type="text" required maxlength="6" oninput="handlePinChange()" placeholder="e.g. 570001" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+                      <select id="form-cust-authority" onchange="handleAuthoritySelectChange()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition cursor-pointer">
+                        <option value="">⚡ Auto-Detect by PIN Code</option>
+                        <option value="gp">🏛️ Bogadi Gram Panchayat (Rural PIN: 570026, 571130...)</option>
+                        <option value="tp">🏢 Hootagalli Town Panchayat (Peri-Urban PIN: 570018, 570017...)</option>
+                        <option value="mcc">🏙️ Mysuru City Corporation (MCC Urban PIN: 570001, 570002...)</option>
+                      </select>
                     </div>
-                    <span id="pin-route-sub" class="text-[10px] text-emerald-700 font-mono font-semibold block mt-1">Routing: Enter PIN code above to auto-match your Ward Inspector</span>
+                    <span class="text-[10px] text-slate-400 block mt-1">Select or let PIN code auto-detect your local jurisdiction</span>
                   </div>
 
                   <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Full Address <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Code <span class="text-rose-500">*</span></label>
                     <div class="relative">
-                      <span class="absolute left-3.5 top-3 text-slate-400 text-sm">🏠</span>
-                      <input id="form-cust-address" type="text" required placeholder="House No., Street, Locality, City" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+                      <span class="absolute left-3.5 top-3 text-slate-400 text-sm">📍</span>
+                      <input id="form-cust-pin" type="text" required maxlength="6" oninput="handlePinChange()" placeholder="e.g. 570026 (GP) or 570018 (TP)" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
                     </div>
-                    <span class="text-[10px] text-slate-400 block mt-1">Include landmark for easy physical inspection</span>
+                    <div id="pin-route-sub" class="mt-1">
+                      <span class="text-[10px] text-emerald-700 font-mono font-semibold block">Routing: Enter PIN code or click "Autofill by GPS"</span>
+                    </div>
                   </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Full Site Address <span class="text-rose-500">*</span></label>
+                  <div class="relative">
+                    <span class="absolute left-3.5 top-3 text-slate-400 text-sm">🏠</span>
+                    <input id="form-cust-address" type="text" required placeholder="House No., Street, Locality, City (or click Autofill by GPS above)" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+                  </div>
+                  <span class="text-[10px] text-slate-400 block mt-1">Include landmark for easy physical inspection</span>
                 </div>
               </div>
 
@@ -866,53 +891,298 @@
       }, 400);
     }
 
-    // Auto-detect Live GPS Coordinates
-    function autoDetectCustomerGPS() {
+    // High-speed Cross-Tab Synchronization Channel
+    const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
+    if (civicSyncChannel) {
+      civicSyncChannel.onmessage = (event) => {
+        if (event && event.data) {
+          syncLiveCustomerApplications();
+        }
+      };
+    }
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'civic_applications' || e.key === 'civic_registered_users') {
+        syncLiveCustomerApplications();
+      }
+    });
+
+    // High-Accuracy Reverse Geocoding & Local Mysuru Boundary Mapping
+    async function reverseGeocodeCoords(lat, lng) {
+      // 1. Attempt OpenStreetMap Nominatim reverse API with quick timeout
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2600);
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+          signal: controller.signal,
+          headers: { 'Accept-Language': 'en' }
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.address) {
+            const addr = data.address;
+            const road = addr.road || addr.street || addr.neighbourhood || addr.suburb || addr.residential || '';
+            const locality = addr.suburb || addr.village || addr.town || addr.city_district || addr.city || 'Mysuru';
+            const postcode = addr.postcode ? addr.postcode.replace(/[^0-9]/g, '').substring(0, 6) : '';
+            const fullAddress = [road, locality, 'Mysuru'].filter(Boolean).join(', ');
+            return { fullAddress, postcode };
+          }
+        }
+      } catch (e) {}
+
+      // 2. High-precision Mysuru local zone boundary fallback
+      // Bogadi GP zone (lat ~ 12.27 to 12.31, lng ~ 76.57 to 76.62)
+      if (lat >= 12.27 && lat <= 12.31 && lng >= 76.57 && lng <= 76.62) {
+        return {
+          fullAddress: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural',
+          postcode: '570026'
+        };
+      }
+      // Hootagalli TP zone (lat ~ 12.33 to 12.37, lng ~ 76.56 to 76.61)
+      if (lat >= 12.33 && lat <= 12.37 && lng >= 76.56 && lng <= 76.61) {
+        return {
+          fullAddress: 'Hootagalli Industrial Area, Belavadi, Hootagalli',
+          postcode: '570018'
+        };
+      }
+      // Kuvempunagar / Saraswathipuram MCC
+      if (lat >= 12.27 && lat <= 12.30 && lng >= 76.62 && lng <= 76.66) {
+        return {
+          fullAddress: 'Kuvempunagar 5th Main, Saraswathipuram, Mysuru',
+          postcode: '570023'
+        };
+      }
+      // Gokulam / V.V. Mohalla MCC
+      if (lat >= 12.32 && lat <= 12.35 && lng >= 76.62 && lng <= 76.66) {
+        return {
+          fullAddress: 'Gokulam 3rd Stage, Contour Road, Mysuru',
+          postcode: '570002'
+        };
+      }
+      // Central / Devaraja Mohalla MCC
+      return {
+        fullAddress: 'Sayyaji Rao Road, Devaraja Mohalla, Mysuru',
+        postcode: '570001'
+      };
+    }
+
+    // Auto-detect Live GPS Coordinates with optional full Address & PIN autofill
+    async function autoDetectCustomerGPS(autofill = false) {
       const displayEl = document.getElementById('live-gps-display');
       const mapLink = document.getElementById('live-gps-map-link');
       if (displayEl) displayEl.innerText = 'Acquiring high-accuracy GPS...';
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          pos => {
+          async pos => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             const gpsStr = `Lat: ${lat.toFixed(5)}° N, Lng: ${lng.toFixed(5)}° E`;
             customerLiveCoords = { lat, lng, gpsText: gpsStr };
             if (displayEl) displayEl.innerText = gpsStr;
             if (mapLink) mapLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
-            showToast('📍 Live GPS acquired: ' + gpsStr, 'success');
+
+            if (autofill) {
+              const geoInfo = await reverseGeocodeCoords(lat, lng);
+              if (geoInfo) {
+                const addrInput = document.getElementById('form-cust-address');
+                const pinInput = document.getElementById('form-cust-pin');
+                if (pinInput && geoInfo.postcode) {
+                  pinInput.value = geoInfo.postcode;
+                }
+                if (addrInput && geoInfo.fullAddress) {
+                  addrInput.value = geoInfo.fullAddress;
+                }
+                handlePinChange();
+                showToast(`📍 Autofilled location: ${geoInfo.fullAddress} (PIN: ${geoInfo.postcode || 'Detected'})`, 'success');
+              }
+            } else {
+              showToast('📍 Live GPS acquired: ' + gpsStr, 'success');
+            }
           },
-          err => {
+          async err => {
             const pin = (document.getElementById('form-cust-pin')?.value || '').trim();
             let fallbackLat = 12.29581, fallbackLng = 76.63942;
-            if (pin.startsWith('570026') || pin.startsWith('571130')) { fallbackLat = 12.28504; fallbackLng = 76.59201; }
-            else if (pin.startsWith('570018') || pin.startsWith('570017')) { fallbackLat = 12.34102; fallbackLng = 76.58905; }
+            if (pin.startsWith('570026') || pin.startsWith('571130') || pin.startsWith('570028') || pin.startsWith('560079') || pin.startsWith('570021')) {
+              fallbackLat = 12.28504; fallbackLng = 76.59201;
+            } else if (pin.startsWith('570018') || pin.startsWith('570017') || pin.startsWith('570027') || pin.startsWith('571607')) {
+              fallbackLat = 12.34102; fallbackLng = 76.58905;
+            }
             const gpsStr = `Lat: ${fallbackLat.toFixed(5)}° N, Lng: ${fallbackLng.toFixed(5)}° E`;
             customerLiveCoords = { lat: fallbackLat, lng: fallbackLng, gpsText: gpsStr };
             if (displayEl) displayEl.innerText = gpsStr + ' (Mysuru Zone)';
             if (mapLink) mapLink.href = `https://www.google.com/maps?q=${fallbackLat},${fallbackLng}`;
+
+            if (autofill) {
+              const geoInfo = await reverseGeocodeCoords(fallbackLat, fallbackLng);
+              if (geoInfo) {
+                const addrInput = document.getElementById('form-cust-address');
+                const pinInput = document.getElementById('form-cust-pin');
+                if (pinInput && geoInfo.postcode && !pinInput.value) pinInput.value = geoInfo.postcode;
+                if (addrInput && geoInfo.fullAddress && !addrInput.value) addrInput.value = geoInfo.fullAddress;
+                handlePinChange();
+                showToast(`📍 Autofilled location: ${geoInfo.fullAddress} (PIN: ${geoInfo.postcode || '570001'})`, 'info');
+              }
+            }
           },
           { timeout: 7000, enableHighAccuracy: true }
         );
       }
     }
 
+    // Dynamic Resolution of Authority & Inspector based on PIN and/or user selection
+    function resolveAuthorityAndInspector(pin, preferredAuthKey = '') {
+      const GP_PINS = ['570026', '571130', '570028', '560079', '570021', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610', '570016'];
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570010', '570020', '570023', '570024'];
+
+      let authorityKey = 'mcc';
+      let authority = 'Mysuru Municipal Corporation (MCC Urban)';
+      let assignedInspectorName = 'Rajesh Kumar';
+      let assignedInspectorEmail = 'inspector.mcc@gmail.com';
+      let assignedOfficerEmail = 'mcc@gmail.com';
+      let badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
+      let tag = 'MCC Urban';
+
+      const cleanPin = String(pin || '').trim();
+
+      // 1. Check if a custom registered inspector in localStorage or users table has this PIN assigned
+      const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      const customPinMatch = allInspectors.find(ins => {
+        const insPin = String(ins.assignedPin || ins.pin || '').trim();
+        if (!insPin) return false;
+        const pList = insPin.split(/[\s,]+/).map(p => p.trim());
+        return pList.some(p => p && (p === cleanPin || cleanPin.startsWith(p) || p.startsWith(cleanPin)));
+      });
+
+      if (customPinMatch) {
+        const d = (customPinMatch.department || '').toLowerCase();
+        const dn = (customPinMatch.departmentName || '').toLowerCase();
+        if (d === 'gp' || d.includes('panchayat') || dn.includes('panchayat')) {
+          authorityKey = 'gp';
+          authority = 'Bogadi Gram Panchayat (Rural)';
+          assignedOfficerEmail = 'gp@gmail.com';
+          badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
+          tag = 'Bogadi Gram Panchayat';
+        } else if (d === 'tp' || d.includes('town') || dn.includes('town')) {
+          authorityKey = 'tp';
+          authority = 'Hootagalli Town Panchayat';
+          assignedOfficerEmail = 'tp@gmail.com';
+          badgeColor = 'bg-teal-50 text-teal-900 border-teal-300';
+          tag = 'Hootagalli Town Panchayat';
+        } else {
+          authorityKey = 'mcc';
+          authority = 'Mysuru Municipal Corporation (MCC Urban)';
+          assignedOfficerEmail = 'mcc@gmail.com';
+          badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
+          tag = 'Mysuru City Corporation';
+        }
+        assignedInspectorName = customPinMatch.name;
+        assignedInspectorEmail = customPinMatch.email;
+      } else {
+        const isGp = GP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
+        const isTp = TP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
+
+        if (preferredAuthKey === 'gp' || isGp) {
+          authorityKey = 'gp';
+          authority = 'Bogadi Gram Panchayat (Rural)';
+          assignedInspectorName = 'Seervi';
+          assignedInspectorEmail = 'q@gmail.com';
+          assignedOfficerEmail = 'gp@gmail.com';
+          badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
+          tag = 'Bogadi Gram Panchayat';
+        } else if (preferredAuthKey === 'tp' || isTp) {
+          authorityKey = 'tp';
+          authority = 'Hootagalli Town Panchayat';
+          assignedInspectorName = 'M. Anand';
+          assignedInspectorEmail = 'anand.tp@gmail.com';
+          assignedOfficerEmail = 'tp@gmail.com';
+          badgeColor = 'bg-teal-50 text-teal-900 border-teal-300';
+          tag = 'Hootagalli Town Panchayat';
+        } else {
+          authorityKey = 'mcc';
+          authority = 'Mysuru Municipal Corporation (MCC Urban)';
+          assignedInspectorName = 'Rajesh Kumar';
+          assignedInspectorEmail = 'inspector.mcc@gmail.com';
+          assignedOfficerEmail = 'mcc@gmail.com';
+          badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
+          tag = 'Mysuru City Corporation';
+        }
+
+        // Check if any custom inspector exists in that dept
+        const deptInspector = allInspectors.find(ins => {
+          const d = (ins.department || '').toLowerCase();
+          const dn = (ins.departmentName || '').toLowerCase();
+          return d === authorityKey || (authorityKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (authorityKey === 'tp' && (d.includes('town') || dn.includes('town')));
+        });
+        if (deptInspector) {
+          assignedInspectorName = deptInspector.name;
+          assignedInspectorEmail = deptInspector.email;
+        }
+      }
+
+      return { authorityKey, authority, assignedInspectorName, assignedInspectorEmail, assignedOfficerEmail, badgeColor, tag };
+    }
+
     function handlePinChange() {
       const pin = (document.getElementById('form-cust-pin').value || '').trim();
-      const sub = document.getElementById('pin-route-sub');
-      if (!sub) return;
+      const authSelect = document.getElementById('form-cust-authority');
+      const prefAuth = authSelect ? authSelect.value : '';
 
-      if (!pin) {
-        sub.innerText = 'Routing: Enter PIN code above to auto-match your Ward Inspector';
-      } else if (pin.startsWith('570026') || pin.startsWith('571130') || pin.startsWith('570028')) {
-        sub.innerText = 'Routing to: Bogadi Gram Panchayat (Rural Debris Squad)';
-      } else if (pin.startsWith('570018') || pin.startsWith('570017')) {
-        sub.innerText = 'Routing to: Hootagalli Town Panchayat (Industrial Clearance)';
-      } else {
-        sub.innerText = 'Routing to: Mysuru Municipal Corporation (MCC Urban Debris Cell)';
+      const matched = resolveAuthorityAndInspector(pin, prefAuth);
+      
+      // Update form select if auto-matched and user didn't explicitly force another
+      if (authSelect && !prefAuth && matched.authorityKey) {
+        authSelect.value = matched.authorityKey;
       }
-      autoDetectCustomerGPS();
+
+      const sub = document.getElementById('pin-route-sub');
+      if (sub) {
+        if (!pin) {
+          sub.innerHTML = `
+            <span class="text-slate-500 font-mono text-[10px] block">
+              Routing: Enter PIN code or click "Autofill by GPS" to auto-match your Ward Inspector & Panchayat
+            </span>
+          `;
+        } else {
+          sub.innerHTML = `
+            <div class="mt-1.5 p-2 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] ${matched.badgeColor}">
+              <div class="flex items-center gap-1.5 font-bold">
+                <span>🏛️</span>
+                <span>${matched.authority}</span>
+              </div>
+              <div class="font-mono text-[10px] font-semibold text-slate-700">
+                👮 Designated Inspector: <strong class="text-slate-900">${matched.assignedInspectorName}</strong> (${matched.assignedInspectorEmail})
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // Update Live Tracker Preview card on the right immediately (if no active complaint lock)
+      const activeApp = getActiveCustomerApplication();
+      if (!activeApp) {
+        const authNameEl = document.getElementById('tracker-authority-name');
+        const inspNameEl = document.getElementById('tracker-assigned-inspector');
+        if (authNameEl) authNameEl.innerText = matched.authority;
+        if (inspNameEl) inspNameEl.innerText = `${matched.assignedInspectorName} (${matched.assignedInspectorEmail}) · Zone: PIN ${pin || 'Auto'}`;
+      }
+    }
+
+    function handleAuthoritySelectChange() {
+      const authSelect = document.getElementById('form-cust-authority');
+      const pinInput = document.getElementById('form-cust-pin');
+      if (authSelect && pinInput) {
+        const val = authSelect.value;
+        if (val === 'gp' && (!pinInput.value || !['570026', '571130', '570028', '560079', '570021'].includes(pinInput.value))) {
+          pinInput.value = '570026';
+        } else if (val === 'tp' && (!pinInput.value || !['570018', '570017', '570027', '571607'].includes(pinInput.value))) {
+          pinInput.value = '570018';
+        } else if (val === 'mcc' && (!pinInput.value || !['570001', '570002', '570004', '570023'].includes(pinInput.value))) {
+          pinInput.value = '570001';
+        }
+      }
+      handlePinChange();
     }
 
     // Photo Capture & Upload Handling (Supports live camera & bulk multi-file uploads)
@@ -1281,66 +1551,15 @@
       const issueDate = new Date().toISOString().split('T')[0];
       const status = 'Pending Inspection';
 
-      // Dynamic Authority & Inspector Pin Matching
-      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
-      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+      const authSelect = document.getElementById('form-cust-authority');
+      const prefAuth = authSelect ? authSelect.value : '';
+      const matched = resolveAuthorityAndInspector(pin, prefAuth);
 
-      let authorityKey = 'mcc';
-      let authority = 'Mysuru Municipal Corporation (MCC Urban)';
-      let assignedInspectorName = 'Rajesh Kumar';
-      let assignedInspectorEmail = 'inspector.mcc@gmail.com';
-      let assignedOfficerEmail = 'mcc@gmail.com';
-
-      const isGp = GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
-      const isTp = TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
-
-      if (isGp) {
-        authorityKey = 'gp';
-        authority = 'Bogadi Gram Panchayat (Rural)';
-        assignedInspectorName = 'S. Nanjappa';
-        assignedInspectorEmail = 'nanjappa.gp@gmail.com';
-        assignedOfficerEmail = 'gp@gmail.com';
-      } else if (isTp) {
-        authorityKey = 'tp';
-        authority = 'Hootagalli Town Panchayat';
-        assignedInspectorName = 'M. Anand';
-        assignedInspectorEmail = 'anand.tp@gmail.com';
-        assignedOfficerEmail = 'tp@gmail.com';
-      }
-
-      const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-      const customMatch = allInspectors.find(ins => {
-        const insPin = String(ins.assignedPin || ins.pin || '').trim();
-        if (!insPin) return false;
-        const pList = insPin.split(/[\s,]+/).map(p => p.trim());
-        return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
-      });
-
-      if (customMatch) {
-        const insDept = (customMatch.department || '').toLowerCase();
-        const insDeptName = (customMatch.departmentName || '').toLowerCase();
-        if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
-          authorityKey = 'gp';
-          authority = 'Bogadi Gram Panchayat (Rural)';
-          assignedOfficerEmail = 'gp@gmail.com';
-        } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
-          authorityKey = 'tp';
-          authority = 'Hootagalli Town Panchayat';
-          assignedOfficerEmail = 'tp@gmail.com';
-        }
-        assignedInspectorName = customMatch.name;
-        assignedInspectorEmail = customMatch.email;
-      } else {
-        const deptInspector = allInspectors.find(ins => {
-          const d = (ins.department || '').toLowerCase();
-          const dn = (ins.departmentName || '').toLowerCase();
-          return d === authorityKey || (authorityKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (authorityKey === 'tp' && (d.includes('town') || dn.includes('town')));
-        });
-        if (deptInspector) {
-          assignedInspectorName = deptInspector.name;
-          assignedInspectorEmail = deptInspector.email;
-        }
-      }
+      const authorityKey = matched.authorityKey;
+      const authority = matched.authority;
+      const assignedInspectorName = matched.assignedInspectorName;
+      const assignedInspectorEmail = matched.assignedInspectorEmail;
+      const assignedOfficerEmail = matched.assignedOfficerEmail;
 
       const appId = '#MCC' + new Date().getFullYear() + String(Math.floor(100000 + Math.random() * 900000));
       const newApplication = {
@@ -1396,7 +1615,14 @@
       myRequests.unshift(newApplication);
       localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
 
-      // 3. Update UI Tracker Card and Lock State
+      // 3. Broadcast to all open tabs immediately
+      if (civicSyncChannel) {
+        try {
+          civicSyncChannel.postMessage({ type: 'APPLICATION_CREATED', id: appId, authorityKey });
+        } catch(e) {}
+      }
+
+      // 4. Update UI Tracker Card and Lock State
       updateLiveTrackerUI(newApplication);
       checkActiveApplicationLock();
 

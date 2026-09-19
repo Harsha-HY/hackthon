@@ -982,6 +982,13 @@
           localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
         }
 
+        // 3. Broadcast to all open tabs immediately
+        if (civicSyncChannel) {
+          try {
+            civicSyncChannel.postMessage({ type: 'STATUS_UPDATED', id: appId, status: decision });
+          } catch(e) {}
+        }
+
         closeModal();
         renderAllPanels();
         showToast('🎉 Status updated to "' + decision + '" for ' + appId + '! Official NOC Certificate generated.', 'success');
@@ -1077,8 +1084,24 @@
       }, 400);
     }
 
+    // Real-Time High Speed Cross-Tab Synchronization
+    const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
+    if (civicSyncChannel) {
+      civicSyncChannel.onmessage = (event) => {
+        if (event && event.data) {
+          loadInspectorData();
+        }
+      };
+    }
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'civic_applications' || e.key === 'civic_registered_users') {
+        loadInspectorData();
+      }
+    });
+
     initInspectorSession();
     loadInspectorData();
+    setInterval(loadInspectorData, 2000);
   </script>
 
   <!-- ========================================================================= -->
