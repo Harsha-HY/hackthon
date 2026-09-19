@@ -574,12 +574,11 @@
         const auditedBy = (app.auditedBy || '').toLowerCase().trim();
         const authStr = (app.authority || '').toLowerCase().trim();
 
-        // 1. Direct inspector email assignment match
-        if (appInspectorEmail && myEmail && (appInspectorEmail === myEmail || myEmail.includes(appInspectorEmail) || appInspectorEmail.includes(myEmail))) return true;
+        // 1. Direct inspector email assignment match (Primary)
+        if (appInspectorEmail && myEmail && appInspectorEmail === myEmail) return true;
 
-        // 2. Direct inspector name assignment match
-        if (appInspectorName && myName && (appInspectorName === myName || myName.includes(appInspectorName) || appInspectorName.includes(myName))) return true;
-        if (auditedBy && myName && (auditedBy === myName || myName.includes(auditedBy))) return true;
+        // 2. Direct inspector audited match
+        if (auditedBy && (auditedBy === myEmail || auditedBy === myName)) return true;
 
         // 3. Strict Authority Isolation
         let appTargetAuth = appAuthKey;
@@ -588,18 +587,18 @@
           else if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('town') || authStr.includes('hootagalli')) appTargetAuth = 'tp';
           else appTargetAuth = 'mcc';
         }
-
-        // Must match the inspector's authority
         if (appTargetAuth !== currentAuthorityKey) return false;
 
-        // 4. Assigned PIN code exact or substring match
+        // 4. Assigned PIN code exact or prefix match
         if (myPin && appPin) {
           const pinList = myPin.split(/[\s,]+/).map(p => p.trim());
           if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
         }
 
-        // 5. Default authority fallback (all unassigned complaints in this jurisdiction route to authority inspectors)
-        return true;
+        // 5. If no other inspector is assigned by email
+        if (!appInspectorEmail) return true;
+
+        return false;
       });
     }
 

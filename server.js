@@ -477,20 +477,40 @@ const server = http.createServer(async (req, res) => {
           const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
           const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
 
-          let resolvedAuthKey = item.authorityKey || baseApp.authorityKey || '';
-          let resolvedAuthName = item.authority || baseApp.authority || '';
-          let resolvedInspName = item.assignedInspectorName || baseApp.assignedInspectorName || '';
-          let resolvedInspEmail = item.assignedInspectorEmail || baseApp.assignedInspectorEmail || '';
-          let resolvedOfficerEmail = item.assignedOfficerEmail || baseApp.assignedOfficerEmail || '';
+          let resolvedAuthKey = '';
+          let resolvedAuthName = '';
+          let resolvedInspName = '';
+          let resolvedInspEmail = '';
+          let resolvedOfficerEmail = '';
 
-          // If not already explicitly set by client, resolve based on PIN and inspector roster
-          if (!resolvedAuthKey || !resolvedInspEmail) {
-            resolvedAuthKey = 'mcc';
-            resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
-            resolvedInspName = 'Rajesh Kumar';
-            resolvedInspEmail = 'inspector.mcc@gmail.com';
-            resolvedOfficerEmail = 'mcc@gmail.com';
+          // 1. Check if a custom registered inspector has this PIN assigned
+          const customPinMatch = allInspectors.find(ins => {
+            const insPin = String(ins.assignedPin || ins.pin || '').trim();
+            if (!insPin) return false;
+            const pList = insPin.split(/[\s,]+/).map(p => p.trim());
+            return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
+          });
 
+          if (customPinMatch) {
+            const insDept = (customPinMatch.department || '').toLowerCase();
+            const insDeptName = (customPinMatch.departmentName || '').toLowerCase();
+            if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
+              resolvedAuthKey = 'gp';
+              resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
+              resolvedOfficerEmail = 'gp@gmail.com';
+            } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
+              resolvedAuthKey = 'tp';
+              resolvedAuthName = 'Hootagalli Town Panchayat';
+              resolvedOfficerEmail = 'tp@gmail.com';
+            } else {
+              resolvedAuthKey = 'mcc';
+              resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
+              resolvedOfficerEmail = 'mcc@gmail.com';
+            }
+            resolvedInspName = customPinMatch.name;
+            resolvedInspEmail = customPinMatch.email;
+          } else {
+            // Check default pin ranges
             const isGp = GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
             const isTp = TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
 
@@ -506,41 +526,33 @@ const server = http.createServer(async (req, res) => {
               resolvedInspName = 'M. Anand';
               resolvedInspEmail = 'anand.tp@gmail.com';
               resolvedOfficerEmail = 'tp@gmail.com';
-            }
-
-            // Check if a custom registered inspector has this PIN assigned
-            const customPinMatch = allInspectors.find(ins => {
-              const insPin = String(ins.assignedPin || ins.pin || '').trim();
-              if (!insPin) return false;
-              const pList = insPin.split(/[\s,]+/).map(p => p.trim());
-              return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
-            });
-
-            if (customPinMatch) {
-              const insDept = (customPinMatch.department || '').toLowerCase();
-              const insDeptName = (customPinMatch.departmentName || '').toLowerCase();
-              if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
-                resolvedAuthKey = 'gp';
-                resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
-                resolvedOfficerEmail = 'gp@gmail.com';
-              } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
-                resolvedAuthKey = 'tp';
-                resolvedAuthName = 'Hootagalli Town Panchayat';
-                resolvedOfficerEmail = 'tp@gmail.com';
-              }
-              resolvedInspName = customPinMatch.name;
-              resolvedInspEmail = customPinMatch.email;
             } else {
-              const deptInspector = allInspectors.find(ins => {
-                const d = (ins.department || '').toLowerCase();
-                const dn = (ins.departmentName || '').toLowerCase();
-                return d === resolvedAuthKey || (resolvedAuthKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (resolvedAuthKey === 'tp' && (d.includes('town') || dn.includes('town')));
-              });
-              if (deptInspector) {
-                resolvedInspName = deptInspector.name;
-                resolvedInspEmail = deptInspector.email;
-              }
+              resolvedAuthKey = 'mcc';
+              resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
+              resolvedInspName = 'Rajesh Kumar';
+              resolvedInspEmail = 'inspector.mcc@gmail.com';
+              resolvedOfficerEmail = 'mcc@gmail.com';
             }
+
+            // Check if any custom inspector is registered in that department
+            const deptInspector = allInspectors.find(ins => {
+              const d = (ins.department || '').toLowerCase();
+              const dn = (ins.departmentName || '').toLowerCase();
+              return d === resolvedAuthKey || (resolvedAuthKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (resolvedAuthKey === 'tp' && (d.includes('town') || dn.includes('town')));
+            });
+            if (deptInspector) {
+              resolvedInspName = deptInspector.name;
+              resolvedInspEmail = deptInspector.email;
+            }
+          }
+
+          // If this is an existing app update, keep existing assigned metadata if present
+          if (existingAppIdx >= 0 && baseApp.assignedInspectorEmail) {
+            resolvedAuthKey = item.authorityKey || baseApp.authorityKey || resolvedAuthKey;
+            resolvedAuthName = item.authority || baseApp.authority || resolvedAuthName;
+            resolvedInspName = item.assignedInspectorName || baseApp.assignedInspectorName || resolvedInspName;
+            resolvedInspEmail = item.assignedInspectorEmail || baseApp.assignedInspectorEmail || resolvedInspEmail;
+            resolvedOfficerEmail = item.assignedOfficerEmail || baseApp.assignedOfficerEmail || resolvedOfficerEmail;
           }
 
           mergedItem.authorityKey = resolvedAuthKey;

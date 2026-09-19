@@ -946,31 +946,54 @@
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
       const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570024'];
 
+      const officerUser = currentUser || {};
+      const officerEmail = (officerUser.email || '').toLowerCase().trim();
+      const officerPin = String(officerUser.assignedPin || officerUser.pin || '').trim();
+
+      // Find all inspectors created/registered under this authority
+      const deptInspectors = (registeredUsers || []).filter(u => {
+        const r = (u.role || '').toLowerCase();
+        const d = (u.department || '').toLowerCase();
+        const dn = (u.departmentName || '').toLowerCase();
+        const auth = (u.authority || '').toLowerCase();
+        if (r !== 'inspector' && !auth.includes('inspector')) return false;
+
+        if (currentAuthorityKey === 'gp') return d === 'gp' || d.includes('panchayat') || dn.includes('panchayat') || auth.includes('panchayat') || u.email === 'q@gmail.com' || u.email.includes('gp');
+        if (currentAuthorityKey === 'tp') return d === 'tp' || d.includes('town') || dn.includes('town') || auth.includes('town') || u.email.includes('tp');
+        return d === 'mcc' || d.includes('mcc') || (!d.includes('panchayat') && !d.includes('town') && !auth.includes('panchayat') && !auth.includes('town'));
+      }).map(u => (u.email || '').toLowerCase().trim()).filter(Boolean);
+
       return applicationsList.filter(app => {
         const appPin = String(app.pincode || app.pin || '').trim();
         const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
         const authStr = (app.authority || '').toLowerCase().trim();
         const inspEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
+        const offEmail = (app.assignedOfficerEmail || '').toLowerCase().trim();
 
-        // 1. Explicit authorityKey match
-        if (appAuthKey) {
-          if (appAuthKey === currentAuthorityKey.toLowerCase()) return true;
+        // 1. Explicit authorityKey match (Primary)
+        if (appAuthKey && appAuthKey === currentAuthorityKey.toLowerCase()) return true;
+
+        // 2. Assigned officer email match
+        if (offEmail && officerEmail && offEmail === officerEmail) return true;
+
+        // 3. Assigned inspector belonging to this authority roster
+        if (inspEmail && deptInspectors.includes(inspEmail)) return true;
+
+        // 4. Officer assigned PIN match
+        if (officerPin && appPin) {
+          const pinList = officerPin.split(/[\s,]+/).map(p => p.trim());
+          if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
         }
 
-        // 2. Assigned inspector belonging to this authority
-        if (currentAuthorityKey === 'gp' && (inspEmail.includes('gp') || inspEmail === 'q@gmail.com' || inspEmail.includes('seervi') || inspEmail.includes('nanjappa'))) return true;
-        if (currentAuthorityKey === 'tp' && (inspEmail.includes('tp') || inspEmail.includes('anand'))) return true;
-        if (currentAuthorityKey === 'mcc' && (inspEmail.includes('mcc') || inspEmail.includes('rajesh'))) return true;
-
-        // 3. PIN code match
+        // 5. Default PIN ranges
         if (currentAuthorityKey === 'gp' && GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
         if (currentAuthorityKey === 'tp' && TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
         if (currentAuthorityKey === 'mcc' && MCC_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
 
-        // 4. Authority text description match
+        // 6. Authority text description match
         if (currentAuthorityKey === 'gp' && (authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('rural') || authStr.includes('bogadi'))) return true;
         if (currentAuthorityKey === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli'))) return true;
-        if (currentAuthorityKey === 'mcc' && (authStr.includes('mcc') || authStr.includes('mysuru urban') || authStr.includes('city') || (!GP_PINS.some(p => appPin.startsWith(p)) && !TP_PINS.some(p => appPin.startsWith(p))))) return true;
+        if (currentAuthorityKey === 'mcc' && (authStr.includes('mcc') || authStr.includes('mysuru urban') || authStr.includes('city'))) return true;
 
         return false;
       });
