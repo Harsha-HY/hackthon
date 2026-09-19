@@ -128,6 +128,128 @@
   </div>
 
   <!-- ========================================================================= -->
+  <!-- FULLSCREEN MULTI-PHOTO GALLERY LIGHTBOX MODAL                             -->
+  <!-- ========================================================================= -->
+  <div id="photo-lightbox-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 hidden">
+    <div class="relative max-w-4xl w-full flex flex-col items-center">
+      <!-- Close button -->
+      <button onclick="closePhotoLightbox()" class="absolute -top-12 right-0 sm:right-2 size-10 rounded-full bg-white/20 hover:bg-white/40 text-white text-xl font-bold flex items-center justify-center transition cursor-pointer z-50">
+        &times;
+      </button>
+      
+      <!-- Photo Viewer Container -->
+      <div class="relative w-full max-h-[75vh] flex items-center justify-center bg-black/60 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+        <img id="lightbox-main-img" src="" alt="Site Photo" class="max-h-[72vh] w-auto max-w-full object-contain select-none rounded-2xl"/>
+        
+        <!-- Prev Button -->
+        <button id="lightbox-prev-btn" onclick="prevLightboxPhoto()" class="absolute left-3 top-1/2 -translate-y-1/2 size-12 rounded-full bg-black/70 hover:bg-emerald-600 text-white text-xl font-bold flex items-center justify-center transition cursor-pointer shadow-lg border border-white/20">
+          &#10094;
+        </button>
+        <!-- Next Button -->
+        <button id="lightbox-next-btn" onclick="nextLightboxPhoto()" class="absolute right-3 top-1/2 -translate-y-1/2 size-12 rounded-full bg-black/70 hover:bg-emerald-600 text-white text-xl font-bold flex items-center justify-center transition cursor-pointer shadow-lg border border-white/20">
+          &#10095;
+        </button>
+      </div>
+
+      <!-- Thumbnail Strip & Info Bar -->
+      <div class="mt-4 flex flex-col sm:flex-row items-center justify-between w-full px-3 text-white text-xs gap-3">
+        <div class="flex items-center gap-2">
+          <span class="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="lightbox-counter" class="font-mono text-emerald-400 font-bold">Photo 1 of 1</span>
+        </div>
+        <div id="lightbox-thumbs-container" class="flex items-center gap-2 overflow-x-auto max-w-full py-1 custom-scrollbar">
+          <!-- Mini thumbnails for fast switching -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- FULL APPLICATION VERTICAL ORDER TRACKING MODAL (TOP TO DOWN COLUMN)       -->
+  <!-- ========================================================================= -->
+  <div id="application-tracking-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      
+      <!-- Modal Header -->
+      <div class="p-5 sm:p-6 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-900/40 shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="size-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-slate-950 flex items-center justify-center text-xl font-bold shadow-md shadow-emerald-500/20">
+            📦
+          </span>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono uppercase text-emerald-400 font-bold tracking-wider">COMPLAINT TRACKING ORDER</span>
+              <span id="modal-track-id" class="font-mono font-bold text-sm text-white">#MCC2026001234</span>
+            </div>
+            <p id="modal-track-authority" class="text-xs text-slate-300 font-medium mt-0.5">Mysuru Municipal Corporation (MCC Urban)</p>
+          </div>
+        </div>
+        <button onclick="closeTrackingModal()" class="size-9 rounded-xl bg-white/10 hover:bg-white/20 text-white text-lg font-bold flex items-center justify-center transition cursor-pointer">
+          &times;
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable Vertical Timeline Top-to-Down) -->
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-slate-50/50">
+        
+        <!-- Summary Info Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Current Status</span>
+            <span id="modal-track-status-pill" class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-amber-100 text-amber-800">Pending</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Property / PID</span>
+            <span id="modal-track-prop" class="text-xs font-bold font-mono text-slate-800 block truncate mt-0.5">—</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">PIN Code</span>
+            <span id="modal-track-pin" class="text-xs font-bold font-mono text-emerald-700 block mt-0.5">—</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tonnage Verified</span>
+            <span id="modal-track-tonnage" class="text-xs font-bold font-mono text-slate-800 block mt-0.5">—</span>
+          </div>
+        </div>
+
+        <!-- Attached Site Photos Gallery Grid (Shows ALL photos with clickable full-view) -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+              <span>📸</span> Attached Site Photos (<span id="modal-track-photo-count">0</span>)
+            </h4>
+            <span class="text-[10px] text-emerald-700 font-semibold">Click any photo to view full size</span>
+          </div>
+          <div id="modal-track-photos-grid" class="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+            <!-- Dynamic image cards -->
+          </div>
+        </div>
+
+        <!-- VERTICAL TOP-TO-DOWN TRACKING ORDER TIMELINE -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1">
+          <h4 class="font-bold text-slate-900 text-xs mb-5 flex items-center gap-1.5 border-b border-slate-100 pb-2.5">
+            <span>📍</span> Step-by-Step Live Order Progress (Top to Bottom)
+          </h4>
+
+          <div id="modal-vertical-timeline" class="space-y-6 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200 pl-8 pb-2">
+            <!-- Dynamically populated vertical timeline nodes -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
+        <span class="text-xs text-slate-400 font-mono" id="modal-track-last-updated">Last Synced: Just Now</span>
+        <button onclick="closeTrackingModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer">
+          Close Tracker
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- 1. LEFT SIDEBAR NAVIGATION PANEL (Dark Theme with Mysuru Skyline)        -->
   <!-- ========================================================================= -->
   <aside class="w-72 bg-[#081d19] text-white flex flex-col justify-between shrink-0 h-screen sticky top-0 border-r border-[#10372e] z-40 hidden md:flex">
@@ -508,8 +630,8 @@
               <!-- Quick Action Link -->
               <div id="tracker-action-footer" class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-slate-400 font-mono text-[10px]" id="tracker-updated-time">Updated: Just Now</span>
-                <button onclick="switchTab('applications')" class="text-emerald-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
-                  <span>View Full Applications</span> <span>&rarr;</span>
+                <button onclick="openTrackingModal()" class="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer flex items-center gap-1">
+                  <span>🔍 View Full Application Tracking</span> <span>&rarr;</span>
                 </button>
               </div>
 
@@ -558,6 +680,209 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VERTICAL ORDER TRACKING TIMELINE                                   -->
+  <!-- ========================================================================= -->
+  <div id="application-tracking-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in duration-150">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="size-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 font-bold text-base">
+            📦
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-sm text-white">Application Tracking Order</h3>
+              <span id="modal-app-id" class="font-mono text-xs px-2 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700">APP-XXXX</span>
+            </div>
+            <p id="modal-authority-subtitle" class="text-[11px] text-slate-400">Mysuru Municipal Corporation (MCC) · Live Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="modal-status-badge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            Pending
+          </span>
+          <button type="button" onclick="closeTrackingModal()" class="size-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-lg font-bold transition cursor-pointer" title="Close modal">
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-1 text-slate-800">
+
+        <!-- Property & Location Card -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Property Site</span>
+            <span id="modal-property-name" class="font-bold text-slate-900 text-sm block">Site Address</span>
+            <span id="modal-full-address" class="text-slate-600 text-[11px] block mt-0.5">Location details</span>
+          </div>
+          <div class="sm:text-right flex flex-col sm:items-end justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">GPS Coordinates</span>
+              <a id="modal-gps-link" href="#" target="_blank" class="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 hover:bg-emerald-100 transition mt-1">
+                <span id="modal-gps-text">📍 12.2958° N, 76.6394° E</span>
+                <span>↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attached Photos Strip (All Uploaded Photos) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <span>📸</span> <span>Uploaded Site Photos</span>
+            </h4>
+            <span id="modal-photo-count" class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              0 Photos
+            </span>
+          </div>
+          <div id="modal-photos-container" class="grid grid-cols-3 sm:grid-cols-5 gap-2.5 p-3 rounded-2xl bg-slate-900/5 border border-slate-200">
+            <!-- Photo thumbnails injected dynamically -->
+          </div>
+          <p class="text-[10px] text-slate-400 italic">Tip: Click on any photo above to inspect in high-resolution full-screen lightbox gallery.</p>
+        </div>
+
+        <!-- Vertical Timeline (Top-to-Down Order Tracking) -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+            <span>🧭</span> <span>Stage-by-Stage Order Tracking</span>
+          </h4>
+
+          <div class="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200" id="modal-timeline-container">
+
+            <!-- Step 1: Lodged -->
+            <div class="relative flex items-start gap-3" id="timeline-step-1">
+              <div class="absolute -left-6 top-0.5 size-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                ✓
+              </div>
+              <div class="flex-1 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs text-slate-900">1. Application Lodged & Geotagged</span>
+                  <span id="timeline-time-1" class="text-[10px] font-mono text-slate-500">Submitted</span>
+                </div>
+                <p class="text-xs text-slate-600" id="timeline-desc-1">
+                  Application registered with live GPS coordinates, property details, and uploaded site evidence.
+                </p>
+                <div class="text-[11px] text-slate-500 pt-1 flex flex-wrap gap-2">
+                  <span id="timeline-applicant-info">Applicant: Citizen</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Assigned -->
+            <div class="relative flex items-start gap-3" id="timeline-step-2">
+              <div class="absolute -left-6 top-0.5 size-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold" id="timeline-icon-2">
+                2
+              </div>
+              <div class="flex-1 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs text-slate-900">2. Ward & Inspector Assigned</span>
+                  <span id="timeline-time-2" class="text-[10px] font-mono text-slate-500">Routing</span>
+                </div>
+                <p class="text-xs text-slate-600" id="timeline-desc-2">
+                  Jurisdiction assigned based on PIN code. Inspector notified for physical site inspection.
+                </p>
+                <div class="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 inline-block mt-1" id="timeline-inspector-info">
+                  Inspector: Assigning...
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Site Inspection -->
+            <div class="relative flex items-start gap-3" id="timeline-step-3">
+              <div class="absolute -left-6 top-0.5 size-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold" id="timeline-icon-3">
+                3
+              </div>
+              <div class="flex-1 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs text-slate-900">3. Physical Site Audit & Tonnage Verification</span>
+                  <span id="timeline-time-3" class="text-[10px] font-mono text-slate-500">Pending</span>
+                </div>
+                <p class="text-xs text-slate-600" id="timeline-desc-3">
+                  Inspector physical visit, geo-fenced rubble volume assessment, and compliance check.
+                </p>
+                <div id="timeline-notes-box" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hidden mt-1">
+                  <span class="font-bold block text-[10px] text-slate-500 uppercase tracking-wider">Inspector Notes & Findings:</span>
+                  <span id="timeline-inspector-notes" class="italic">"Awaiting site inspection."</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Clearance NOC / Resolution -->
+            <div class="relative flex items-start gap-3" id="timeline-step-4">
+              <div class="absolute -left-6 top-0.5 size-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold" id="timeline-icon-4">
+                4
+              </div>
+              <div class="flex-1 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs text-slate-900">4. Clearance NOC & Final Resolution</span>
+                  <span id="timeline-time-4" class="text-[10px] font-mono text-slate-500">Pending</span>
+                </div>
+                <p class="text-xs text-slate-600" id="timeline-desc-4">
+                  Official clearance decision. Once finalized, application is archived and new filings unlocked.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
+        <button type="button" onclick="copyAppIdFromModal()" class="font-mono text-slate-600 hover:text-emerald-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
+          <span>📋 Copy App ID</span>
+        </button>
+        <button type="button" onclick="closeTrackingModal()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: MULTI-PHOTO FULL-SCREEN LIGHTBOX GALLERY                           -->
+  <!-- ========================================================================= -->
+  <div id="photo-lightbox-modal" class="fixed inset-0 z-60 bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 hidden select-none animate-in fade-in duration-150">
+    <!-- Lightbox Top Controls -->
+    <div class="w-full max-w-5xl flex items-center justify-between text-white py-2 px-4 z-10">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">📸</span>
+        <span id="lightbox-counter" class="font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/10 border border-white/20">
+          Photo 1 of 1
+        </span>
+      </div>
+      <button type="button" onclick="closePhotoLightbox()" class="size-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center text-xl font-bold transition cursor-pointer" title="Close Lightbox (ESC)">
+        &times;
+      </button>
+    </div>
+
+    <!-- Main Large Image with Next/Prev Arrows -->
+    <div class="relative w-full max-w-5xl flex-1 flex items-center justify-center px-2 py-4">
+      <button type="button" onclick="prevLightboxPhoto()" class="absolute left-2 sm:left-4 z-20 size-11 rounded-full bg-black/60 hover:bg-emerald-600 text-white flex items-center justify-center text-xl font-bold transition cursor-pointer shadow-xl border border-white/20" title="Previous photo">
+        &#10094;
+      </button>
+
+      <img id="lightbox-main-img" src="" alt="Full Preview" class="max-h-[72vh] max-w-full object-contain rounded-2xl shadow-2xl border border-white/10 transition duration-150"/>
+
+      <button type="button" onclick="nextLightboxPhoto()" class="absolute right-2 sm:right-4 z-20 size-11 rounded-full bg-black/60 hover:bg-emerald-600 text-white flex items-center justify-center text-xl font-bold transition cursor-pointer shadow-xl border border-white/20" title="Next photo">
+        &#10095;
+      </button>
+    </div>
+
+    <!-- Bottom Thumbnails Strip -->
+    <div class="w-full max-w-3xl flex items-center justify-center gap-2 py-3 overflow-x-auto z-10" id="lightbox-thumb-strip">
+      <!-- Injected thumbnail buttons -->
+    </div>
   </div>
 
   <!-- ========================================================================= -->
@@ -767,9 +1092,9 @@
         if (i < uploadedPhotos.length) {
           html += `
             <div class="flex flex-col items-center gap-1 group">
-              <div class="relative w-full aspect-square rounded-xl overflow-hidden border border-emerald-300 shadow-xs bg-slate-900">
+              <div class="relative w-full aspect-square rounded-xl overflow-hidden border border-emerald-300 shadow-xs bg-slate-900 cursor-pointer" onclick="openPhotoLightbox(uploadedPhotos, ${i})" title="Click to inspect full photo">
                 <img src="${uploadedPhotos[i]}" alt="Photo ${i+1}" class="w-full h-full object-cover group-hover:scale-105 transition"/>
-                <button type="button" onclick="removePhoto(${i})" class="absolute top-1 right-1 size-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center justify-center shadow-md transition cursor-pointer" title="Delete photo">
+                <button type="button" onclick="event.stopPropagation(); removePhoto(${i})" class="absolute top-1 right-1 size-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center justify-center shadow-md transition cursor-pointer" title="Delete photo">
                   &times;
                 </button>
               </div>
@@ -1258,7 +1583,236 @@
       } catch(e) {}
     }
 
-    // Render Applications History Table
+    // ==========================================
+    // MULTI-PHOTO FULL-SCREEN LIGHTBOX LOGIC
+    // ==========================================
+    let lightboxPhotosList = [];
+    let currentLightboxIndex = 0;
+
+    function openPhotoLightbox(photos, startIndex = 0) {
+      if (!photos || photos.length === 0) {
+        showToast('No photo available to preview', 'info');
+        return;
+      }
+      lightboxPhotosList = Array.isArray(photos) ? photos : [photos];
+      currentLightboxIndex = Math.max(0, Math.min(startIndex, lightboxPhotosList.length - 1));
+      updateLightboxView();
+      const modal = document.getElementById('photo-lightbox-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePhotoLightbox() {
+      const modal = document.getElementById('photo-lightbox-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function updateLightboxView() {
+      if (lightboxPhotosList.length === 0) return;
+      const img = document.getElementById('lightbox-main-img');
+      const counter = document.getElementById('lightbox-counter');
+      const thumbStrip = document.getElementById('lightbox-thumb-strip');
+
+      if (img) img.src = lightboxPhotosList[currentLightboxIndex];
+      if (counter) counter.innerText = `Photo ${currentLightboxIndex + 1} of ${lightboxPhotosList.length}`;
+
+      if (thumbStrip) {
+        thumbStrip.innerHTML = lightboxPhotosList.map((p, idx) => `
+          <button type="button" onclick="currentLightboxIndex = ${idx}; updateLightboxView()" class="size-12 rounded-xl overflow-hidden border-2 transition cursor-pointer flex-shrink-0 ${idx === currentLightboxIndex ? 'border-emerald-400 scale-105 shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-400/50' : 'border-white/20 opacity-60 hover:opacity-100'}">
+            <img src="${p}" class="w-full h-full object-cover"/>
+          </button>
+        `).join('');
+      }
+    }
+
+    function prevLightboxPhoto() {
+      if (lightboxPhotosList.length <= 1) return;
+      currentLightboxIndex = (currentLightboxIndex - 1 + lightboxPhotosList.length) % lightboxPhotosList.length;
+      updateLightboxView();
+    }
+
+    function nextLightboxPhoto() {
+      if (lightboxPhotosList.length <= 1) return;
+      currentLightboxIndex = (currentLightboxIndex + 1) % lightboxPhotosList.length;
+      updateLightboxView();
+    }
+
+    // Keyboard navigation for lightbox
+    document.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('photo-lightbox-modal');
+      if (modal && !modal.classList.contains('hidden')) {
+        if (e.key === 'Escape') closePhotoLightbox();
+        if (e.key === 'ArrowLeft') prevLightboxPhoto();
+        if (e.key === 'ArrowRight') nextLightboxPhoto();
+      }
+    });
+
+    // ==========================================
+    // VERTICAL ORDER TRACKING MODAL LOGIC
+    // ==========================================
+    let currentModalApp = null;
+
+    function openTrackingModal(appId) {
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const myRequests = getLoggedInUserApplications(allApps);
+      let app = null;
+
+      if (appId) {
+        app = allApps.find(a => String(a.id) === String(appId));
+      } else if (myRequests.length > 0) {
+        app = myRequests[0];
+      }
+
+      if (!app) {
+        showToast('No active application found to track.', 'info');
+        return;
+      }
+
+      currentModalApp = app;
+
+      // Fill header & properties
+      const idEl = document.getElementById('modal-app-id');
+      if (idEl) idEl.innerText = app.id || 'APP-XXXX';
+
+      const authSub = document.getElementById('modal-authority-subtitle');
+      if (authSub) authSub.innerText = (app.authority || 'Mysuru Municipal Authority') + ' · Live Tracking';
+
+      const propEl = document.getElementById('modal-property-name');
+      if (propEl) propEl.innerText = app.propertyId || 'Property / Construction Site';
+
+      const addrEl = document.getElementById('modal-full-address');
+      if (addrEl) addrEl.innerText = `${app.address || 'Mysuru'} · PIN ${app.pincode || app.pin || '570001'} · Ward ${app.ward || 'Zone'}`;
+
+      const gpsText = document.getElementById('modal-gps-text');
+      const gpsLink = document.getElementById('modal-gps-link');
+      const lat = app.lat || 12.2958;
+      const lng = app.lng || 76.6394;
+      if (gpsText) gpsText.innerText = `📍 ${app.gpsLocation || (lat + '° N, ' + lng + '° E')}`;
+      if (gpsLink) gpsLink.href = app.mapUrl || `https://www.google.com/maps?q=${lat},${lng}`;
+
+      const statusBadge = document.getElementById('modal-status-badge');
+      const status = app.status || 'Pending';
+      if (statusBadge) {
+        statusBadge.innerText = status;
+        if (status === 'Approved' || status === 'Issued' || status === 'Certificate Issued') {
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        } else if (status === 'Cancelled' || status === 'Rejected' || status === 'Flagged Violation') {
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        } else {
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        }
+      }
+
+      // Photos container: Render ALL photos as clickable thumbnails
+      const photos = (app.photos && Array.isArray(app.photos) && app.photos.length > 0) 
+        ? app.photos 
+        : (app.photo ? [app.photo] : []);
+      
+      const photoCountEl = document.getElementById('modal-photo-count');
+      if (photoCountEl) photoCountEl.innerText = `${photos.length} Photo${photos.length === 1 ? '' : 's'}`;
+
+      const photosContainer = document.getElementById('modal-photos-container');
+      if (photosContainer) {
+        if (photos.length === 0) {
+          photosContainer.innerHTML = '<span class="text-xs text-slate-400 italic col-span-full text-center py-2">No photos attached.</span>';
+        } else {
+          window._trackingModalPhotos = photos;
+          photosContainer.innerHTML = photos.map((p, idx) => `
+            <div onclick="openPhotoLightbox(window._trackingModalPhotos, ${idx})" class="group relative aspect-square rounded-xl overflow-hidden bg-slate-900 border border-slate-300 shadow-xs cursor-pointer hover:border-emerald-500 transition">
+              <img src="${p}" alt="Site Photo ${idx + 1}" class="w-full h-full object-cover group-hover:scale-105 transition"/>
+              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition">
+                <span class="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full transition">🔍 Zoom</span>
+              </div>
+              <span class="absolute bottom-1 right-1 bg-slate-900/80 text-white text-[9px] font-mono px-1 rounded">#${idx+1}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Vertical Stage-by-Stage Tracking
+      const time1 = document.getElementById('timeline-time-1');
+      if (time1) time1.innerText = app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Logged';
+
+      const applicantInfo = document.getElementById('timeline-applicant-info');
+      if (applicantInfo) applicantInfo.innerText = `Applicant: ${app.applicantName || 'Citizen'} · Phone: ${app.phone || 'Verified'}`;
+
+      // Step 2: Inspector assignment
+      const icon2 = document.getElementById('timeline-icon-2');
+      const time2 = document.getElementById('timeline-time-2');
+      const inspectorInfo = document.getElementById('timeline-inspector-info');
+      const desc2 = document.getElementById('timeline-desc-2');
+      
+      const inspectorAssigned = app.assignedInspectorName || (app.assignedInspectorEmail);
+      if (inspectorAssigned) {
+        if (icon2) { icon2.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs'; icon2.innerText = '✓'; }
+        if (time2) time2.innerText = 'Assigned';
+        if (inspectorInfo) inspectorInfo.innerHTML = `<span>👮 Assigned Inspector: <strong>${app.assignedInspectorName || 'Ward Officer'}</strong></span> ${app.assignedInspectorEmail ? '<span class="text-slate-500 block text-[10px]">(' + app.assignedInspectorEmail + ')</span>' : ''}`;
+        if (desc2) desc2.innerText = `Dispatched to ${app.authority || 'Local Jurisdiction'}. Physical inspection scheduled.`;
+      } else {
+        if (icon2) { icon2.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold'; icon2.innerText = '2'; }
+        if (time2) time2.innerText = 'Routing';
+        if (inspectorInfo) inspectorInfo.innerText = 'Inspector: Assigning based on PIN ' + (app.pincode || app.pin || '570001');
+      }
+
+      // Step 3: Site Visit & Audit
+      const icon3 = document.getElementById('timeline-icon-3');
+      const time3 = document.getElementById('timeline-time-3');
+      const desc3 = document.getElementById('timeline-desc-3');
+      const notesBox = document.getElementById('timeline-notes-box');
+      const notesText = document.getElementById('timeline-inspector-notes');
+
+      if (app.siteVisitDone || app.inspectorNotes || app.verifiedTonnage || status === 'Under Review' || status === 'Audit Done' || status === 'Approved' || status === 'Cancelled' || status === 'Rejected') {
+        if (icon3) { icon3.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs'; icon3.innerText = '✓'; }
+        if (time3) time3.innerText = 'Completed';
+        if (desc3) desc3.innerText = `Site inspection performed. Verified volume: ${app.verifiedTonnage ? app.verifiedTonnage + ' MT' : 'Audited'}.`;
+        if (app.inspectorNotes && notesBox && notesText) {
+          notesBox.classList.remove('hidden');
+          notesText.innerText = `"${app.inspectorNotes}"`;
+        } else if (notesBox) {
+          notesBox.classList.add('hidden');
+        }
+      } else {
+        if (icon3) { icon3.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold'; icon3.innerText = '3'; }
+        if (time3) time3.innerText = 'Pending';
+        if (desc3) desc3.innerText = 'Inspector physical visit, geo-fenced rubble volume assessment, and compliance check.';
+        if (notesBox) notesBox.classList.add('hidden');
+      }
+
+      // Step 4: Resolution / Clearance NOC
+      const icon4 = document.getElementById('timeline-icon-4');
+      const time4 = document.getElementById('timeline-time-4');
+      const desc4 = document.getElementById('timeline-desc-4');
+
+      if (status === 'Approved' || status === 'Issued' || status === 'Certificate Issued') {
+        if (icon4) { icon4.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs'; icon4.innerText = '✓'; }
+        if (time4) time4.innerText = 'Approved NOC Issued';
+        if (desc4) desc4.innerText = 'Municipal Clearance Certificate NOC approved and granted. All disposal compliance verified.';
+      } else if (status === 'Cancelled' || status === 'Rejected' || status === 'Flagged Violation') {
+        if (icon4) { icon4.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs'; icon4.innerText = '✕'; }
+        if (time4) time4.innerText = 'Declined / Cancelled';
+        if (desc4) desc4.innerText = 'Application was rejected or cancelled by inspector. Lock released for new submissions.';
+      } else {
+        if (icon4) { icon4.className = 'absolute -left-6 top-0.5 size-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold'; icon4.innerText = '4'; }
+        if (time4) time4.innerText = 'In Progress';
+        if (desc4) desc4.innerText = 'Official clearance decision pending final verification.';
+      }
+
+      const modalEl = document.getElementById('application-tracking-modal');
+      if (modalEl) modalEl.classList.remove('hidden');
+    }
+
+    function closeTrackingModal() {
+      const modalEl = document.getElementById('application-tracking-modal');
+      if (modalEl) modalEl.classList.add('hidden');
+    }
+
+    function copyAppIdFromModal() {
+      if (currentModalApp && currentModalApp.id) {
+        if (navigator.clipboard) navigator.clipboard.writeText(currentModalApp.id);
+        showToast('Copied Application ID: ' + currentModalApp.id, 'success');
+      }
+    }
+
+    // Render Applications History Table with Multi-Photo Thumbnails and Track Order Modal
     function renderApplicationsHistory() {
       const tbody = document.getElementById('table-my-applications');
       if (!tbody) return;
@@ -1276,37 +1830,56 @@
         return;
       }
 
-      tbody.innerHTML = myRequests.map(a => `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
-          <td class="px-4 py-3">
-            <span class="font-semibold text-slate-900 block">${a.propertyId || 'Property Site'}</span>
-            <span class="text-[11px] text-slate-500 block">${a.address || 'Mysuru'} · PIN ${a.pincode || a.pin}</span>
-          </td>
-          <td class="px-4 py-3">
-            <a href="${a.mapUrl || 'https://www.google.com/maps?q=' + (a.lat || 12.2958) + ',' + (a.lng || 76.6394)}" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold hover:underline">
-              <span>📍 ${a.gpsLocation || 'Live GPS'}</span> <span>↗</span>
-            </a>
-          </td>
-          <td class="px-4 py-3 font-mono font-bold text-slate-700">
-            ${(a.photos && a.photos.length) ? '📸 ' + a.photos.length + ' Photos' : (a.photo ? '📸 1 Photo' : 'No Photo')}
-          </td>
-          <td class="px-4 py-3">
-            <span class="font-bold text-slate-800 block">${a.authority || 'Mysuru Municipal'}</span>
-            <span class="text-[10px] text-slate-500 block">Inspector: ${a.assignedInspectorName || 'Assigned'}</span>
-          </td>
-          <td class="px-4 py-3">
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
-              ${a.status || 'Pending'}
-            </span>
-          </td>
-          <td class="px-4 py-3 text-right">
-            <button onclick="switchTab('panel')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">
-              View Status &rarr;
-            </button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = myRequests.map(a => {
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        let photosHtml = '<span class="text-slate-400 italic">No Photo</span>';
+        if (photos.length > 0) {
+          photosHtml = `
+            <div class="flex items-center gap-1.5">
+              <div class="flex -space-x-2 overflow-hidden py-1">
+                ${photos.slice(0, 3).map((p, idx) => `
+                  <img src="${p}" class="inline-block size-7 rounded-lg ring-2 ring-white object-cover cursor-pointer hover:scale-110 transition shadow-2xs" onclick="openTrackingModal('${a.id}')" title="Photo ${idx+1}"/>
+                `).join('')}
+              </div>
+              <span class="font-mono text-[11px] font-bold text-slate-700 ml-1">
+                ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+              </span>
+            </div>
+          `;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
+            <td class="px-4 py-3">
+              <span class="font-semibold text-slate-900 block">${a.propertyId || 'Property Site'}</span>
+              <span class="text-[11px] text-slate-500 block">${a.address || 'Mysuru'} · PIN ${a.pincode || a.pin}</span>
+            </td>
+            <td class="px-4 py-3">
+              <a href="${a.mapUrl || 'https://www.google.com/maps?q=' + (a.lat || 12.2958) + ',' + (a.lng || 76.6394)}" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold hover:underline">
+                <span>📍 ${a.gpsLocation || 'Live GPS'}</span> <span>↗</span>
+              </a>
+            </td>
+            <td class="px-4 py-3">
+              ${photosHtml}
+            </td>
+            <td class="px-4 py-3">
+              <span class="font-bold text-slate-800 block">${a.authority || 'Mysuru Municipal'}</span>
+              <span class="text-[10px] text-slate-500 block">Inspector: ${a.assignedInspectorName || 'Assigned'}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (a.status === 'Cancelled' || a.status === 'Rejected' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200')}">
+                ${a.status || 'Pending'}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <button onclick="openTrackingModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition cursor-pointer inline-flex items-center gap-1">
+                <span>🔍 Track Order</span> <span>&rarr;</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // Initialize Default Form State & Auth
