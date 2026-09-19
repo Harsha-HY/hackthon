@@ -325,11 +325,13 @@
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                 <tr>
                   <th class="px-4 py-3">Citizen ID</th>
-                  <th class="px-4 py-3">Full Name</th>
-                  <th class="px-4 py-3">Email Address</th>
-                  <th class="px-4 py-3">Phone Number</th>
-                  <th class="px-4 py-3">Registered On</th>
-                  <th class="px-4 py-3">Applications Filed</th>
+                  <th class="px-4 py-3">Applicant Full Name</th>
+                  <th class="px-4 py-3">Gmail / Mobile</th>
+                  <th class="px-4 py-3">Property PID & Site Address</th>
+                  <th class="px-4 py-3">Authority Jurisdiction</th>
+                  <th class="px-4 py-3">Clearance Permits</th>
+                  <th class="px-4 py-3">Account Status</th>
+                  <th class="px-4 py-3">Action</th>
                 </tr>
               </thead>
               <tbody id="table-citizens" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
@@ -1431,46 +1433,106 @@
 
     function renderCitizensTable() {
       const tbody = document.getElementById('table-citizens');
+      if (!tbody) return;
       const badge = document.getElementById('citizens-count-badge');
       const authApps = getAuthorityApplications();
+      const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
       
       const citizenMap = new Map();
+
+      // Authority-specific authentic baseline citizens
+      const BASELINE_CITIZENS = {
+        mcc: [
+          { id: 'CITZ-MCC-101', name: 'Ramesh Somanna', email: 'ramesh.somanna@gmail.com', phone: '+91 98450 11021', propId: 'PID-4029-URBAN', address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru', pin: '570001', permits: 2, status: 'Verified Active', registeredDate: '2026-08-14' },
+          { id: 'CITZ-MCC-102', name: 'Dr. S. Rao (Vijayanagar Plaza)', email: 'vijayanagar.rao@gmail.com', phone: '+91 98450 33910', propId: 'PID-7714-URBAN', address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru', pin: '570017', permits: 1, status: 'Verified Active', registeredDate: '2026-08-22' },
+          { id: 'CITZ-MCC-103', name: 'Priya Natarajan', email: 'priya.natarajan@gmail.com', phone: '+91 98450 88201', propId: 'PID-1082-URBAN', address: 'Gokulam 3rd Stage, 8th Main, Mysuru', pin: '570002', permits: 1, status: 'Verified Active', registeredDate: '2026-09-02' },
+          { id: 'CITZ-MCC-104', name: 'M. Venkatesh', email: 'm.venkatesh@gmail.com', phone: '+91 98450 66412', propId: 'PID-5520-URBAN', address: 'KRS Road, Industrial Suburb, Mysuru', pin: '570020', permits: 2, status: 'Verified Active', registeredDate: '2026-09-10' }
+        ],
+        gp: [
+          { id: 'CITZ-GP-201', name: 'Naveen Kumar Gowda', email: 'naveen.gowda@gmail.com', phone: '+91 98450 33419', propId: 'PID-GP-8821', address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village', pin: '570026', permits: 2, status: 'Verified Active', registeredDate: '2026-08-10' },
+          { id: 'CITZ-GP-202', name: 'Channappa Marigowda', email: 'channappa.m@gmail.com', phone: '+91 98450 55190', propId: 'PID-GP-9102', address: 'Main Road, Maratikyathanahalli Village, Bogadi Rural', pin: '570026', permits: 1, status: 'Verified Active', registeredDate: '2026-08-28' },
+          { id: 'CITZ-GP-203', name: 'Ningegowda Patil', email: 'ningegowda.p@gmail.com', phone: '+91 98450 77801', propId: 'PID-GP-3041', address: 'Survey No. 12/B, Kadakola Village, Nanjangud Border', pin: '571311', permits: 1, status: 'Verified Active', registeredDate: '2026-09-05' },
+          { id: 'CITZ-GP-204', name: 'Mahadevamma K.', email: 'mahadevamma.k@gmail.com', phone: '+91 98450 99120', propId: 'PID-GP-4412', address: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural', pin: '570026', permits: 2, status: 'Verified Active', registeredDate: '2026-09-12' }
+        ],
+        tp: [
+          { id: 'CITZ-TP-301', name: 'Suresh B. Patil', email: 'suresh.patil@gmail.com', phone: '+91 98450 77102', propId: 'PID-TP-5510', address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli', pin: '570018', permits: 2, status: 'Verified Active', registeredDate: '2026-08-18' },
+          { id: 'CITZ-TP-302', name: 'Anand R. Varma', email: 'anand.varma@gmail.com', phone: '+91 98450 11982', propId: 'PID-TP-6721', address: 'Koorgalli Industrial Estate Phase 2, Hootagalli', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-08-25' },
+          { id: 'CITZ-TP-303', name: 'Belawadi Precision Foundry', email: 'belawadi.foundry@gmail.com', phone: '+91 98450 44320', propId: 'PID-TP-8890', address: 'Belawadi Urban Industrial Extn, Mysuru', pin: '570017', permits: 2, status: 'Verified Active', registeredDate: '2026-09-08' },
+          { id: 'CITZ-TP-304', name: 'G. K. Raju', email: 'gk.raju@gmail.com', phone: '+91 98450 22319', propId: 'PID-TP-1104', address: 'Hootagalli Town Centre, BM Road Periphery', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-09-15' }
+        ]
+      };
+
+      const baselineList = BASELINE_CITIZENS[currentAuthorityKey] || BASELINE_CITIZENS.mcc;
+      baselineList.forEach(b => {
+        citizenMap.set(b.email.toLowerCase(), { ...b });
+      });
       
-      registeredUsers.filter(u => (u.role || '').toLowerCase() === 'citizen' || (u.authority || '').toLowerCase() === 'customer').forEach(c => {
-        citizenMap.set((c.email || c.name || '').toLowerCase(), {
-          name: c.name || 'Citizen User',
-          email: c.email || 'citizen@mysuru.gov.in',
-          phone: c.phone || '+91 98450 11005',
-          createdAt: c.createdAt || new Date().toISOString(),
-          permits: 0
-        });
+      // Dynamic Registered Users Matching This Authority
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
+      registeredUsers.filter(u => (u.role || '').toLowerCase() === 'citizen' || (u.authority || '').toLowerCase() === 'customer').forEach((c, idx) => {
+        const emailKey = (c.email || '').toLowerCase();
+        const pin = String(c.assignedPin || c.pin || '').trim();
+        let matchesAuth = true;
+        if (currentAuthorityKey === 'gp') matchesAuth = GP_PINS.some(p => pin.includes(p)) || emailKey.includes('gp') || pin === '570026';
+        else if (currentAuthorityKey === 'tp') matchesAuth = TP_PINS.some(p => pin.includes(p)) || emailKey.includes('tp') || pin === '570018';
+
+        if (matchesAuth && !citizenMap.has(emailKey)) {
+          citizenMap.set(emailKey, {
+            id: `CITZ-${currentAuthorityKey.toUpperCase()}-${String(idx + 105)}`,
+            name: c.name || 'Citizen Customer',
+            email: c.email || 'customer@gmail.com',
+            phone: c.phone || '+91 98450 11005',
+            propId: 'PID-' + (c.pin || '570001') + '-' + String(idx + 101),
+            address: c.address || `${dept.name} Residential Layout`,
+            pin: c.pin || (currentAuthorityKey === 'gp' ? '570026' : (currentAuthorityKey === 'tp' ? '570018' : '570001')),
+            registeredDate: c.createdAt ? String(c.createdAt).split('T')[0] : '2026-09-18',
+            permits: 1,
+            status: 'Verified Active'
+          });
+        }
       });
 
+      // Match with live submitted applications
       authApps.forEach(a => {
-        const key = (a.applicantEmail || a.applicantName || 'applicant').toLowerCase();
-        if (!citizenMap.has(key)) {
-          citizenMap.set(key, {
-            name: a.applicantName || 'Citizen Applicant',
-            email: a.applicantEmail || `${(a.applicantName || 'user').toLowerCase().replace(/\s+/g, '')}@gmail.com`,
-            phone: a.phone || '+91 98765 43210',
-            createdAt: a.createdAt || a.date || new Date().toISOString(),
-            permits: 1
-          });
+        const emailKey = (a.email || a.applicantEmail || `${(a.applicantName || 'user').toLowerCase().replace(/\s+/g, '')}@gmail.com`).toLowerCase();
+        if (citizenMap.has(emailKey)) {
+          const exist = citizenMap.get(emailKey);
+          exist.permits = Math.max(exist.permits || 1, 1);
+          if (a.propertyId) exist.propId = a.propertyId;
+          if (a.address) exist.address = a.address;
+          if (a.pincode || a.pin) exist.pin = a.pincode || a.pin;
+          if (a.phone) exist.phone = a.phone;
         } else {
-          citizenMap.get(key).permits += 1;
+          citizenMap.set(emailKey, {
+            id: `CITZ-${currentAuthorityKey.toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`,
+            name: a.applicantName || 'Citizen Applicant',
+            email: emailKey,
+            phone: a.phone || '+91 98765 43210',
+            propId: a.propertyId || ('PID-' + (a.pincode || '570001') + '-01'),
+            address: a.address || 'Mysuru Site Address',
+            pin: a.pincode || a.pin || (currentAuthorityKey === 'gp' ? '570026' : (currentAuthorityKey === 'tp' ? '570018' : '570001')),
+            registeredDate: a.submittedAt ? String(a.submittedAt).split('T')[0] : '2026-09-19',
+            permits: 1,
+            status: 'Verified Active'
+          });
         }
       });
 
       let citizens = Array.from(citizenMap.values());
-      badge.innerText = citizens.length + ' Registered Citizens';
+      badge.innerText = `${citizens.length} Registered Citizen${citizens.length > 1 ? 's' : ''}`;
 
       if (searchQueryOfficerCitizens) {
         const q = searchQueryOfficerCitizens;
-        citizens = citizens.filter((c, i) =>
-          `citz-${String(i+1).padStart(3, '0')}`.includes(q) ||
+        citizens = citizens.filter(c =>
+          (c.id || '').toLowerCase().includes(q) ||
           (c.name || '').toLowerCase().includes(q) ||
           (c.email || '').toLowerCase().includes(q) ||
           (c.phone || '').toLowerCase().includes(q) ||
+          (c.propId || '').toLowerCase().includes(q) ||
+          (c.address || '').toLowerCase().includes(q) ||
+          String(c.pin || '').includes(q) ||
           String(c.permits || '').includes(q)
         );
       }
@@ -1478,7 +1540,7 @@
       if (citizens.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
               No registered citizens found matching "${searchQueryOfficerCitizens || 'registered list'}".
             </td>
           </tr>
@@ -1488,13 +1550,39 @@
 
       tbody.innerHTML = citizens.map((c, i) => `
         <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-slate-500">CITZ-${String(i+1).padStart(3, '0')}</td>
-          <td class="px-4 py-3 font-bold text-slate-900">${c.name}</td>
-          <td class="px-4 py-3 font-mono text-slate-600">${c.email}</td>
-          <td class="px-4 py-3 font-mono text-slate-700">${c.phone}</td>
-          <td class="px-4 py-3 text-slate-500 font-mono text-[11px]">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Active Member'}</td>
+          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${c.id || `CITZ-${currentAuthorityKey.toUpperCase()}-${String(i+101)}`}</td>
+          <td class="px-4 py-3">
+            <span class="font-bold text-slate-900 block">${c.name}</span>
+            <span class="text-[10px] text-slate-400 font-mono">Reg: ${c.registeredDate || '2026-09-18'}</span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="font-mono text-emerald-900 font-semibold block text-xs">${c.email}</span>
+            <span class="font-mono text-slate-500 text-[11px] block">📱 ${c.phone}</span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="font-bold text-slate-800 block text-xs">${c.propId || 'PID-MYS-101'}</span>
+            <span class="text-slate-600 text-[11px] block">${c.address || 'Mysuru Site'}</span>
+            <span class="font-mono text-emerald-700 text-[10px] font-bold">PIN: ${c.pin || '570001'}</span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 font-bold text-[10px] border border-slate-200 block w-fit">
+              🏛️ ${dept.name.split('(')[0].trim()}
+            </span>
+          </td>
           <td class="px-4 py-3 font-mono font-bold text-emerald-700">
-            ${c.permits || 1} Permit(s)
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200">
+              ${c.permits || 1} Permit${(c.permits || 1) > 1 ? 's' : ''} Filed
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
+              ✓ ${c.status || 'Active'}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 hover:underline cursor-pointer">
+              Applications &rarr;
+            </button>
           </td>
         </tr>
       `).join('');
@@ -1835,6 +1923,7 @@
         assignedPin,
         assignedArea,
         designation,
+        status: 'Active (On Duty)',
         createdAt: new Date().toISOString()
       };
 
@@ -1861,13 +1950,125 @@
       if (insIdx >= 0) {
         inspectors[insIdx] = newInspector;
       } else {
-        inspectors.push(newInspector);
+        inspectors.unshift(newInspector);
       }
       localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
 
       closeModal();
       await loadData();
-      showToast('🎉 Inspector account created for ' + name + ' (' + email + ', PIN: ' + assignedPin + ')! They can now log in immediately.', 'success');
+
+      // Automatically move down to Inspectors Panel and display success pop-up
+      switchOfficerTab('inspectors');
+      showInspectorCreatedModal(newInspector);
+      showToast('🎉 Inspector account activated! Credentials displayed.', 'success');
+    }
+
+    function showInspectorCreatedModal(ins) {
+      const modalContainer = document.getElementById('modal-container');
+      const backdrop = document.getElementById('modal-backdrop');
+      const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
+
+      modalContainer.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-3">
+              <div class="size-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl font-bold shadow-xs">
+                👷
+              </div>
+              <div>
+                <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300 inline-block">
+                  ✓ Account Created & Activated
+                </span>
+                <h3 class="text-lg font-black text-slate-900 mt-0.5">Field Inspector Created</h3>
+              </div>
+            </div>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold cursor-pointer">&times;</button>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block">Inspector Name</span>
+                <span class="font-bold text-slate-900 text-sm block">${ins.name}</span>
+                <span class="text-[11px] text-slate-500">${ins.designation || 'Ward Health Inspector'}</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block">Inspector Employee ID</span>
+                <span class="font-mono font-bold text-emerald-800 text-sm block">${ins.id}</span>
+                <span class="text-[11px] text-emerald-700 font-semibold">● Active (On Duty)</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2.5 border-t border-slate-200/80">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-emerald-800 block">Official Login Email</span>
+                <span class="font-mono font-bold text-slate-900 block">${ins.email}</span>
+                <span class="text-[10px] text-slate-400 font-mono">📱 ${ins.phone || '+91 98450 11005'}</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase text-emerald-800 block">Login Password</span>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="font-mono font-extrabold text-amber-950 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300 text-xs">${ins.password}</span>
+                  <button type="button" onclick="navigator.clipboard.writeText('${ins.password}'); showToast('Copied password: ${ins.password}', 'success')" class="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 text-[10px] font-bold cursor-pointer" title="Copy password">
+                    📋 Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2.5 border-t border-slate-200/80">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block">Assigned PIN Code</span>
+                <span class="font-mono font-extrabold text-emerald-800 block">📍 PIN ${ins.assignedPin}</span>
+                <span class="text-[10px] text-emerald-600">Automated queue routing</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block">Assigned Ward / Locality</span>
+                <span class="font-semibold text-slate-800 block">${ins.assignedArea || 'Jurisdiction Zone'}</span>
+                <span class="text-[10px] text-slate-500">${dept.name}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 flex flex-col sm:flex-row items-center gap-2">
+            <button type="button" onclick="loginDirectlyAsInspector('${ins.email}', '${ins.password}')" class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer flex items-center justify-center gap-2">
+              <span>🚀 Direct Inspector Sign In</span>
+              <span>&rarr;</span>
+            </button>
+            <button type="button" onclick="copyInspectorCredentials('${ins.email}', '${ins.password}')" class="w-full sm:w-auto py-2.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+              <span>📋 Copy Info</span>
+            </button>
+            <button type="button" onclick="closeModal(); switchOfficerTab('inspectors');" class="w-full sm:w-auto py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition cursor-pointer">
+              <span>⬇️ View in Table</span>
+            </button>
+          </div>
+        </div>
+      `;
+      backdrop.classList.remove('hidden');
+    }
+
+    function loginDirectlyAsInspector(email, password) {
+      const users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      const inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      const ins = inspectors.find(i => (i.email||'').toLowerCase() === email.toLowerCase()) || users.find(u => (u.email||'').toLowerCase() === email.toLowerCase());
+      if (ins) {
+        localStorage.setItem('current_user', JSON.stringify(ins));
+        sessionStorage.setItem('current_user', JSON.stringify(ins));
+        showToast('Logging into Field Inspector Console for ' + ins.name + '...', 'success');
+        setTimeout(() => {
+          window.location.href = 'inspector.html';
+        }, 350);
+      } else {
+        showToast('Inspector not found in local cache.', 'error');
+      }
+    }
+
+    function copyInspectorCredentials(email, password) {
+      const text = `Inspector Login Credentials:\nEmail: ${email}\nPassword: ${password}\nURL: ${window.location.origin}/auth.html`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+      showToast('Copied inspector email & password to clipboard!', 'success');
     }
 
     let currentOfficerCertDeptFilter = 'all';
@@ -1907,6 +2108,7 @@
 
     function renderInspectorsTable() {
       const tbody = document.getElementById('table-inspectors');
+      if (!tbody) return;
       const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
       
       const registeredInspectors = registeredUsers.filter(u => (u.role || '').toLowerCase() === 'inspector' || (u.authority || '').toLowerCase().includes('inspector'));
@@ -2042,7 +2244,14 @@
               </span>
             </td>
             <td class="px-4 py-3">
-              <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">View Queue &rarr;</button>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="loginDirectlyAsInspector('${ins.email}', '${password}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer flex items-center gap-1" title="Test Login as this Inspector">
+                  <span>🚀 Sign In</span>
+                </button>
+                <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer" title="View assigned queue">
+                  Queue &rarr;
+                </button>
+              </div>
             </td>
           </tr>
         `;
