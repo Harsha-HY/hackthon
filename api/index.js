@@ -331,7 +331,21 @@ module.exports = async (req, res) => {
     });
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(combined.map(u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role, authority: u.authority, assignedPin: u.assignedPin || u.pin || '', assignedArea: u.assignedArea || '', designation: u.designation || '' }))));
+    res.end(JSON.stringify(combined.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      role: u.role,
+      authority: u.authority,
+      department: u.department || '',
+      departmentName: u.departmentName || u.department_name || '',
+      assignedPin: u.assignedPin || u.assigned_pin || u.pin || '',
+      assignedArea: u.assignedArea || u.assigned_area || '',
+      designation: u.designation || '',
+      createdBy: u.createdBy || u.created_by || '',
+      status: u.status || 'Active'
+    }))));
     return;
   }
 
