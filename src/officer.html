@@ -973,6 +973,11 @@
         const inspEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
         const offEmail = (app.assignedOfficerEmail || '').toLowerCase().trim();
 
+        // Strict Exclusion: If app has a different authorityKey, exclude immediately
+        if (appAuthKey && appAuthKey !== currentAuthorityKey.toLowerCase()) {
+          return false;
+        }
+
         // 1. Explicit authorityKey match (Primary)
         if (appAuthKey && appAuthKey === currentAuthorityKey.toLowerCase()) return true;
 
