@@ -2066,19 +2066,23 @@
     if (civicSyncChannel) {
       civicSyncChannel.onmessage = (event) => {
         if (event && event.data) {
+          initOfficerSession();
           loadData();
         }
       };
     }
     window.addEventListener('storage', (e) => {
-      if (e.key === 'civic_applications' || e.key === 'civic_registered_users') {
+      if (e.key === 'civic_applications' || e.key === 'civic_registered_users' || e.key === 'civic_departments_config' || e.key === 'civic_inspectors') {
+        initOfficerSession();
         loadData();
       }
     });
 
     initOfficerSession();
     loadData();
-    setInterval(loadData, 2000);
+    setInterval(() => {
+      loadData();
+    }, 1000);
   </script>
 
   <!-- ========================================================================= -->

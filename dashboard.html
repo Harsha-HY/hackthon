@@ -708,13 +708,34 @@
       </section>
 
       <!-- ===================================================================== -->
-      <!-- 7. DEMOLITION REQUESTS                                                -->
+      <!-- 6. DEMOLITION REQUESTS                                                -->
       <!-- ===================================================================== -->
       <section id="panel-demolition_requests" class="panel-view space-y-6">
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">Building Demolition Clearance Requests</h3>
-            <p class="text-xs text-slate-500">Large-scale commercial and residential demolition intake & machinery dispatch.</p>
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-orange-50 text-orange-800 text-[10px] font-mono font-bold uppercase border border-orange-200 mb-1">
+                <span>🏗️ Large Scale Demolition & Clearance</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">Building Demolition Clearance Requests</h3>
+              <p class="text-xs text-slate-500">Commercial and residential demolition intake, material verification & machinery dispatch.</p>
+            </div>
+            
+            <!-- Panchayat Filter Tabs -->
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+              <button onclick="filterDemolitionRequestsByDept('all')" id="btn-demfilter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
+                🌐 All Jurisdictions
+              </button>
+              <button onclick="filterDemolitionRequestsByDept('gp')" id="btn-demfilter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏡 Gram Panchayat
+              </button>
+              <button onclick="filterDemolitionRequestsByDept('tp')" id="btn-demfilter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏭 Town Panchayat
+              </button>
+              <button onclick="filterDemolitionRequestsByDept('mcc')" id="btn-demfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏛️ MCC
+              </button>
+            </div>
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -726,7 +747,7 @@
                   <th class="px-4 py-3">Location</th>
                   <th class="px-4 py-3">Applicant</th>
                   <th class="px-4 py-3">Verified Material & Tonnage</th>
-                  <th class="px-4 py-3">Documents/Photos</th>
+                  <th class="px-4 py-3">Documents / Photos</th>
                   <th class="px-4 py-3">Status</th>
                 </tr>
               </thead>
@@ -1808,6 +1829,118 @@
       renderModalPhoto();
     }
 
+    // =========================================================================
+    // DEMOLITION REQUESTS INTAKE & INSPECTOR CLEARANCE SYNC LOGIC
+    // =========================================================================
+    let currentDemDeptFilter = 'all';
+
+    function filterDemolitionRequestsByDept(dept) {
+      currentDemDeptFilter = dept;
+      ['all', 'gp', 'tp', 'mcc'].forEach(k => {
+        const btn = document.getElementById('btn-demfilter-' + k);
+        if (btn) {
+          if (k === dept) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer';
+          }
+        }
+      });
+      renderDemolitionRequestsTable(dept);
+    }
+
+    function renderDemolitionRequestsTable(filter = currentDemDeptFilter) {
+      const tableDem = document.getElementById('table-demolition-requests');
+      if (!tableDem) return;
+
+      const GP_PINS = ['570026', '571130', '570028', '571311'];
+      const TP_PINS = ['570018', '571607', '570016', '571604'];
+
+      const combined = [];
+
+      (cachedApplications || []).forEach(a => {
+        const photos = getAppPhotos(a);
+        const pin = String(a.pin || a.pincode || '570001');
+        let dept = 'mcc';
+        if (GP_PINS.some(p => pin.startsWith(p)) || (a.authority || '').toLowerCase().includes('panchayat')) dept = 'gp';
+        else if (TP_PINS.some(p => pin.startsWith(p)) || (a.authority || '').toLowerCase().includes('town')) dept = 'tp';
+
+        combined.push({
+          requestId: 'DEM-' + a.id,
+          originalAppId: a.id,
+          property: a.propertyDetails || a.structureType || (a.propertyId ? `Site Plot (${a.propertyId})` : 'Commercial RCC Complex / Structure'),
+          location: `${a.address || 'Mysuru Site'} (PIN: ${pin})`,
+          applicant: `${a.applicantName || 'Citizen Applicant'}${a.phone ? ' · ' + a.phone : ''}`,
+          verifiedMaterial: a.estimatedTonnage || a.verifiedMaterial || `${a.propertyDetails || 'RCC Rubble & Steel Rebar'} (Est: 14.5 MT)`,
+          photos: photos,
+          status: a.status || 'Under Inspection',
+          assignedInspector: a.assignedInspectorName || (dept === 'gp' ? 'Seervi' : (dept === 'tp' ? 'M. Anand' : 'Rajesh Kumar')),
+          dept: dept
+        });
+      });
+
+      let displayed = combined;
+      if (filter === 'gp') {
+        displayed = combined.filter(d => d.dept === 'gp');
+      } else if (filter === 'tp') {
+        displayed = combined.filter(d => d.dept === 'tp');
+      } else if (filter === 'mcc') {
+        displayed = combined.filter(d => d.dept === 'mcc');
+      }
+
+      if (displayed.length === 0) {
+        tableDem.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No building demolition clearance requests found for this jurisdiction.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableDem.innerHTML = displayed.map(d => {
+        const photos = d.photos || [];
+        const isApproved = (d.status || '').toLowerCase().includes('approved') || (d.status || '').toLowerCase().includes('clearance') || (d.status || '').toLowerCase().includes('completed');
+        const isCancelled = (d.status || '').toLowerCase().includes('cancel') || (d.status || '').toLowerCase().includes('reject');
+
+        const statusBadge = isApproved 
+          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+          : (isCancelled ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-amber-100 text-amber-800 border-amber-200');
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${d.requestId}</td>
+            <td class="px-4 py-3 font-bold text-slate-900">${d.property}</td>
+            <td class="px-4 py-3 text-slate-700">${d.location}</td>
+            <td class="px-4 py-3 font-medium text-slate-800">${d.applicant}</td>
+            <td class="px-4 py-3 font-semibold text-amber-900 bg-amber-50/50 px-2.5 py-1 rounded-xl">${d.verifiedMaterial}</td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  ${photos.slice(0, 2).map((p, pIdx) => `
+                    <img src="${p}" onclick="openPhotoModal('${d.originalAppId || d.requestId}', ${pIdx})" alt="Photo" class="size-7 rounded-lg object-cover border border-slate-300 hover:border-emerald-500 cursor-pointer hover:scale-110 transition"/>
+                  `).join('')}
+                  <button onclick="openPhotoModal('${d.originalAppId || d.requestId}', 0)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer">
+                    📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+                  </button>
+                </div>
+              ` : `
+                <span class="text-slate-400 font-mono text-[11px]">📄 Verification Docs</span>
+              `}
+            </td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${statusBadge}">
+                <span class="size-1.5 rounded-full ${isApproved ? 'bg-emerald-500' : (isCancelled ? 'bg-rose-500' : 'bg-amber-500 animate-pulse')}"></span>
+                <span>${d.status}</span>
+              </span>
+              ${d.assignedInspector ? `<span class="block text-[9px] text-slate-500 mt-0.5">👮 ${d.assignedInspector}</span>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     function sendQuickAlert() {
       const msg = prompt('Broadcast Alert Message to Officers:', 'High-priority demolition debris clearance on Ring Road.');
       if (!msg) return;
@@ -2237,8 +2370,15 @@
         });
       } catch(e) {}
 
+      // Real-time broadcast to all dashboards
+      if (civicSyncChannel) {
+        civicSyncChannel.postMessage({ type: 'OFFICER_UPDATED', officer: officerAccount });
+      }
+
       renderAuthoritiesTable();
       renderInspectorsTable();
+      renderPinMappingInspectors();
+      loadData();
       showToast('✅ Saved ' + d.organization + ' Officer (' + d.headName + ')! Login Email: ' + d.email);
     }
 
@@ -2250,6 +2390,8 @@
       selectDepartment(currentSelectedDept);
       renderAuthoritiesTable();
       renderInspectorsTable();
+      renderPinMappingInspectors();
+      loadData();
       showToast('Reset ' + currentSelectedDept.toUpperCase() + ' to official default settings.');
     }
 
@@ -2311,30 +2453,14 @@
       }).join('');
     }
 
-    function openAddOfficerModal() {
-      const deptChoice = prompt('Choose Department to assign officer:\n1 = MCC (Mysuru City Corporation)\n2 = Gram Panchayat\n3 = Town Panchayat\n\nEnter 1, 2, or 3:', '1');
-      if (!deptChoice) return;
-      
-      let deptKey = 'mcc';
-      let orgName = 'Mysuru City Corporation (MCC)';
-      let roleName = 'MCC Admin';
-      let icon = '🏛️';
-      
-      if (deptChoice.trim() === '2') {
-        deptKey = 'gp';
-        orgName = 'Bogadi Gram Panchayat';
-        roleName = 'Panchayat Admin';
-        icon = '🏡';
-      } else if (deptChoice.trim() === '3') {
-        deptKey = 'tp';
-        orgName = 'Hootagalli Town Panchayat';
-        roleName = 'Town Panchayat Admin';
-        icon = '🏭';
-      }
+    function addCustomOfficer(deptKey) {
+      const orgName = deptKey === 'mcc' ? 'Mysuru City Corporation (MCC)' : (deptKey === 'gp' ? 'Bogadi Gram Panchayat' : 'Hootagalli Town Panchayat');
+      const icon = deptKey === 'mcc' ? '🏛️' : (deptKey === 'gp' ? '🏡' : '🏭');
+      const roleName = deptKey === 'mcc' ? 'MCC Officer' : (deptKey === 'gp' ? 'Panchayat Officer' : 'Town Panchayat Officer');
 
-      const name = prompt('Enter Officer Full Name:', 'Sri. Manjunath Swamy');
+      const name = prompt('Enter Officer / Member Full Name:');
       if (!name) return;
-      const desig = prompt('Enter Designation:', 'Assistant Executive Engineer');
+      const desig = prompt('Enter Officer Designation:', deptKey === 'mcc' ? 'Assistant Executive Engineer' : (deptKey === 'gp' ? 'Panchayat Secretary' : 'Town Revenue Inspector'));
       if (!desig) return;
       const empId = prompt('Enter Employee / Officer ID:', deptKey.toUpperCase() + '-OFF-' + Math.floor(100 + Math.random() * 900));
       if (!empId) return;
@@ -2398,8 +2524,15 @@
         }).catch(() => {});
       } catch(e) {}
 
+      // Broadcast to other dashboards
+      if (civicSyncChannel) {
+        civicSyncChannel.postMessage({ type: 'OFFICER_CREATED', officer: officerAccount });
+      }
+
       renderAuthoritiesTable();
       renderInspectorsTable();
+      renderPinMappingInspectors();
+      loadData();
       showToast('🎉 Officer ' + name + ' registered with login: ' + email + ' (Password: ' + password + ')!');
     }
 
@@ -3070,14 +3203,22 @@
     const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
     if (civicSyncChannel) {
       civicSyncChannel.onmessage = (event) => {
-        if (event && event.data) {
-          loadData();
-        }
+        loadData();
+        renderAuthoritiesTable();
+        renderInspectorsTable();
+        renderPinMappingInspectors();
+        renderApplicationsTable();
+        renderDemolitionRequestsTable();
       };
     }
     window.addEventListener('storage', (e) => {
-      if (e.key === 'civic_applications' || e.key === 'civic_registered_users') {
+      if (e.key === 'civic_applications' || e.key === 'civic_registered_users' || e.key === 'civic_departments_config' || e.key === 'civic_additional_officers' || e.key === 'civic_inspectors') {
         loadData();
+        renderAuthoritiesTable();
+        renderInspectorsTable();
+        renderPinMappingInspectors();
+        renderApplicationsTable();
+        renderDemolitionRequestsTable();
       }
     });
 
@@ -3086,8 +3227,11 @@
     selectDepartment(currentAuthorityScope === 'all' ? 'mcc' : currentAuthorityScope);
     renderAuthoritiesTable();
     renderInspectorsTable();
+    renderPinMappingInspectors();
     loadData();
-    setInterval(loadData, 2000);
+    setInterval(() => {
+      loadData();
+    }, 1000);
   </script>
 
   <!-- ========================================================================= -->
