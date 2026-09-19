@@ -262,10 +262,22 @@ module.exports = async (req, res) => {
         initialData.registeredUsers.push(newUser);
       }
 
-      // Supabase DB Persistence
+      // Supabase DB & Auth Persistence
       if (supabase) {
         try {
           await supabase.from('users').upsert(mapUserToDb(newUser));
+          await supabase.auth.admin.createUser({
+            email: newUser.email,
+            password: newUser.password || '123456',
+            email_confirm: true,
+            user_metadata: {
+              name: newUser.name,
+              role: newUser.role,
+              phone: newUser.phone,
+              department: newUser.department,
+              assigned_pin: newUser.assignedPin
+            }
+          }).catch(() => {});
         } catch(e) {}
       }
 
