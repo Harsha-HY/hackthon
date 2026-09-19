@@ -463,10 +463,12 @@
                 <tr>
                   <th class="px-4 py-3">Inspector ID</th>
                   <th class="px-4 py-3">Officer Name & Designation</th>
+                  <th class="px-4 py-3">📍 Assigned Area</th>
                   <th class="px-4 py-3">Official Gmail / Email</th>
+                  <th class="px-4 py-3">🔑 Password / Login Key</th>
                   <th class="px-4 py-3">Contact Phone</th>
-                  <th class="px-4 py-3">📍 Assigned PIN Code & Area</th>
-                  <th class="px-4 py-3">Linked Applications</th>
+                  <th class="px-4 py-3">Mapped PIN Code</th>
+                  <th class="px-4 py-3">Linked Requests</th>
                   <th class="px-4 py-3">Status</th>
                   <th class="px-4 py-3">Action</th>
                 </tr>
@@ -514,7 +516,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <h2 class="text-lg font-bold text-slate-900">Demolition Clearance Requests</h2>
-              <p class="text-xs text-slate-500">Initial applications requesting structural dismantling authorization.</p>
+              <p class="text-xs text-slate-500">Initial applications requesting structural dismantling authorization and debris processing.</p>
             </div>
           </div>
 
@@ -524,9 +526,10 @@
                 <tr>
                   <th class="px-4 py-3">Request ID</th>
                   <th class="px-4 py-3">Structure Details</th>
-                  <th class="px-4 py-3">Location</th>
+                  <th class="px-4 py-3">Location & PIN</th>
                   <th class="px-4 py-3">Submission Date</th>
                   <th class="px-4 py-3">Review Status</th>
+                  <th class="px-4 py-3">Action</th>
                 </tr>
               </thead>
               <tbody id="table-demolition_requests" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
@@ -1526,16 +1529,20 @@
 
       const mergedInspectors = [...customInspectors];
       registeredInspectors.forEach(ri => {
-        if (!mergedInspectors.find(m => (m.email || '').toLowerCase() === (ri.email || '').toLowerCase())) {
+        const exist = mergedInspectors.find(m => (m.email || '').toLowerCase() === (ri.email || '').toLowerCase());
+        if (!exist) {
           mergedInspectors.push(ri);
+        } else {
+          // Merge missing fields like password
+          Object.assign(exist, ri);
         }
       });
 
       if (mergedInspectors.length === 0) {
         mergedInspectors.push(
-          { id: 'INS-01', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', phone: '+91 98450 11001', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
-          { id: 'INS-02', name: 'S. Nanjappa', email: 'nanjappa.gp@gmail.com', phone: '+91 98450 11002', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
-          { id: 'INS-03', name: 'M. Anand', email: 'anand.tp@gmail.com', phone: '+91 98450 11003', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' }
+          { id: 'INS-01', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+          { id: 'INS-02', name: 'S. Nanjappa', email: 'nanjappa.gp@gmail.com', password: '123456', phone: '+91 98450 11002', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
+          { id: 'INS-03', name: 'M. Anand', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' }
         );
       }
 
@@ -1547,21 +1554,23 @@
         const d = (ins.department || '').toLowerCase().trim();
         const dn = (ins.departmentName || '').toLowerCase().trim();
         const auth = (ins.authority || '').toLowerCase().trim();
+        const email = (ins.email || '').toLowerCase().trim();
+        const createdBy = (ins.createdBy || '').toLowerCase().trim();
         const pin = String(ins.assignedPin || ins.pin || '').trim();
 
         if (currentAuthorityKey === 'gp') {
-          return d === 'gp' || d.includes('panchayat') || d.includes('gram') || dn.includes('panchayat') || auth.includes('panchayat') || GP_PINS.some(p => pin.includes(p));
+          return d === 'gp' || d.includes('panchayat') || d.includes('gram') || dn.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || createdBy.includes('gp') || createdBy.includes('gram') || GP_PINS.some(p => pin.includes(p));
         } else if (currentAuthorityKey === 'tp') {
-          return d === 'tp' || d.includes('town') || dn.includes('town') || auth.includes('town') || TP_PINS.some(p => pin.includes(p));
+          return d === 'tp' || d.includes('town') || dn.includes('town') || auth.includes('town') || email.includes('tp') || createdBy.includes('tp') || TP_PINS.some(p => pin.includes(p));
         } else {
-          return d === 'mcc' || d.includes('mcc') || d.includes('city') || dn.includes('mcc') || auth.includes('mcc') || (!GP_PINS.some(p => pin.includes(p)) && !TP_PINS.some(p => pin.includes(p)));
+          return d === 'mcc' || d.includes('mcc') || d.includes('city') || dn.includes('mcc') || auth.includes('mcc') || email.includes('mcc') || createdBy.includes('mcc') || (!GP_PINS.some(p => pin.includes(p)) && !TP_PINS.some(p => pin.includes(p)));
         }
       });
 
       if (authorityInspectors.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="10" class="px-4 py-8 text-center text-slate-400 font-medium">
               No field inspectors registered under ${dept.name} yet. Click "+ Create Inspector Account" to register one.
             </td>
           </tr>
@@ -1571,9 +1580,11 @@
 
       tbody.innerHTML = authorityInspectors.map((ins, idx) => {
         const pin = ins.assignedPin || ins.pin || '570001';
+        const password = ins.password || '123456';
         const linkedCount = applicationsList.filter(a => {
           const appPin = String(a.pincode || a.pin || '').trim();
-          return appPin === pin || pin.includes(appPin);
+          const appInspEmail = (a.assignedInspectorEmail || '').toLowerCase().trim();
+          return (appInspEmail && appInspEmail === (ins.email || '').toLowerCase().trim()) || appPin === pin || pin.includes(appPin);
         }).length;
 
         return `
@@ -1581,15 +1592,23 @@
             <td class="px-4 py-3 font-mono font-bold text-emerald-800">${ins.id || 'INS-' + String(idx+1).padStart(2,'0')}</td>
             <td class="px-4 py-3">
               <span class="font-bold text-slate-900 block">${ins.name}</span>
-              <span class="text-[11px] text-slate-500 block">${ins.designation || 'Field Officer'}</span>
+              <span class="text-[11px] text-slate-500 block">${ins.designation || 'Ward Health Inspector'}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="font-semibold text-slate-800 block">${ins.assignedArea || 'Zone Area'}</span>
             </td>
             <td class="px-4 py-3 font-mono font-semibold text-emerald-800">${ins.email}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-950 font-mono font-bold text-xs border border-amber-300 shadow-2xs">
+                <span>🔑 ${password}</span>
+                <button type="button" onclick="navigator.clipboard.writeText('${password}'); showToast('Copied password: ${password}', 'success')" class="text-amber-700 hover:text-amber-900 cursor-pointer ml-1" title="Copy password">📋</button>
+              </span>
+            </td>
             <td class="px-4 py-3 font-mono text-slate-700">${ins.phone || '+91 98450 11001'}</td>
             <td class="px-4 py-3">
               <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-950 font-mono font-bold text-xs border border-emerald-200 block w-fit">
                 📍 PIN: ${pin}
               </span>
-              <span class="text-[11px] text-slate-600 block mt-0.5">${ins.assignedArea || 'Zone Area'}</span>
             </td>
             <td class="px-4 py-3 font-mono font-bold text-emerald-700">
               <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[11px]">${linkedCount} Linked Request(s)</span>
@@ -1667,25 +1686,49 @@
         return;
       }
 
-      tbody.innerHTML = apps.map((a, i) => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">DEM-REQ-${String(i+501)}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">${a.propertyType || 'Residential Building (G+2)'}</td>
-          <td class="px-4 py-3 text-slate-700">
-            <span class="block">${a.address || 'Mysuru Premise'}</span>
-            <span class="text-[10px] font-mono text-emerald-700 font-bold">PIN: ${a.pincode || a.pin || '570001'}</span>
-          </td>
-          <td class="px-4 py-3 font-mono text-slate-500 text-[11px]">${a.date || 'Recent'}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} text-[10px] font-bold font-mono">
-              ${a.status || 'Under Structural Audit'}
-            </span>
-          </td>
-          <td class="px-4 py-3">
-            <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Process &rarr;</button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = apps.map((a, i) => {
+        const isApproved = a.status === 'Approved' || a.status === 'Clearance Approved' || a.status === 'Issued' || a.certificateStatus === 'Issued';
+        const isAudited = isApproved || a.status === 'Inspection Passed & Verified' || a.status === 'Site Audit Done' || a.status === 'Audited';
+        const isScheduled = a.status === 'Visit Scheduled' || a.status === 'On-Site Audit In Progress';
+        const isViolation = a.status === 'Flagged Violation' || a.status === 'Cancelled' || a.status === 'Rejected';
+        const formattedDate = a.submittedAt || a.createdAt || a.issueDate ? new Date(a.submittedAt || a.createdAt || a.issueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id || ('DEM-REQ-' + String(i+501))}</td>
+            <td class="px-4 py-3">
+              <span class="font-bold text-slate-900 block">${a.propertyId || 'Residential Building Structure'}</span>
+              <span class="text-[11px] text-slate-600 block">${a.verifiedTonnage || a.tonnage || 10} MT Rubble · ${a.propertyType || 'Masonry & Concrete'}</span>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <span class="block font-semibold">${a.address || 'Mysuru Premise'}</span>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="text-[10px] font-mono text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">PIN: ${a.pincode || a.pin || '570001'}</span>
+                <a href="${a.mapUrl || 'https://www.google.com/maps?q=' + (a.lat||12.2958) + ',' + (a.lng||76.6394)}" target="_blank" class="text-[10px] font-mono text-emerald-600 hover:underline">📍 Live GPS ↗</a>
+              </div>
+            </td>
+            <td class="px-4 py-3 font-mono text-slate-600 text-[11px]">${formattedDate}</td>
+            <td class="px-4 py-3">
+              <div class="space-y-0.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono inline-block ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (isViolation ? 'bg-rose-100 text-rose-800 border border-rose-200' : (isAudited ? 'bg-teal-100 text-teal-800 border border-teal-200' : 'bg-blue-100 text-blue-800 border border-blue-200'))}">
+                  ${isApproved ? '✓ Clearance Approved (NOC Issued)' : (isAudited ? '🟢 Audit Passed & Verified' : (isScheduled ? '📅 ' + a.status : '⏳ Pending Field Inspection'))}
+                </span>
+                <span class="text-[10px] text-slate-500 block">Inspector: <strong>${a.assignedInspectorName || 'Assigned'}</strong></span>
+                ${a.inspectorNotes ? `<span class="text-[10px] text-amber-800 italic block">"${a.inspectorNotes}"</span>` : ''}
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              ${isApproved ? `
+                <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs transition cursor-pointer inline-flex items-center gap-1 shadow-2xs">
+                  <span>📜 View NOC</span>
+                </button>
+              ` : `
+                <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Review &rarr;</button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderDemolitionCasesTable() {

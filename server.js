@@ -351,6 +351,7 @@ const server = http.createServer(async (req, res) => {
         name: u.name,
         email: u.email,
         phone: u.phone,
+        password: u.password || (u.passwords && u.passwords[0]) || '123456',
         role: u.role,
         authority: u.authority,
         department: u.department || '',
