@@ -225,21 +225,6 @@
             <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
             <span>6. Certificates</span>
           </button>
-          <button onclick="switchView('reports')" id="btn-reports" class="nav-btn">
-            <span class="icon-box bg-violet-500/10 text-violet-400">📈</span>
-            <span>7. Reports & Analytics</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Group 4: Administration & System -->
-      <div>
-        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Administration</span>
-        <div class="space-y-1">
-          <button onclick="switchView('users')" id="btn-users" class="nav-btn">
-            <span class="icon-box bg-slate-500/10 text-slate-400">👥</span>
-            <span>8. Users</span>
-          </button>
         </div>
       </div>
 
@@ -810,333 +795,7 @@
         </div>
       </section>
 
-      <!-- ===================================================================== -->
-      <!-- 12. REPORTS & ANALYTICS                                               -->
-      <!-- ===================================================================== -->
-      <section id="panel-reports" class="panel-view space-y-6">
-        
-        <!-- Header & Control Strip -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-mono font-bold uppercase border border-violet-200 mb-1.5">
-              <span>📈 Current Actuals vs Upcoming Demand Forecast</span>
-            </div>
-            <h3 class="text-xl font-bold text-slate-900">City C&D Waste Reports & Predictive Analytics</h3>
-            <p class="text-xs text-slate-500">Analyze verified historical clearance data alongside scheduled upcoming demolition pipeline and recycling forecasts.</p>
-          </div>
 
-          <!-- Controls: Filters & Export -->
-          <div class="flex flex-wrap items-center gap-2.5">
-            <!-- Data Horizon Mode Selector (Current vs Upcoming) -->
-            <div class="flex items-center gap-1 bg-violet-50 p-1 rounded-2xl border border-violet-200">
-              <button onclick="setReportsHorizon('all')" id="btn-horizon-all" class="px-3 py-1.5 rounded-xl bg-violet-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1">
-                <span>📊</span> <span>Unified (All)</span>
-              </button>
-              <button onclick="setReportsHorizon('current')" id="btn-horizon-current" class="px-3 py-1.5 rounded-xl text-violet-900 hover:bg-white/80 font-bold text-xs transition cursor-pointer flex items-center gap-1">
-                <span>✅</span> <span>Current Data</span>
-              </button>
-              <button onclick="setReportsHorizon('upcoming')" id="btn-horizon-upcoming" class="px-3 py-1.5 rounded-xl text-violet-900 hover:bg-white/80 font-bold text-xs transition cursor-pointer flex items-center gap-1">
-                <span>🔮</span> <span>Upcoming Forecast</span>
-              </button>
-            </div>
-
-            <!-- Jurisdiction Filter Tabs -->
-            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl">
-              <button onclick="filterReportsByDept('all')" id="btn-repfilter-all" class="px-3 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
-                🌐 All Mysuru
-              </button>
-              <button onclick="filterReportsByDept('mcc')" id="btn-repfilter-mcc" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏛️ MCC Urban
-              </button>
-              <button onclick="filterReportsByDept('gp')" id="btn-repfilter-gp" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏡 Bogadi GP
-              </button>
-              <button onclick="filterReportsByDept('tp')" id="btn-repfilter-tp" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏭 Hootagalli TP
-              </button>
-            </div>
-
-            <!-- Export Button -->
-            <button onclick="exportReportsCSV()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-              <span>📥</span> <span>Export CSV</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 5 KPI Cards Grid (Current vs Upcoming Aware) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="kpi-title-tonnage">Total Debris Volume</span>
-              <span class="size-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold">🏗️</span>
-            </div>
-            <span id="rep-kpi-tonnage" class="text-2xl font-black text-emerald-800 block">0 MT</span>
-            <div class="flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold" id="rep-sub-tonnage">
-              <span>Realized + Upcoming Pipeline</span>
-            </div>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="kpi-title-recycling">Recycling Paver Yield</span>
-              <span class="size-7 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-sm font-bold">♻️</span>
-            </div>
-            <span id="rep-kpi-recycling" class="text-2xl font-black text-teal-700 block">92.4%</span>
-            <div class="flex items-center gap-1.5 text-[11px] text-teal-700 font-semibold" id="rep-sub-recycling">
-              <span>0 Paver Blocks Output</span>
-            </div>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="kpi-title-sla">Inspection Turnaround</span>
-              <span class="size-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">⚡</span>
-            </div>
-            <span id="rep-kpi-sla" class="text-2xl font-black text-blue-700 block">2.8 Hours</span>
-            <div class="flex items-center gap-1.5 text-[11px] text-blue-700 font-semibold" id="rep-sub-sla">
-              <span>Standard SLA: 4.0 Hours</span>
-            </div>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="kpi-title-permits">Permits & Case Count</span>
-              <span class="size-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm font-bold">📜</span>
-            </div>
-            <span id="rep-kpi-permits" class="text-2xl font-black text-amber-700 block">0</span>
-            <div class="flex items-center gap-1.5 text-[11px] text-amber-700 font-semibold" id="rep-sub-permits">
-              <span id="rep-kpi-approval-rate">0 Cleared · 0 Upcoming</span>
-            </div>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="kpi-title-carbon">Next Scheduled Inspection</span>
-              <span class="size-7 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-sm font-bold">📅</span>
-            </div>
-            <span id="rep-kpi-carbon" class="text-xl font-black text-violet-700 block">20 Sep 2026</span>
-            <div class="flex items-center gap-1.5 text-[11px] text-violet-700 font-semibold" id="rep-sub-carbon">
-              <span id="rep-kpi-revenue">₹0 Clearance Fees</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2x2 Interactive Charts Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          <!-- Chart 1: Monthly Intake (Current Actuals vs Upcoming Forecast) -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm">Monthly Inflow: Current Actuals vs Upcoming Forecast</h4>
-                <p class="text-xs text-slate-500">Historical realized intake vs upcoming projected demolition volume (MT).</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full bg-violet-50 text-violet-800 text-[10px] font-mono font-bold border border-violet-200">
-                Actuals + Forecast
-              </span>
-            </div>
-            <div class="h-64 relative">
-              <canvas id="chart-monthly-trend"></canvas>
-            </div>
-          </div>
-
-          <!-- Chart 2: Rubble Material Breakdown Doughnut -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm">Rubble Material Composition Breakdown</h4>
-                <p class="text-xs text-slate-500">Classification of demolition debris by verified material category.</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-800 text-[10px] font-mono font-bold border border-indigo-200">
-                Composition %
-              </span>
-            </div>
-            <div class="h-64 relative flex items-center justify-center">
-              <canvas id="chart-material-breakdown"></canvas>
-            </div>
-          </div>
-
-          <!-- Chart 3: Cross-Jurisdiction Comparison: Cleared vs Upcoming Queue -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm">Jurisdiction Fulfillment: Cleared vs Upcoming Queue</h4>
-                <p class="text-xs text-slate-500">Comparing realized clearance vs upcoming scheduled caseload across authorities.</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-[10px] font-mono font-bold border border-amber-200">
-                Fulfillment Matrix
-              </span>
-            </div>
-            <div class="h-64 relative">
-              <canvas id="chart-jurisdiction-comparison"></canvas>
-            </div>
-          </div>
-
-          <!-- Chart 4: Field Inspector Workload: Cleared vs Upcoming Audits -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm">Inspector Workload: Cleared Audits vs Upcoming Pipeline</h4>
-                <p class="text-xs text-slate-500">Completed physical site verifications vs upcoming scheduled appointments.</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 text-[10px] font-mono font-bold border border-teal-200">
-                Workload Schedule
-              </span>
-            </div>
-            <div class="h-64 relative">
-              <canvas id="chart-inspector-efficiency"></canvas>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Processing Plants & Recycling Yard Live Capacity -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h4 class="font-bold text-slate-900 text-sm">🏭 Designated C&D Waste Processing Plants & Recycling Yards</h4>
-              <p class="text-xs text-slate-500">Current load capacity vs projected demand from upcoming demolition pipeline.</p>
-            </div>
-            <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
-              <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>All 3 Plants Ready for Upcoming Intake</span>
-            </span>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-900">Kumbarakoppal ZWM C&D Plant</span>
-                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px]">Urban Hub</span>
-              </div>
-              <p class="text-slate-500 text-[11px]">Primary Heavy Concrete Jaw Crusher & Vibratory Screening Sieve.</p>
-              <div class="space-y-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-700">
-                  <span>Capacity Utilization (150 MT/Day)</span>
-                  <span class="text-emerald-700 font-bold" id="plant-kumbarakoppal-cap">74% Current · 86% Projected</span>
-                </div>
-                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500 rounded-full" style="width: 74%"></div>
-                </div>
-              </div>
-              <div class="text-[10px] text-slate-400 font-mono flex justify-between pt-1 border-t border-slate-200">
-                <span>Output: Manufactured Sand (M-Sand)</span>
-                <span>Active</span>
-              </div>
-            </div>
-
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-900">Rayanakere Secondary Yard</span>
-                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-mono font-bold text-[10px]">Rural / Bogadi</span>
-              </div>
-              <p class="text-slate-500 text-[11px]">Secondary Aggregate Pulverizer & Road Sub-base Processing Unit.</p>
-              <div class="space-y-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-700">
-                  <span>Capacity Utilization (100 MT/Day)</span>
-                  <span class="text-amber-700 font-bold" id="plant-rayanakere-cap">52% Current · 68% Projected</span>
-                </div>
-                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-amber-500 rounded-full" style="width: 52%"></div>
-                </div>
-              </div>
-              <div class="text-[10px] text-slate-400 font-mono flex justify-between pt-1 border-t border-slate-200">
-                <span>Output: Wet Mix Macadam (GSB)</span>
-                <span>Active</span>
-              </div>
-            </div>
-
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-900">Hootagalli KIADB Paving Press</span>
-                <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-mono font-bold text-[10px]">Town Panchayat</span>
-              </div>
-              <p class="text-slate-500 text-[11px]">Hydraulic Compaction Unit for Heavy-Duty Interlocking Paver Blocks.</p>
-              <div class="space-y-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-700">
-                  <span>Capacity (5,000 Pavers/Day)</span>
-                  <span class="text-blue-700 font-bold" id="plant-hootagalli-cap">68% Current · 82% Projected</span>
-                </div>
-                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-blue-500 rounded-full" style="width: 68%"></div>
-                </div>
-              </div>
-              <div class="text-[10px] text-slate-400 font-mono flex justify-between pt-1 border-t border-slate-200">
-                <span>Output: Interlocking Paver Bricks</span>
-                <span>Active</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Regional Debris Statistics Breakdown Table -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-            <div>
-              <h3 class="text-base font-bold text-slate-900">Area & Demolition Site Dissection Log</h3>
-              <p class="text-xs text-slate-500">Track realized clearances and upcoming scheduled site audits with material and plant destinations.</p>
-            </div>
-            <!-- Search bar -->
-            <div class="relative w-full sm:w-72">
-              <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
-              <input type="text" id="search-reports-table" oninput="handleReportsTableSearch(this.value)" placeholder="Search area, PIN, material, inspector, date..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Ward / Area & PIN</th>
-                  <th class="px-4 py-3">Jurisdiction</th>
-                  <th class="px-4 py-3">Volume (MT)</th>
-                  <th class="px-4 py-3">Rubble Material</th>
-                  <th class="px-4 py-3">Assigned Inspector</th>
-                  <th class="px-4 py-3">Designated Plant</th>
-                  <th class="px-4 py-3">Timeline / Date</th>
-                  <th class="px-4 py-3">Data Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-reports-breakdown" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 13. USERS                                                             -->
-      <!-- ===================================================================== -->
-      <section id="panel-users" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">System Users & Administrative Permissions</h3>
-            <p class="text-xs text-slate-500">Manage login credentials and authority privileges across departments.</p>
-          </div>
-
-          <!-- Search Users Bar -->
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
-            <input type="text" id="search-users-list" oninput="handleUsersSearch(this.value)" placeholder="Search system users by Name, Role, Email, Phone, Employee ID, or Assigned Jurisdiction..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Name</th>
-                  <th class="px-4 py-3">Role</th>
-                  <th class="px-4 py-3">Phone & Email</th>
-                  <th class="px-4 py-3">Assigned Area Jurisdiction</th>
-                  <th class="px-4 py-3">Permissions Scope</th>
-                  <th class="px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-users" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ===================================================================== -->
       <!-- 14. SETTINGS                                                          -->
@@ -1207,7 +866,7 @@
     const views = [
       'dashboard', 'pinmapping', 'authorities',
       'inspectors', 'inspections', 'demolition_requests',
-      'certificates', 'notifications', 'reports', 'users', 'settings'
+      'certificates', 'notifications', 'settings'
     ];
 
     const viewTitles = {
@@ -1219,9 +878,7 @@
       'demolition_requests': '5. Building Demolition Clearance Requests',
       'certificates': '6. Green Disposal Certificates',
       'notifications': '7. Notifications Dispatch Center',
-      'reports': '8. Reports & City Analytics',
-      'users': '9. System Users & Access Control',
-      'settings': '10. System Configurations & Settings'
+      'settings': '8. System Configurations & Settings'
     };
 
     function switchView(viewName) {
@@ -2746,6 +2403,7 @@
     }
 
     function renderReportsAnalytics(redrawCharts = true) {
+      if (!document.getElementById('panel-reports')) return;
       const allRawApps = getOriginalDemolitionApplications();
       
       // Filter by Jurisdiction
