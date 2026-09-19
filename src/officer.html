@@ -263,14 +263,7 @@
 
       <div class="flex items-center gap-3">
         <!-- Interactive Panchayat Authority Switcher -->
-        <div class="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-100 px-3 py-1 rounded-2xl border border-slate-300/80 transition">
-          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline-block">Panchayat:</label>
-          <select id="officer-authority-switcher" onchange="changeOfficerAuthority(this.value)" class="bg-transparent font-bold text-xs text-slate-900 focus:outline-none cursor-pointer py-1">
-            <option value="mcc">🏛️ Mysuru City Corp (MCC)</option>
-            <option value="gp">🏡 Gram Panchayat (Bogadi Rural)</option>
-            <option value="tp">🏭 Town Panchayat (Hootagalli Town)</option>
-          </select>
-        </div>
+        
 
         <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
           <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1994,6 +1987,26 @@
       document.getElementById('modal-backdrop').classList.add('hidden');
     }
 
+    
+    function toggleInspectorStatus(email) {
+      let inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      let users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      const targetEmail = (email || '').toLowerCase().trim();
+
+      const ins = inspectors.find(i => (i.email || '').toLowerCase().trim() === targetEmail);
+      if (ins) {
+        ins.status = (ins.status || 'Active').includes('Leave') ? 'Active (On Duty)' : 'On Leave';
+        localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+      }
+      const u = users.find(i => (i.email || '').toLowerCase().trim() === targetEmail);
+      if (u) {
+        u.status = (u.status || 'Active').includes('Leave') ? 'Active (On Duty)' : 'On Leave';
+        localStorage.setItem('civic_registered_users', JSON.stringify(users));
+      }
+      renderInspectorsTable();
+      showToast('Status updated for ' + (ins ? ins.name : email), 'success');
+    }
+
     async function handleCreateInspector(e) {
       e.preventDefault();
       const name = document.getElementById('new-ins-name').value.trim();
@@ -2329,9 +2342,9 @@
               </span>
             </td>
             <td class="px-4 py-3">
-              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
-                ✓ Active (On Duty)
-              </span>
+              <button type="button" onclick="toggleInspectorStatus('${ins.email}')" class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold transition cursor-pointer border ${(ins.status || 'Active').includes('Leave') ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-emerald-100 hover:text-emerald-900' : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-amber-100 hover:text-amber-900'}" title="Click to toggle Active / On Leave">
+     ${(ins.status || 'Active').includes('Leave') ? '⏸️ On Leave' : '✓ Active (On Duty)'}
+   </button>
             </td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
