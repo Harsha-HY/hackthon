@@ -250,6 +250,129 @@
   </div>
 
   <!-- ========================================================================= -->
+  <!-- OFFICIAL MUNICIPAL & PANCHAYAT C&D CLEARANCE CERTIFICATE (NOC) MODAL       -->
+  <!-- ========================================================================= -->
+  <div id="noc-certificate-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-emerald-600/30 overflow-hidden my-auto animate-in fade-in zoom-in duration-150">
+      
+      <!-- Certificate Action Header -->
+      <div class="p-4 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg">📜</span>
+          <div>
+            <h3 class="font-bold text-xs sm:text-sm text-white">Official Clearance Certificate (NOC)</h3>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="cert-modal-header-sub">Authorized by Ward Inspector & Panchayat</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1 shadow-xs">
+            <span>🖨️</span> <span>Print / Save PDF</span>
+          </button>
+          <button onclick="closeCertificateModal()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white text-base font-bold flex items-center justify-center transition cursor-pointer">
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Certificate Body -->
+      <div class="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1 bg-[#fcfdfd] text-slate-800 border-8 border-double border-emerald-800/20 m-3 rounded-2xl" id="printable-certificate-content">
+        
+        <!-- Govt Header & Seal -->
+        <div class="text-center space-y-1.5 border-b-2 border-emerald-800/30 pb-4">
+          <div class="inline-flex items-center justify-center size-12 rounded-full bg-emerald-900 text-amber-300 font-bold text-2xl shadow-md">
+            🏛️
+          </div>
+          <span class="block text-[11px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
+          <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
+          <h2 class="text-base sm:text-lg font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
+            Bogadi Gram Panchayat (Rural)
+          </h2>
+          <div class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs uppercase tracking-wider border border-emerald-300 mt-1">
+            Official C&D Waste Clearance No-Objection Certificate (NOC)
+          </div>
+        </div>
+
+        <!-- Reference & Date Strip -->
+        <div class="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-3">
+          <div>
+            <span class="text-slate-400 font-semibold">NOC Ref No:</span>
+            <span class="font-bold text-emerald-800 ml-1" id="cert-ref-no">NOC/GP/2026/934924</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold">Date of Clearance:</span>
+            <span class="font-bold text-slate-800 ml-1" id="cert-issue-date">19 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Clearance Statement & Details Grid -->
+        <div class="space-y-4 text-xs">
+          <p class="leading-relaxed text-slate-700">
+            This is to certify that physical site inspection, GPS verification, and rubble volume measurement have been completed in accordance with the <strong>Construction & Demolition Waste Management Rules</strong>. The applicant is hereby authorized for lawful haulage and disposal at the designated municipal processing facility.
+          </p>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Authorized Citizen / Applicant</span>
+              <span class="font-bold text-slate-900 text-sm block" id="cert-applicant-name">Citizen User</span>
+              <span class="text-slate-600 font-mono text-[11px] block" id="cert-applicant-phone">Mobile: +91 98765 43210</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-8821</span>
+              <span class="text-slate-600 text-[11px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
+              <span class="font-bold text-emerald-800 font-mono text-sm block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
+              <span class="text-slate-500 text-[10px] block">Waste Category: Non-Hazardous C&D Debris</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
+              <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
+              <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endorsement & Signatures -->
+        <div class="pt-4 border-t-2 border-emerald-800/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <!-- Digital QR Seal -->
+          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="size-12 rounded-lg bg-emerald-900 text-white flex flex-col items-center justify-center font-mono font-bold text-[9px] leading-tight text-center">
+              <span>QR</span>
+              <span class="text-[7px] text-emerald-300">VALID</span>
+            </div>
+            <div class="text-[10px] leading-tight">
+              <span class="font-bold text-emerald-950 block">Digital Verification Seal</span>
+              <span class="text-slate-500 font-mono block">Status: Official & Compliant</span>
+            </div>
+          </div>
+
+          <!-- Inspector & Authority Signature Block -->
+          <div class="text-right space-y-0.5">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Authorized By Ward Inspector</span>
+            <span class="font-bold text-slate-900 text-sm block" id="cert-inspector-name">seervi</span>
+            <span class="text-[10px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+            <span class="text-[10px] font-bold text-emerald-800 block" id="cert-panchayat-seal">Bogadi Gram Panchayat (Rural)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2 shrink-0">
+        <button onclick="closeCertificateModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- 1. LEFT SIDEBAR NAVIGATION PANEL (Dark Theme with Mysuru Skyline)        -->
   <!-- ========================================================================= -->
   <aside class="w-72 bg-[#081d19] text-white flex flex-col justify-between shrink-0 h-screen sticky top-0 border-r border-[#10372e] z-40 hidden md:flex">
@@ -273,8 +396,8 @@
       </button>
       
       <button onclick="switchTab('applications')" id="nav-applications" class="nav-btn">
-        <span class="text-base">📄</span>
-        <span>Applications</span>
+        <span class="text-base">📜</span>
+        <span>Application History</span>
       </button>
     </div>
 
@@ -330,8 +453,8 @@
             <span class="block text-xs font-bold text-slate-900" id="drop-user-name">Citizen User</span>
             <span class="block text-[10px] font-mono text-emerald-700 font-semibold" id="drop-user-email">customer@gmail.com</span>
           </div>
-          <button onclick="switchTab('applications')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition">
-            📄 My Applications
+          <button onclick="switchTab('applications')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
+            <span>📜</span> <span>Application History</span>
           </button>
           <div class="border-t border-slate-100 my-1"></div>
           <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition">
@@ -975,31 +1098,89 @@
       return userApps.find(app => !isFinalizedStatus(app.status));
     }
 
-    // Renders lock banner and disables submit button if an active complaint is in progress
+    // Renders lock banner and completely hides form if an active complaint is in progress
     function checkActiveApplicationLock() {
       const activeApp = getActiveCustomerApplication();
       const banner = document.getElementById('active-lock-banner-container');
+      const form = document.getElementById('customer-main-form');
       const submitBtn = document.getElementById('btn-submit-application');
 
       if (activeApp) {
+        if (form) form.classList.add('hidden');
         if (banner) {
-          banner.className = 'mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
+          const isApproved = activeApp.status === 'Approved' || activeApp.status === 'Clearance Approved' || activeApp.status === 'Issued' || activeApp.status === 'Certificate Issued';
+          const isViolation = activeApp.status === 'Flagged Violation' || activeApp.status === 'Cancelled' || activeApp.status === 'Rejected';
+
+          banner.className = 'mb-6 p-6 rounded-3xl bg-[#081d19] text-white border border-emerald-800 shadow-xl space-y-5';
           banner.innerHTML = `
-            <div class="flex items-start gap-3">
-              <span class="size-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base shrink-0 font-bold">🔒</span>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="font-bold text-xs uppercase tracking-wider text-amber-900">Active Complaint In Progress</h4>
-                  <span class="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-950 font-mono text-[10px] font-bold">${activeApp.id}</span>
+            <!-- Lock Header -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-emerald-900/60 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="size-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center font-bold text-lg shadow-xs">
+                  🔒
                 </div>
-                <p class="text-xs text-amber-800 mt-0.5">
-                  Current Status: <strong class="font-bold text-amber-950">${activeApp.status || 'Pending Inspection'}</strong>. You can only apply once until the Inspector, Panchayat Officer, or Admin agrees (Approves) or Cancels your existing request.
-                </p>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-sm text-white">Active Complaint In Progress</h3>
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/30">${activeApp.id}</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-0.5">Submitted and actively managed by ${activeApp.authority || 'Local Jurisdiction'}</p>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${isApproved ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' : (isViolation ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40' : 'bg-amber-500/30 text-amber-200 border border-amber-400/40')}">
+                ● ${activeApp.status || 'Pending Inspection'}
+              </span>
+            </div>
+
+            <!-- Explanation Notice -->
+            <div class="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800/60 text-xs text-emerald-200 space-y-1">
+              <span class="font-bold text-emerald-300 block">ℹ️ Single Active Application Policy:</span>
+              <p class="text-emerald-100/80 leading-relaxed">
+                Your C&D waste clearance request has been lodged. The submission form is hidden and locked until Ward Inspector <strong>${activeApp.assignedInspectorName || 'Ward Officer'}</strong> finishes the site audit, issues your NOC clearance, or cancels the request.
+              </p>
+            </div>
+
+            <!-- Active Complaint Details Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-black/30 border border-emerald-900/40 text-xs">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Customer & Contact</span>
+                <span class="font-bold text-white text-sm block">${activeApp.applicantName || 'Citizen User'}</span>
+                <span class="text-slate-400 font-mono text-[11px] block">📱 ${activeApp.phone || 'Verified Phone'}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Property Site & PIN</span>
+                <span class="font-bold text-white block">${activeApp.propertyId || 'Property Site'}</span>
+                <span class="text-slate-300 text-[11px] block">${activeApp.address || 'Mysuru'} · PIN ${activeApp.pincode || activeApp.pin}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Assigned Inspector & Authority</span>
+                <span class="font-bold text-emerald-300 block">${activeApp.assignedInspectorName || 'Ward Inspector'}</span>
+                <span class="text-slate-400 text-[11px] block">${activeApp.authority || 'Mysuru Municipal Corporation'}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">GPS Location</span>
+                <a href="${activeApp.mapUrl || 'https://www.google.com/maps?q=' + (activeApp.lat||12.2958) + ',' + (activeApp.lng||76.6394)}" target="_blank" class="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-400 hover:underline mt-0.5">
+                  <span>📍 ${activeApp.gpsLocation || 'Live GPS'}</span> <span>↗</span>
+                </a>
               </div>
             </div>
-            <button type="button" onclick="switchTab('applications')" class="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition cursor-pointer">
-              Track Status &rarr;
-            </button>
+
+            <!-- Action Buttons Strip -->
+            <div class="pt-2 flex flex-wrap items-center justify-between gap-3">
+              <button type="button" onclick="switchTab('applications')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>📜</span> <span>View Application History</span>
+              </button>
+              <div class="flex items-center gap-2">
+                ${isApproved ? `
+                  <button type="button" onclick="openCertificateModal('${activeApp.id}')" class="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
+                    <span>📜</span> <span>View Official Certificate (NOC)</span>
+                  </button>
+                ` : ''}
+                <button type="button" onclick="openTrackingModal('${activeApp.id}')" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/30 transition cursor-pointer flex items-center gap-1.5">
+                  <span>🔍</span> <span>Track Full Order &rarr;</span>
+                </button>
+              </div>
+            </div>
           `;
           banner.classList.remove('hidden');
         }
@@ -1009,6 +1190,7 @@
           submitBtn.innerHTML = `<span>🔒 Active Complaint In Progress</span>`;
         }
       } else {
+        if (form) form.classList.remove('hidden');
         if (banner) {
           banner.className = 'hidden mb-6';
           banner.innerHTML = '';
@@ -1718,6 +1900,82 @@
       if (modalEl) modalEl.classList.add('hidden');
     }
 
+    // ==========================================
+    // OFFICIAL CLEARANCE CERTIFICATE (NOC) MODAL
+    // ==========================================
+    function openCertificateModal(appId) {
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const myRequests = getLoggedInUserApplications(allApps);
+      let app = null;
+
+      if (appId) {
+        app = allApps.find(a => String(a.id) === String(appId));
+      } else if (myRequests.length > 0) {
+        app = myRequests.find(a => isFinalizedStatus(a.status) && (a.status === 'Approved' || a.status === 'Clearance Approved' || a.status === 'Issued' || a.status === 'Certificate Issued')) || myRequests[0];
+      }
+
+      if (!app) {
+        showToast('No approved clearance application found to generate NOC certificate.', 'info');
+        return;
+      }
+
+      // Populate Authority & Header
+      const authTitle = document.getElementById('cert-authority-title');
+      if (authTitle) authTitle.innerText = (app.authority || 'Bogadi Gram Panchayat (Rural)').toUpperCase();
+
+      const headerSub = document.getElementById('cert-modal-header-sub');
+      if (headerSub) headerSub.innerText = `Authorized by ${app.assignedInspectorName || 'Ward Inspector'} · ${app.authority || 'Panchayat'}`;
+
+      const cleanId = String(app.id || '2026934924').replace(/[^0-9]/g, '') || '2026934924';
+      const authPrefix = (app.authorityKey || (app.authority && app.authority.toLowerCase().includes('panchayat') ? 'GP' : 'MCC')).toUpperCase();
+      
+      const refNo = document.getElementById('cert-ref-no');
+      if (refNo) refNo.innerText = `NOC/${authPrefix}/${cleanId}`;
+
+      const issueDate = document.getElementById('cert-issue-date');
+      if (issueDate) {
+        issueDate.innerText = app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      const applicantName = document.getElementById('cert-applicant-name');
+      if (applicantName) applicantName.innerText = app.applicantName || 'Citizen User';
+
+      const applicantPhone = document.getElementById('cert-applicant-phone');
+      if (applicantPhone) applicantPhone.innerText = `Mobile: ${app.phone || '+91 98765 43210'}`;
+
+      const propId = document.getElementById('cert-prop-id');
+      if (propId) propId.innerText = app.propertyId || 'PROP-MYS-8821';
+
+      const fullAddr = document.getElementById('cert-full-address');
+      if (fullAddr) fullAddr.innerText = `${app.address || 'Mysuru'} · PIN ${app.pincode || app.pin || '570026'}`;
+
+      const tonnage = document.getElementById('cert-verified-tonnage');
+      if (tonnage) tonnage.innerText = `${app.verifiedTonnage || 10} MT (Metric Tonnes)`;
+
+      const lat = app.lat || 12.2958;
+      const lng = app.lng || 76.6394;
+      const gpsCoords = document.getElementById('cert-gps-coords');
+      if (gpsCoords) gpsCoords.innerText = app.gpsLocation || `${lat}° N, ${lng}° E`;
+
+      // Inspector and Authority Signatures
+      const insName = document.getElementById('cert-inspector-name');
+      if (insName) insName.innerText = `Inspector ${app.assignedInspectorName || 'seervi'}`;
+
+      const insEmail = document.getElementById('cert-inspector-email');
+      if (insEmail) insEmail.innerText = app.assignedInspectorEmail || 'q@gmail.com';
+
+      const panchayatSeal = document.getElementById('cert-panchayat-seal');
+      if (panchayatSeal) panchayatSeal.innerText = app.authority || 'Bogadi Gram Panchayat (Rural)';
+
+      const modal = document.getElementById('noc-certificate-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeCertificateModal() {
+      const modal = document.getElementById('noc-certificate-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
     // Render Applications History Table with Multi-Photo Thumbnails and Track Order Modal
     function renderApplicationsHistory() {
       const tbody = document.getElementById('table-my-applications');
@@ -1738,6 +1996,9 @@
 
       tbody.innerHTML = myRequests.map(a => {
         const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        const isApproved = a.status === 'Approved' || a.status === 'Clearance Approved' || a.status === 'Issued' || a.status === 'Certificate Issued';
+        const isViolation = a.status === 'Flagged Violation' || a.status === 'Cancelled' || a.status === 'Rejected';
+
         let photosHtml = '<span class="text-slate-400 italic">No Photo</span>';
         if (photos.length > 0) {
           photosHtml = `
@@ -1774,14 +2035,21 @@
               <span class="text-[10px] text-slate-500 block">Inspector: ${a.assignedInspectorName || 'Assigned'}</span>
             </td>
             <td class="px-4 py-3">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' || a.status === 'Clearance Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (a.status === 'Cancelled' || a.status === 'Rejected' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200')}">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (isViolation ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200')}">
                 ${a.status || 'Pending'}
               </span>
             </td>
             <td class="px-4 py-3 text-right">
-              <button onclick="openTrackingModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition cursor-pointer inline-flex items-center gap-1">
-                <span>🔍 Track Order</span> <span>&rarr;</span>
-              </button>
+              <div class="flex items-center justify-end gap-1.5">
+                ${isApproved ? `
+                  <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs transition cursor-pointer inline-flex items-center gap-1 shadow-2xs" title="View Official Clearance Certificate">
+                    <span>📜</span> <span>NOC</span>
+                  </button>
+                ` : ''}
+                <button onclick="openTrackingModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition cursor-pointer inline-flex items-center gap-1">
+                  <span>🔍 Track</span> <span>&rarr;</span>
+                </button>
+              </div>
             </td>
           </tr>
         `;
