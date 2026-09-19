@@ -583,20 +583,9 @@
               <h2 class="text-lg font-bold text-slate-900">Green Demolition & Waste Disposal Certificates (NOC)</h2>
               <p class="text-xs text-slate-500">Official QR-verified civic compliance certificates issued upon verified rubble disposal and recycling.</p>
             </div>
-            <!-- Panchayat / Authority Selection Tabs -->
-            <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl overflow-x-auto custom-scrollbar">
-              <button onclick="filterOfficerCertificatesByDept('all')" id="btn-officer-certfilter-all" class="px-3 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
-                ⭐ All Jurisdictions
-              </button>
-              <button onclick="filterOfficerCertificatesByDept('gp')" id="btn-officer-certfilter-gp" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏡 Bogadi GP
-              </button>
-              <button onclick="filterOfficerCertificatesByDept('tp')" id="btn-officer-certfilter-tp" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏭 Hootagalli TP
-              </button>
-              <button onclick="filterOfficerCertificatesByDept('mcc')" id="btn-officer-certfilter-mcc" class="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏛️ MCC Urban
-              </button>
+            <!-- Active Authority Exclusive Badge -->
+            <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold text-xs">
+              <span id="officer-cert-authority-badge">🏛️ Exclusive Authority Certificates</span>
             </div>
           </div>
 
@@ -1319,6 +1308,11 @@
       document.getElementById('header-title').innerText = dept.title;
       document.getElementById('header-subtitle').innerText = dept.sub;
 
+      const certBadge = document.getElementById('officer-cert-authority-badge');
+      if (certBadge) {
+        certBadge.innerHTML = `${dept.icon} ${dept.name} · Exclusive NOC Archive`;
+      }
+
       renderAuthorityFields();
     }
 
@@ -1408,61 +1402,38 @@
     function getAuthorityApplications() {
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
-      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570024'];
-
-      const officerUser = currentUser || {};
-      const officerEmail = (officerUser.email || '').toLowerCase().trim();
-      const officerPin = String(officerUser.assignedPin || officerUser.pin || '').trim();
-
-      // Find all inspectors created/registered under this authority
-      const deptInspectors = (registeredUsers || []).filter(u => {
-        const r = (u.role || '').toLowerCase();
-        const d = (u.department || '').toLowerCase();
-        const dn = (u.departmentName || '').toLowerCase();
-        const auth = (u.authority || '').toLowerCase();
-        if (r !== 'inspector' && !auth.includes('inspector')) return false;
-
-        if (currentAuthorityKey === 'gp') return d === 'gp' || d.includes('panchayat') || dn.includes('panchayat') || auth.includes('panchayat') || u.email === 'q@gmail.com' || u.email.includes('gp');
-        if (currentAuthorityKey === 'tp') return d === 'tp' || d.includes('town') || dn.includes('town') || auth.includes('town') || u.email.includes('tp');
-        return d === 'mcc' || d.includes('mcc') || (!d.includes('panchayat') && !d.includes('town') && !auth.includes('panchayat') && !auth.includes('town'));
-      }).map(u => (u.email || '').toLowerCase().trim()).filter(Boolean);
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570023', '570024'];
 
       return applicationsList.filter(app => {
+        const id = (app.id || app.requestId || '').toUpperCase().trim();
         const appPin = String(app.pincode || app.pin || '').trim();
-        const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
+        const appAuthKey = (app.authorityKey || app.dept || '').toLowerCase().trim();
         const authStr = (app.authority || '').toLowerCase().trim();
-        const inspEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
-        const offEmail = (app.assignedOfficerEmail || '').toLowerCase().trim();
 
-        // Strict Exclusion: If app has a different authorityKey, exclude immediately
-        if (appAuthKey && appAuthKey !== currentAuthorityKey.toLowerCase()) {
-          return false;
+        // 1. Strict Exclusion: If app belongs to another jurisdiction by ID or authorityKey, reject immediately
+        if (id.startsWith('GP-') && currentAuthorityKey !== 'gp') return false;
+        if (id.startsWith('TP-') && currentAuthorityKey !== 'tp') return false;
+        if (id.startsWith('MCC-') && currentAuthorityKey !== 'mcc') return false;
+
+        if (appAuthKey && appAuthKey !== currentAuthorityKey.toLowerCase()) return false;
+
+        // 2. Positive Prefix Match
+        if (id.startsWith(currentAuthorityKey.toUpperCase() + '-')) return true;
+
+        // 3. Positive Department / AuthorityKey Match
+        if (appAuthKey === currentAuthorityKey.toLowerCase()) return true;
+
+        // 4. Fallback to PIN / Authority text matches
+        if (currentAuthorityKey === 'gp') {
+          if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
+          if (authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) return true;
+        } else if (currentAuthorityKey === 'tp') {
+          if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
+          if (authStr.includes('town') || authStr.includes('hootagalli')) return true;
+        } else if (currentAuthorityKey === 'mcc') {
+          if (MCC_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
+          if (authStr.includes('mcc') || authStr.includes('mysuru city') || authStr.includes('corporation')) return true;
         }
-
-        // 1. Explicit authorityKey match (Primary)
-        if (appAuthKey && appAuthKey === currentAuthorityKey.toLowerCase()) return true;
-
-        // 2. Assigned officer email match
-        if (offEmail && officerEmail && offEmail === officerEmail) return true;
-
-        // 3. Assigned inspector belonging to this authority roster
-        if (inspEmail && deptInspectors.includes(inspEmail)) return true;
-
-        // 4. Officer assigned PIN match
-        if (officerPin && appPin) {
-          const pinList = officerPin.split(/[\s,]+/).map(p => p.trim());
-          if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
-        }
-
-        // 5. Default PIN ranges
-        if (currentAuthorityKey === 'gp' && GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
-        if (currentAuthorityKey === 'tp' && TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
-        if (currentAuthorityKey === 'mcc' && MCC_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
-
-        // 6. Authority text description match
-        if (currentAuthorityKey === 'gp' && (authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('rural') || authStr.includes('bogadi'))) return true;
-        if (currentAuthorityKey === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli'))) return true;
-        if (currentAuthorityKey === 'mcc' && (authStr.includes('mcc') || authStr.includes('mysuru urban') || authStr.includes('city'))) return true;
 
         return false;
       });
@@ -1526,6 +1497,126 @@
     function handleOfficerUsersSearch(q) {
       searchQueryOfficerUsers = (q || '').toLowerCase().trim();
       renderUsersTable();
+    }
+
+    function renderInspectionsTable() {
+      const tbody = document.getElementById('table-inspections');
+      if (!tbody) return;
+      const apps = getAuthorityApplications();
+      let displayed = apps;
+      if (searchQueryOfficerInspections) {
+        const q = searchQueryOfficerInspections;
+        displayed = displayed.filter(a =>
+          (a.id || '').toLowerCase().includes(q) ||
+          (a.applicantName || '').toLowerCase().includes(q) ||
+          (a.assignedInspectorName || '').toLowerCase().includes(q) ||
+          (a.assignedInspectorEmail || '').toLowerCase().includes(q) ||
+          (a.scheduledDate || '').toLowerCase().includes(q) ||
+          (a.status || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No on-ground site inspections found matching "${searchQueryOfficerInspections || 'current queue'}".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayed.map((a, i) => {
+        const isApproved = isOfficerAppCompleted(a);
+        const insId = `INSP-${currentAuthorityKey.toUpperCase()}-${String(i+101)}`;
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${insId}</td>
+            <td class="px-4 py-3 font-mono font-semibold text-slate-900">${a.id}</td>
+            <td class="px-4 py-3 font-bold text-slate-800">
+              <span>👮 ${a.assignedInspectorName || 'Ward Officer'}</span>
+              <span class="block font-mono text-[10px] text-slate-500 font-normal">${a.assignedInspectorEmail || ''}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-slate-700 text-xs">
+              <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200">📅 ${a.scheduledDate || '2026-09-20'}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="badge-status ${isApproved ? 'badge-approved' : 'badge-pending'}">
+                ${isApproved ? '✓ Site Audited & Cleared' : '⏳ Scheduled for Audit'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDemolitionRequestsTable() {
+      const tbody = document.getElementById('table-demolition_requests');
+      if (!tbody) return;
+      const apps = getAuthorityApplications();
+      let displayed = apps;
+      if (searchQueryOfficerDemolition) {
+        const q = searchQueryOfficerDemolition;
+        displayed = displayed.filter(a =>
+          (a.id || '').toLowerCase().includes(q) ||
+          (a.propertyDetails || a.material || '').toLowerCase().includes(q) ||
+          (a.address || '').toLowerCase().includes(q) ||
+          (a.pincode || a.pin || '').toString().includes(q) ||
+          (a.scheduledDate || '').toLowerCase().includes(q) ||
+          (a.status || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No demolition clearance requests found matching "${searchQueryOfficerDemolition || 'current queue'}".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayed.map(a => {
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        const isApproved = isOfficerAppCompleted(a);
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
+            <td class="px-4 py-3">
+              <span class="font-bold text-slate-900 block">${a.propertyDetails || 'Demolition Clearance'}</span>
+              <span class="text-xs text-slate-600 block">${a.verifiedMaterial || a.material || 'Masonry Rubble'} (${a.verifiedTonnage || a.tonnage || 10} MT)</span>
+            </td>
+            <td class="px-4 py-3 text-slate-800">
+              <span class="block font-medium">${a.address || 'Mysuru'}</span>
+              <span class="font-mono text-emerald-800 text-[10px] font-bold">PIN: ${a.pincode || a.pin || ''}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-xs text-slate-700">${a.scheduledDate || '2026-09-20'}</td>
+            <td class="px-4 py-3 font-mono text-xs text-slate-700">${a.completionDate || (isApproved ? 'Cleared' : 'Pending')}</td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <button onclick="viewPhoto('${a.id}')" class="px-2 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-bold hover:bg-emerald-100">
+                  📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+                </button>
+              ` : `<span class="text-slate-400 font-mono text-[10px]">No photo</span>`}
+            </td>
+            <td class="px-4 py-3">
+              <span class="badge-status ${isApproved ? 'badge-approved' : 'badge-pending'}">
+                ${isApproved ? '✓ Cleared' : (a.status || 'Pending Review')}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Manage &rarr;</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDemolitionCasesTable() {
+      renderDemolitionRequestsTable();
     }
 
     function renderAllTables() {
@@ -2161,9 +2252,16 @@
 
       if (mergedInspectors.length === 0) {
         mergedInspectors.push(
-          { id: 'INS-01', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
-          { id: 'INS-02', name: 'Seervi', email: 'q@gmail.com', password: '123456', phone: '+91 98450 11002', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
-          { id: 'INS-03', name: 'M. Anand', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' }
+          // MCC Urban Inspectors
+          { id: 'INS-MCC-01', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+          { id: 'INS-MCC-02', name: 'P. Ramesh', email: 'ramesh.mcc@gmail.com', password: '123456', phone: '+91 98450 44520', department: 'mcc', assignedPin: '570023', assignedArea: 'Ward 32 (Kuvempunagar & Central)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+          // Bogadi GP Inspectors
+          { id: 'INS-GP-01', name: 'Seervi', email: 'q@gmail.com', password: '123456', phone: '+91 98450 11002', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
+          { id: 'INS-GP-02', name: 'Dimple', email: 'dim@gmail.com', password: '123456', phone: '+91 98450 22003', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 02 (Maratikyathanahalli)', designation: 'Village Sanitary Inspector', status: 'Active (On Duty)' },
+          { id: 'INS-GP-03', name: 'S. Nanjappa', email: 'nanjappa.gp@gmail.com', password: '123456', phone: '+91 98450 33419', department: 'gp', assignedPin: '571311', assignedArea: 'GP Ward 03 (Kadakola Grama)', designation: 'Panchayat Field Assistant', status: 'Active (On Duty)' },
+          // Hootagalli TP Inspectors
+          { id: 'INS-TP-01', name: 'M. Anand', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' },
+          { id: 'INS-TP-02', name: 'K. Suresh', email: 'suresh.tp@gmail.com', password: '123456', phone: '+91 98450 77102', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 02 (Koorgalli Industrial)', designation: 'Zonal Sanitary Supervisor', status: 'Active (On Duty)' }
         );
       }
 
@@ -2180,7 +2278,7 @@
         const pin = String(ins.assignedPin || ins.pin || '').trim();
 
         if (currentAuthorityKey === 'gp') {
-          return d === 'gp' || d.includes('panchayat') || d.includes('gram') || dn.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || email === 'q@gmail.com' || createdBy.includes('gp') || createdBy.includes('gram') || GP_PINS.some(p => pin.includes(p));
+          return d === 'gp' || d.includes('panchayat') || d.includes('gram') || dn.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || email === 'q@gmail.com' || email === 'dim@gmail.com' || createdBy.includes('gp') || createdBy.includes('gram') || GP_PINS.some(p => pin.includes(p));
         } else if (currentAuthorityKey === 'tp') {
           return d === 'tp' || d.includes('town') || dn.includes('town') || auth.includes('town') || email.includes('tp') || createdBy.includes('tp') || TP_PINS.some(p => pin.includes(p));
         } else {
@@ -2279,7 +2377,7 @@
       }).join('');
     }
 
-    function renderCertificatesTable(filter = currentOfficerCertDeptFilter) {
+    function renderCertificatesTable() {
       const tbody = document.getElementById('table-certificates');
       if (!tbody) return;
 
@@ -2360,16 +2458,8 @@
         };
       });
 
-      // Filter only certified / approved applications
-      let certifiedApps = allCerts.filter(c => c.isApproved || c.certificateNo);
-
-      if (filter === 'gp') {
-        certifiedApps = certifiedApps.filter(c => c.dept === 'gp');
-      } else if (filter === 'tp') {
-        certifiedApps = certifiedApps.filter(c => c.dept === 'tp');
-      } else if (filter === 'mcc') {
-        certifiedApps = certifiedApps.filter(c => c.dept === 'mcc');
-      }
+      // Strictly isolate to the current authority ONLY
+      let certifiedApps = allCerts.filter(c => (c.isApproved || c.certificateNo) && (c.dept === currentAuthorityKey || c.authorityKey === currentAuthorityKey));
 
       if (searchQueryOfficerCertificates) {
         const q = searchQueryOfficerCertificates;
@@ -2392,12 +2482,13 @@
         tbody.innerHTML = `
           <tr>
             <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No green clearance certificates found matching "${searchQueryOfficerCertificates || 'current filter'}".
+              No green clearance certificates found for ${DEFAULT_DEPARTMENTS[currentAuthorityKey].name}.
             </td>
           </tr>
         `;
         return;
       }
+
 
       tbody.innerHTML = certifiedApps.map(c => {
         const certNo = c.certificateNo || ('NOC/' + c.dept.toUpperCase() + '/' + String(c.id).replace(/[^0-9]/g, '').slice(-4));
