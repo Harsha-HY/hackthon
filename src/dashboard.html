@@ -1634,6 +1634,132 @@
       }).join('');
     }
 
+    let currentOfficersDeptFilter = 'all';
+    let searchQueryOfficersList = '';
+
+    function filterOfficersByDept(dept) {
+      currentOfficersDeptFilter = dept;
+      ['all', 'mcc', 'gp', 'tp'].forEach(k => {
+        const btn = document.getElementById('btn-filter-' + k);
+        if (btn) {
+          if (k === dept) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer';
+          }
+        }
+      });
+      renderInspectorsTable();
+    }
+
+    function handleOfficersSearch(q) {
+      searchQueryOfficersList = (q || '').toLowerCase().trim();
+      renderInspectorsTable();
+    }
+
+    function renderInspectorsTable() {
+      const tbody = document.getElementById('table-inspectors');
+      if (!tbody) return;
+
+      const inspectors = getComprehensiveInspectorsList();
+      
+      // Update stats
+      const elTotal = document.getElementById('stat-total-officers');
+      const elMcc = document.getElementById('stat-mcc-officers');
+      const elGp = document.getElementById('stat-gp-officers');
+      const elTp = document.getElementById('stat-tp-officers');
+      if (elTotal) elTotal.innerText = `${inspectors.length} Active`;
+      if (elMcc) elMcc.innerText = `${inspectors.filter(i=>i.type==='mcc').length} Assigned`;
+      if (elGp) elGp.innerText = `${inspectors.filter(i=>i.type==='gp').length} Assigned`;
+      if (elTp) elTp.innerText = `${inspectors.filter(i=>i.type==='tp').length} Assigned`;
+
+      let displayed = inspectors;
+      if (currentOfficersDeptFilter && currentOfficersDeptFilter !== 'all') {
+        displayed = displayed.filter(i => i.type === currentOfficersDeptFilter);
+      }
+
+      if (searchQueryOfficersList) {
+        const q = searchQueryOfficersList;
+        displayed = displayed.filter(i =>
+          (i.id || '').toLowerCase().includes(q) ||
+          (i.headName || '').toLowerCase().includes(q) ||
+          (i.email || '').toLowerCase().includes(q) ||
+          (i.phone || '').toLowerCase().includes(q) ||
+          (i.organization || '').toLowerCase().includes(q) ||
+          (i.jurisdiction || '').toLowerCase().includes(q) ||
+          (i.dutyZone || '').toLowerCase().includes(q) ||
+          (i.pinCodes || '').toLowerCase().includes(q) ||
+          (i.designation || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No officers or field inspectors found matching "${searchQueryOfficersList || 'current filter'}".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const allApps = getOriginalDemolitionApplications();
+
+      tbody.innerHTML = displayed.map(ins => {
+        const deptBadgeColor = ins.type === 'mcc' 
+          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+          : (ins.type === 'gp' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-blue-100 text-blue-800 border-blue-200');
+
+        const activeCount = allApps.filter(a => (a.assignedInspectorEmail || '').toLowerCase().trim() === (ins.email || '').toLowerCase().trim() || a.dept === ins.type).length;
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2.5">
+                <span class="size-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-sm shadow-xs">${ins.icon || '👷'}</span>
+                <div>
+                  <span class="block font-bold text-slate-900">${ins.headName}</span>
+                  <span class="block text-[11px] text-slate-500 font-medium">${ins.designation || 'Field Officer'}</span>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${deptBadgeColor} inline-flex items-center gap-1">
+                <span>${ins.icon || '🏛️'}</span>
+                <span>${ins.organization}</span>
+              </span>
+            </td>
+            <td class="px-4 py-3.5 font-mono font-bold text-emerald-900 bg-emerald-50/60 px-2 py-1 rounded-lg border border-emerald-200 text-xs">${ins.id}</td>
+            <td class="px-4 py-3.5 font-mono text-[11px]">
+              <span class="block text-emerald-950 font-bold bg-emerald-50/80 px-2 py-0.5 rounded border border-emerald-200 mb-0.5 inline-block">${ins.email}</span>
+              <span class="block text-slate-500">${ins.phone}</span>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="block text-slate-800 font-semibold text-xs">${ins.jurisdiction || ins.dutyZone}</span>
+              <span class="block font-mono text-emerald-800 text-[10px] font-bold">PIN: ${ins.pinCodes}</span>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold font-mono text-xs border border-slate-200 block w-fit">
+                ${activeCount} Cases
+              </span>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Active (On Duty)</span>
+              </span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button onclick="copyOfficerLogin('${ins.email}', '${ins.password || '123456'}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
+                Copy Login
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     function renderPinMappingTable(filter = currentPinDeptFilter) {
       const tbody = document.getElementById('table-pinmappings');
       if (!tbody) return;
