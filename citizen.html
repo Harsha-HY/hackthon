@@ -1504,6 +1504,14 @@
           if (user.name && document.getElementById('top-user-name')) document.getElementById('top-user-name').innerText = user.name;
           if (user.name && document.getElementById('drop-user-name')) document.getElementById('drop-user-name').innerText = user.name;
           if (user.email && document.getElementById('drop-user-email')) document.getElementById('drop-user-email').innerText = user.email;
+          const custNameInput = document.getElementById('form-cust-name');
+          if (custNameInput && !custNameInput.value && user.name) {
+            custNameInput.value = user.name;
+          }
+          const custPhoneInput = document.getElementById('form-cust-phone');
+          if (custPhoneInput && !custPhoneInput.value && (user.phone || user.mobile)) {
+            custPhoneInput.value = user.phone || user.mobile;
+          }
         } catch(e) {}
       }
 

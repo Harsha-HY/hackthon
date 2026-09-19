@@ -1497,7 +1497,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Head / Officer Name</label>
-              <input id="df-head" type="text" value="${d.customHead ? (d.headName || '') : ''}" placeholder="${d.headName || 'MCC Executive Officer'}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <input id="df-head" type="text" value="${d.headName || ''}" placeholder="Enter Head / Officer Name" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Designation</label>
@@ -1565,7 +1565,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Head / Officer Name</label>
-              <input id="df-head" type="text" value="${d.customHead ? (d.headName || '') : ''}" placeholder="${d.headName || 'Gram Panchayat PDO'}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <input id="df-head" type="text" value="${d.headName || ''}" placeholder="Enter Gram Panchayat Officer Name" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Designation</label>
@@ -1641,7 +1641,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Head / Officer Name</label>
-              <input id="df-head" type="text" value="${d.customHead ? (d.headName || '') : ''}" placeholder="${d.headName || 'Town Panchayat Chief Officer'}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <input id="df-head" type="text" value="${d.headName || ''}" placeholder="Enter Town Panchayat Officer Name" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Designation</label>
@@ -1712,12 +1712,7 @@
       if (document.getElementById('df-org')) d.organization = document.getElementById('df-org').value.trim() || d.organization;
       if (document.getElementById('df-head')) {
         const hVal = document.getElementById('df-head').value.trim();
-        if (hVal) {
-          d.headName = hVal;
-          d.customHead = true;
-        } else if (!d.customHead) {
-          d.headName = DEFAULT_DEPARTMENTS_CONFIG[currentSelectedDept].headName;
-        }
+        if (hVal) d.headName = hVal;
       }
       if (document.getElementById('df-desig')) d.designation = document.getElementById('df-desig').value.trim() || d.designation;
       if (document.getElementById('df-empid')) d.empId = document.getElementById('df-empid').value.trim() || d.empId;
@@ -1774,16 +1769,16 @@
 
       // Sync with server API
       try {
-        fetch('/api/auth/register', {
+        await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(officerAccount)
-        }).catch(() => {});
+        });
       } catch(e) {}
 
       renderAuthoritiesTable();
       renderInspectorsTable();
-      showToast('✅ Saved ' + d.organization + ' Officer! Login: ' + d.email + ' | Password: ' + d.password);
+      showToast('✅ Saved ' + d.organization + ' Officer (' + d.headName + ')! Login Email: ' + d.email);
     }
 
     function resetDeptDefaults() {
