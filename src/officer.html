@@ -158,13 +158,20 @@
         </div>
       </div>
 
-      <!-- Locked Authority Badge (Strict Dashboard Isolation) -->
-      <div class="mt-3 bg-slate-900/90 px-3 py-2 rounded-xl flex items-center justify-between border border-slate-700/60">
-        <div class="flex items-center gap-2">
-          <span class="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="brand-dept-scope-text" class="text-[11px] font-bold text-slate-200 uppercase tracking-wide">MCC Urban Console</span>
+      <!-- Active Panchayat Hub & Quick Switcher -->
+      <div class="mt-3 bg-slate-900/90 p-2.5 rounded-xl border border-slate-700/60 space-y-1.5">
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-1.5">
+            <span class="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wide">Panchayat Hub</span>
+          </div>
+          <span id="brand-dept-scope-text" class="text-[10px] font-mono text-emerald-400 font-bold">Active</span>
         </div>
-        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Locked</span>
+        <select id="officer-authority-sidebar-select" onchange="changeOfficerAuthority(this.value)" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-[11px] text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer">
+          <option value="mcc">🏛️ Mysuru City Corp (MCC)</option>
+          <option value="gp">🏡 Gram Panchayat (Bogadi)</option>
+          <option value="tp">🏭 Town Panchayat (Hootagalli)</option>
+        </select>
       </div>
     </div>
 
@@ -262,11 +269,21 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
-          <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="header-live-badge" class="text-xs font-mono font-bold text-slate-700">Live Sync: Mysuru Central DB</span>
+        <!-- Interactive Panchayat Authority Switcher -->
+        <div class="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-100 px-3 py-1 rounded-2xl border border-slate-300/80 transition">
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline-block">Panchayat:</label>
+          <select id="officer-authority-switcher" onchange="changeOfficerAuthority(this.value)" class="bg-transparent font-bold text-xs text-slate-900 focus:outline-none cursor-pointer py-1">
+            <option value="mcc">🏛️ Mysuru City Corp (MCC)</option>
+            <option value="gp">🏡 Gram Panchayat (Bogadi Rural)</option>
+            <option value="tp">🏭 Town Panchayat (Hootagalli Town)</option>
+          </select>
         </div>
-        <a href="citizen.html" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+
+        <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
+          <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="header-live-badge" class="text-xs font-mono font-bold text-slate-700">Live Sync</span>
+        </div>
+        <a href="citizen.html" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
           <span>🌐 Citizen View</span>
         </a>
       </div>
@@ -995,6 +1012,27 @@
       }
     ];
 
+    function changeOfficerAuthority(authKey) {
+      if (!DEFAULT_DEPARTMENTS[authKey]) return;
+      currentAuthorityKey = authKey;
+      const dept = DEFAULT_DEPARTMENTS[authKey];
+      currentUser = {
+        name: dept.headName,
+        email: dept.email,
+        role: 'officer',
+        department: authKey,
+        departmentName: dept.name,
+        authority: dept.name,
+        assignedPin: dept.pinCodes.split(',')[0].trim()
+      };
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+
+      renderCurrentAuthorityUI();
+      renderAllTables();
+      showToast(`Switched to ${dept.name}! All panels updated with authentic data.`, 'success');
+    }
+
     function renderCurrentAuthorityUI() {
       const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
       
@@ -1002,7 +1040,7 @@
       document.getElementById('brand-title').innerText = dept.tag;
       document.getElementById('brand-dept-tag').innerText = dept.jurisdiction || dept.name;
       const scopeText = document.getElementById('brand-dept-scope-text');
-      if (scopeText) scopeText.innerText = dept.tag;
+      if (scopeText) scopeText.innerText = dept.name.split('(')[0].trim();
       document.getElementById('nav-auth-title').innerText = dept.name.split('(')[0].trim() + ' Profile';
 
       document.getElementById('header-icon').innerText = dept.icon;
@@ -1012,6 +1050,23 @@
       const certBadge = document.getElementById('officer-cert-authority-badge');
       if (certBadge) {
         certBadge.innerHTML = `${dept.icon} ${dept.name} · Exclusive NOC Archive`;
+      }
+
+      // Sync dropdowns
+      const selHeader = document.getElementById('officer-authority-switcher');
+      const selSidebar = document.getElementById('officer-authority-sidebar-select');
+      if (selHeader) selHeader.value = currentAuthorityKey;
+      if (selSidebar) selSidebar.value = currentAuthorityKey;
+
+      // Update officer footer profile
+      const nameEl = document.getElementById('officer-name-display');
+      const emailEl = document.getElementById('officer-email-display');
+      const avatarEl = document.getElementById('officer-avatar');
+      if (nameEl) nameEl.innerText = dept.headName;
+      if (emailEl) emailEl.innerText = dept.email;
+      if (avatarEl) {
+        const initials = dept.headName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        avatarEl.innerText = initials || 'OF';
       }
 
       renderAuthorityFields();
@@ -2283,6 +2338,137 @@
           </tr>
         `;
       }).join('');
+    }
+
+    function renderInspectionsTable() {
+      const tbody = document.getElementById('table-inspections');
+      if (!tbody) return;
+      const apps = getAuthorityApplications();
+
+      let displayed = apps;
+      if (searchQueryOfficerInspections) {
+        const q = searchQueryOfficerInspections;
+        displayed = displayed.filter(a =>
+          (a.id || '').toLowerCase().includes(q) ||
+          (a.applicantName || '').toLowerCase().includes(q) ||
+          (a.address || '').toLowerCase().includes(q) ||
+          (a.assignedInspectorName || '').toLowerCase().includes(q) ||
+          (a.status || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No field inspections scheduled yet for ${DEFAULT_DEPARTMENTS[currentAuthorityKey].name}.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayed.map(a => {
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
+        const dateStr = a.scheduledDate || (a.issueDate ? String(a.issueDate).split('T')[0] : '2026-09-20');
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
+            <td class="px-4 py-3">
+              <span class="block font-bold text-slate-900">${a.applicantName || 'Citizen'}</span>
+              <span class="text-slate-500 text-[11px]">${a.phone || ''}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="text-slate-800 block font-semibold">${a.address || 'Mysuru Site'}</span>
+              <span class="font-mono text-emerald-700 text-[11px] font-bold">PIN: ${a.pincode || a.pin || ''}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="font-bold text-slate-900 block">👮 ${a.assignedInspectorName || 'Assigned Officer'}</span>
+              <span class="text-slate-500 font-mono text-[10px]">${a.assignedInspectorEmail || ''}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-slate-700 text-xs">
+              <span class="font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200">📅 ${dateStr}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="font-mono font-bold text-slate-900 block">${a.verifiedTonnage || a.tonnage || 10} MT</span>
+              <span class="text-[10px] text-slate-500">${a.verifiedMaterial || a.material || 'Demolition Rubble'}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+                ${a.status || 'Scheduled'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDemolitionRequestsTable() {
+      const tbody = document.getElementById('table-demolition_requests');
+      if (!tbody) return;
+      const apps = getAuthorityApplications();
+
+      let displayed = apps;
+      if (searchQueryOfficerDemolition) {
+        const q = searchQueryOfficerDemolition;
+        displayed = displayed.filter(a =>
+          (a.id || '').toLowerCase().includes(q) ||
+          (a.applicantName || '').toLowerCase().includes(q) ||
+          (a.address || '').toLowerCase().includes(q) ||
+          (a.propertyType || '').toLowerCase().includes(q) ||
+          (a.material || '').toLowerCase().includes(q) ||
+          (a.status || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No demolition clearance requests found for ${DEFAULT_DEPARTMENTS[currentAuthorityKey].name}.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayed.map(a => {
+        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
+            <td class="px-4 py-3 font-semibold text-slate-900">${a.applicantName || 'Citizen'}</td>
+            <td class="px-4 py-3">
+              <span class="text-slate-800 block">${a.address || 'Mysuru Site'}</span>
+              <span class="font-mono text-emerald-700 text-[11px] font-bold">PIN: ${a.pincode || a.pin || ''}</span>
+            </td>
+            <td class="px-4 py-3 text-slate-700">${a.propertyType || 'Structure'}</td>
+            <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.verifiedTonnage || a.tonnage || 10} MT</td>
+            <td class="px-4 py-3">
+              ${photos.length > 0 ? `
+                <button type="button" onclick="viewPhoto('${a.id}')" class="px-2 py-1 rounded bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 hover:bg-emerald-100 cursor-pointer">
+                  📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''}
+                </button>
+              ` : `<span class="text-[10px] text-slate-400 italic">No Photos</span>`}
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+                ${a.status || 'Pending'}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 cursor-pointer">
+                View &rarr;
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDemolitionCasesTable() {
+      // Stub for secondary cases table
     }
 
     function renderCertificatesTable() {
