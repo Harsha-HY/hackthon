@@ -154,21 +154,6 @@
         <span class="text-base">📄</span>
         <span>Applications</span>
       </button>
-
-      <button onclick="switchTab('certificates')" id="nav-certificates" class="nav-btn">
-        <span class="text-base">📜</span>
-        <span>Certificates</span>
-      </button>
-
-      <button onclick="switchTab('notifications')" id="nav-notifications" class="nav-btn">
-        <span class="text-base">🔔</span>
-        <span>Notifications</span>
-      </button>
-
-      <button onclick="switchTab('support')" id="nav-support" class="nav-btn">
-        <span class="text-base">❓</span>
-        <span>Help & Support</span>
-      </button>
     </div>
 
     <!-- Bottom Mysuru City Branding & Skyline Outline -->
@@ -200,7 +185,7 @@
           <span class="text-xs font-bold text-emerald-600 font-mono uppercase tracking-wider">Citizen Services</span>
         </div>
         <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight" id="header-main-title">Customer Application Form</h1>
-        <p class="text-xs text-slate-500 hidden sm:block">Provide your details to apply for certificate and related services.</p>
+        <p class="text-xs text-slate-500 hidden sm:block">Provide your details to apply for C&D waste clearance services.</p>
       </div>
 
       <!-- Right User Menu -->
@@ -225,9 +210,6 @@
           </div>
           <button onclick="switchTab('applications')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition">
             📄 My Applications
-          </button>
-          <button onclick="switchTab('certificates')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition">
-            📜 My Certificates
           </button>
           <div class="border-t border-slate-100 my-1"></div>
           <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition">
@@ -384,54 +366,10 @@
                 <span class="text-[11px] text-slate-400 block">Add up to 5 site photos. Photos will be geotagged with your current location.</span>
               </div>
 
-              <!-- 5. Certificate Details -->
-              <div class="space-y-3 pt-2">
-                <div class="flex items-center gap-2">
-                  <span class="size-6 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center">5</span>
-                  <h3 class="font-bold text-slate-900 text-sm">Certificate Details</h3>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div>
-                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Certificate Number <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                      <span class="absolute left-3 top-2.5 text-slate-400 text-xs">📄</span>
-                      <input id="form-cert-num" type="text" oninput="syncPreviewCards()" placeholder="e.g. MCC-2026-001" class="w-full pl-8 pr-2.5 py-2 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Certificate Type <span class="text-rose-500">*</span></label>
-                    <select id="form-cert-type" onchange="syncPreviewCards()" class="w-full px-3 py-2 rounded-xl bg-slate-50/70 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition cursor-pointer">
-                      <option value="" selected disabled>Select certificate type</option>
-                      <option value="C&D Waste Clearance NOC">C&D Waste Clearance NOC</option>
-                      <option value="Green Demolition Certificate">Green Demolition Certificate</option>
-                      <option value="Debris Recycling NOC">Debris Recycling NOC</option>
-                      <option value="Water & Power Rebate NOC">Water & Power Rebate NOC</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Issue Date <span class="text-rose-500">*</span></label>
-                    <input id="form-cert-date" type="date" onchange="syncPreviewCards()" class="w-full px-3 py-2 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition cursor-pointer"/>
-                  </div>
-
-                  <div>
-                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Status <span class="text-rose-500">*</span></label>
-                    <select id="form-cert-status" onchange="syncPreviewCards()" class="w-full px-3 py-2 rounded-xl bg-slate-50/70 border border-slate-200 text-xs font-bold text-amber-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition cursor-pointer">
-                      <option value="Pending" selected>Pending</option>
-                      <option value="Under Review">Under Review</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Issued">Issued</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
               <!-- Form Action Buttons -->
               <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
                 <button type="button" onclick="resetCustomerForm()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer">
-                  <span>🔄</span> <span>Reset</span>
+                  <span>🔄</span> <span>Reset Form</span>
                 </button>
 
                 <button id="btn-submit-application" type="submit" class="px-6 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer">
@@ -443,7 +381,7 @@
             </form>
           </div>
 
-          <!-- RIGHT COLUMN: 3 PREVIEW & TRACKER CARDS (4 or 5 Cols) -->
+          <!-- RIGHT COLUMN: STATUS UPDATE & PHOTO PREVIEW (4 or 5 Cols) -->
           <div class="lg:col-span-5 xl:col-span-4 space-y-5">
             
             <!-- 1. Live Photo Preview Card -->
@@ -451,7 +389,7 @@
               <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div class="flex items-center gap-2">
                   <span class="text-sm">🖼️</span>
-                  <h4 class="font-bold text-slate-900 text-xs">Live Photo Preview</h4>
+                  <h4 class="font-bold text-slate-900 text-xs">Site Photos & Geotag Preview</h4>
                 </div>
                 <span id="photo-count-badge" class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-200">
                   ● 0/5 photos
@@ -464,36 +402,7 @@
               </div>
             </div>
 
-            <!-- 2. Certificate Details Preview Card -->
-            <div class="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs space-y-3">
-              <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                <span class="text-sm">📄</span>
-                <h4 class="font-bold text-slate-900 text-xs">Certificate Details Preview</h4>
-              </div>
-
-              <div class="space-y-2 text-xs">
-                <div class="flex items-center justify-between py-1 border-b border-slate-50">
-                  <span class="text-slate-500 font-medium">Certificate No.</span>
-                  <span id="prev-cert-no" class="font-mono font-bold text-slate-800">—</span>
-                </div>
-                <div class="flex items-center justify-between py-1 border-b border-slate-50">
-                  <span class="text-slate-500 font-medium">Type</span>
-                  <span id="prev-cert-type" class="font-semibold text-slate-800">—</span>
-                </div>
-                <div class="flex items-center justify-between py-1 border-b border-slate-50">
-                  <span class="text-slate-500 font-medium">Issue Date</span>
-                  <span id="prev-cert-date" class="font-mono text-slate-800">—</span>
-                </div>
-                <div class="flex items-center justify-between py-1">
-                  <span class="text-slate-500 font-medium">Status</span>
-                  <span id="prev-cert-status" class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-mono text-[10px] font-bold">
-                    Pending
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3. Dynamic Live Inspection Lifecycle Tracker Card -->
+            <!-- 2. Prominent Real-Time Status & Ward Inspection Live Update Card -->
             <div class="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs space-y-4" id="live-tracking-card">
               <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div class="flex items-center gap-2">
@@ -501,8 +410,8 @@
                     ⚡
                   </span>
                   <div>
-                    <h4 class="font-bold text-slate-900 text-xs">Live Inspection & Permit Tracker</h4>
-                    <p class="text-[10px] text-slate-500">Real-time status synced with Ward Inspector & Officer.</p>
+                    <h4 class="font-bold text-slate-900 text-xs">Live Status & Inspector Tracking</h4>
+                    <p class="text-[10px] text-slate-500">Real-time status updates synced with Ward Inspector.</p>
                   </div>
                 </div>
                 <span id="tracker-live-pulse" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-mono font-bold border border-emerald-200">
@@ -511,40 +420,54 @@
                 </span>
               </div>
 
-              <!-- Application Selector & ID Box -->
-              <div class="p-3.5 rounded-2xl bg-[#091c18] text-white space-y-2">
+              <!-- Application ID & Status Header Box -->
+              <div class="p-4 rounded-2xl bg-[#081d19] text-white space-y-2.5 shadow-xs">
                 <div class="flex items-center justify-between">
                   <div>
-                    <span class="text-[9px] font-mono text-slate-400 uppercase tracking-wider block">Active Application ID</span>
-                    <span id="tracker-app-id" class="font-mono font-bold text-sm text-emerald-400 block">No Active Request</span>
+                    <span class="text-[9px] font-mono text-emerald-400 uppercase tracking-wider block font-bold">ACTIVE COMPLAINT ID</span>
+                    <span id="tracker-app-id" class="font-mono font-bold text-base text-white block">No Active Request</span>
                   </div>
-                  <button onclick="copyAppId()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition cursor-pointer" title="Copy ID">
-                    📋
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <span id="tracker-current-status-pill" class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono font-bold border border-emerald-500/30">
+                      Ready
+                    </span>
+                    <button onclick="copyAppId()" class="size-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition cursor-pointer" title="Copy ID">
+                      📋
+                    </button>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between text-[11px] pt-1.5 border-t border-white/10 text-slate-300">
-                  <span id="tracker-assigned-inspector" class="truncate font-medium">Ready to lodge application</span>
-                  <span id="tracker-current-status-pill" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30">
-                    Ready
-                  </span>
+
+                <div class="pt-2 border-t border-white/10 flex flex-col gap-1 text-[11px] text-slate-300">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-emerald-400 font-bold">🏛️ Authority:</span>
+                    <span id="tracker-authority-name" class="truncate text-white font-medium">Mysuru Municipal Corporation (MCC)</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-emerald-400 font-bold">👷 Inspector:</span>
+                    <span id="tracker-assigned-inspector" class="truncate text-white font-medium">Ready to lodge application</span>
+                  </div>
                 </div>
               </div>
 
               <!-- Dynamic Status Alert Box -->
-              <div id="tracker-status-alert-box" class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1">
-                <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[11px]" id="tracker-alert-title">
-                  <span>📄</span> <span>Apply for C&D Clearance Permit</span>
+              <div id="tracker-status-alert-box" class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5">
+                <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs" id="tracker-alert-title">
+                  <span>📄</span> <span>Ready to Lodge C&D Complaint</span>
                 </div>
-                <p class="text-[11px] text-slate-600 leading-snug" id="tracker-alert-desc">
+                <p class="text-xs text-slate-600 leading-snug" id="tracker-alert-desc">
                   Provide your site details and camera photo to submit a clearance request.
                 </p>
+                <div id="tracker-notes-container" class="hidden mt-2 p-2.5 rounded-xl bg-white border border-slate-200 text-[11px] text-slate-700 font-mono">
+                  <span class="font-bold text-slate-900 block mb-0.5">Inspector Audit Remarks:</span>
+                  <span id="tracker-inspector-notes">—</span>
+                </div>
               </div>
 
-              <!-- 5-Stage Step Progress Tracker -->
-              <div class="pt-1">
+              <!-- 4-Stage Step Progress Tracker -->
+              <div class="pt-2">
                 <div class="relative flex items-center justify-between">
                   <!-- Connecting Progress Line -->
-                  <div class="absolute left-3 right-3 top-3 h-0.5 bg-slate-200 -z-0">
+                  <div class="absolute left-4 right-4 top-3 h-0.5 bg-slate-200 -z-0">
                     <div id="tracker-progress-bar-fill" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
                   </div>
                   
@@ -553,7 +476,7 @@
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
                       1
                     </div>
-                    <span class="text-[9px] font-semibold text-slate-500 mt-1">Submitted</span>
+                    <span class="text-[10px] font-semibold text-slate-500 mt-1">Submitted</span>
                   </div>
 
                   <!-- Step 2: Visit Scheduled -->
@@ -561,7 +484,7 @@
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
                       2
                     </div>
-                    <span class="text-[9px] font-semibold text-slate-500 mt-1">Scheduled</span>
+                    <span class="text-[10px] font-semibold text-slate-500 mt-1">Scheduled</span>
                   </div>
 
                   <!-- Step 3: On-Site Audit -->
@@ -569,32 +492,24 @@
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
                       3
                     </div>
-                    <span class="text-[9px] font-semibold text-slate-500 mt-1">Audit</span>
+                    <span class="text-[10px] font-semibold text-slate-500 mt-1">Audited</span>
                   </div>
 
-                  <!-- Step 4: Inspection Passed -->
+                  <!-- Step 4: Approved -->
                   <div class="flex flex-col items-center relative z-10" id="step-node-4">
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
                       4
                     </div>
-                    <span class="text-[9px] font-semibold text-slate-500 mt-1">Verified</span>
-                  </div>
-
-                  <!-- Step 5: Certificate Issued -->
-                  <div class="flex flex-col items-center relative z-10" id="step-node-5">
-                    <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
-                      5
-                    </div>
-                    <span class="text-[9px] font-semibold text-slate-500 mt-1">Certificate</span>
+                    <span class="text-[10px] font-semibold text-slate-500 mt-1">Approved</span>
                   </div>
                 </div>
               </div>
 
               <!-- Quick Action Link -->
-              <div id="tracker-action-footer" class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <div id="tracker-action-footer" class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-slate-400 font-mono text-[10px]" id="tracker-updated-time">Updated: Just Now</span>
-                <button onclick="switchTab('applications')" class="text-emerald-700 font-bold hover:underline cursor-pointer">
-                  View Full History &rarr;
+                <button onclick="switchTab('applications')" class="text-emerald-700 font-bold hover:underline cursor-pointer flex items-center gap-1">
+                  <span>View Full Applications</span> <span>&rarr;</span>
                 </button>
               </div>
 
@@ -642,73 +557,6 @@
         </div>
       </div>
 
-      <!-- ===================================================================== -->
-      <!-- TAB 3: CERTIFICATES & REBATES                                         -->
-      <!-- ===================================================================== -->
-      <div id="tab-pane-certificates" class="tab-pane hidden space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-4">
-            <h3 class="text-base font-bold text-slate-900">📜 My Green Disposal Certificates</h3>
-            <p class="text-xs text-slate-500">Official digital QR-verified clearance certificates for building occupancy and water/electricity rebates.</p>
-          </div>
-
-          <div id="certificates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Populated via renderCertificatesGrid() -->
-          </div>
-        </div>
-      </div>
-
-      <!-- ===================================================================== -->
-      <!-- TAB 4: NOTIFICATIONS & ALERTS                                         -->
-      <!-- ===================================================================== -->
-      <div id="tab-pane-notifications" class="tab-pane hidden space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-4">
-            <h3 class="text-base font-bold text-slate-900">🔔 Civic Alerts & Notification Center</h3>
-            <p class="text-xs text-slate-500">Live updates regarding inspection schedules, recycling certificates, and rebate disbursements.</p>
-          </div>
-
-          <div id="notifications-list" class="space-y-3">
-            <!-- Populated via renderNotificationsList() -->
-          </div>
-        </div>
-      </div>
-
-      <!-- ===================================================================== -->
-      <!-- TAB 5: HELP & SUPPORT                                                 -->
-      <!-- ===================================================================== -->
-      <div id="tab-pane-support" class="tab-pane hidden space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
-          <div class="border-b border-slate-100 pb-4">
-            <h3 class="text-base font-bold text-slate-900">❓ Help, FAQs & Escalation Directory</h3>
-            <p class="text-xs text-slate-500">Reach your designated Mysuru ward officer or access civic clearance guides.</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2">
-              <span class="text-xl">🏛️</span>
-              <h4 class="font-bold text-slate-900 text-sm">Mysuru City Corporation (MCC)</h4>
-              <p class="text-xs text-slate-600">New Sayyaji Rao Road, Mysuru - 570024</p>
-              <span class="block font-mono font-bold text-emerald-800 text-xs">📞 0821-2418800</span>
-            </div>
-
-            <div class="p-5 rounded-2xl bg-amber-50/50 border border-amber-200 space-y-2">
-              <span class="text-xl">🏡</span>
-              <h4 class="font-bold text-slate-900 text-sm">Bogadi Gram Panchayat</h4>
-              <p class="text-xs text-slate-600">Panchayat Office, Bogadi Main Road, Mysuru - 570026</p>
-              <span class="block font-mono font-bold text-amber-800 text-xs">📞 0821-2598811</span>
-            </div>
-
-            <div class="p-5 rounded-2xl bg-blue-50/50 border border-blue-200 space-y-2">
-              <span class="text-xl">🏭</span>
-              <h4 class="font-bold text-slate-900 text-sm">Hootagalli Town Panchayat</h4>
-              <p class="text-xs text-slate-600">Council Bhavan, KIADB Road, Hootagalli - 570018</p>
-              <span class="block font-mono font-bold text-blue-800 text-xs">📞 0821-2404555</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </main>
   </div>
 
@@ -733,7 +581,7 @@
 
     // Tab Switcher
     function switchTab(tabId) {
-      const tabs = ['panel', 'applications', 'certificates', 'notifications', 'support'];
+      const tabs = ['panel', 'applications'];
       tabs.forEach(t => {
         const btn = document.getElementById('nav-' + t);
         const pane = document.getElementById('tab-pane-' + t);
@@ -743,18 +591,13 @@
 
       const titleMap = {
         'panel': 'Customer Application Form',
-        'applications': 'My Clearance Applications',
-        'certificates': 'My Green Disposal Certificates',
-        'notifications': 'Civic Notifications & Updates',
-        'support': 'Civic Helpdesk & Ward Contacts'
+        'applications': 'My Clearance Applications & Complaints'
       };
       if (document.getElementById('header-main-title')) {
         document.getElementById('header-main-title').innerText = titleMap[tabId] || 'Customer Dashboard';
       }
 
       if (tabId === 'applications') renderApplicationsHistory();
-      if (tabId === 'certificates') renderCertificatesGrid();
-      if (tabId === 'notifications') renderNotificationsList();
     }
 
     function toggleUserDropdown() {
@@ -948,31 +791,10 @@
       grid.innerHTML = html;
     }
 
-    // Live Sync Preview Cards
-    function syncPreviewCards() {
-      const certNo = document.getElementById('form-cert-num').value.trim() || '—';
-      const certType = document.getElementById('form-cert-type').value.trim() || '—';
-      const certDate = document.getElementById('form-cert-date').value || '—';
-      const certStatus = document.getElementById('form-cert-status').value || 'Pending';
-
-      document.getElementById('prev-cert-no').innerText = certNo;
-      document.getElementById('prev-cert-type').innerText = certType;
-      document.getElementById('prev-cert-date').innerText = certDate;
-      
-      const badge = document.getElementById('prev-cert-status');
-      badge.innerText = certStatus;
-      if (certStatus === 'Approved' || certStatus === 'Issued') {
-        badge.className = 'px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[10px] font-bold';
-      } else {
-        badge.className = 'px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-mono text-[10px] font-bold';
-      }
-    }
-
     function resetCustomerForm() {
       document.getElementById('customer-main-form').reset();
       uploadedPhotos = [];
       renderPhotoPreviewSlots();
-      syncPreviewCards();
       initDefaultValues();
       showToast('Form reset to default values.');
     }
@@ -1096,10 +918,10 @@
       const pin = document.getElementById('form-cust-pin').value.trim();
       const address = document.getElementById('form-cust-address').value.trim();
       const propertyId = document.getElementById('form-cust-property-id').value.trim();
-      const certNo = document.getElementById('form-cert-num').value.trim() || ('MCC-' + Math.floor(100000 + Math.random() * 900000));
-      const certType = document.getElementById('form-cert-type').value;
-      const issueDate = document.getElementById('form-cert-date').value || new Date().toISOString().split('T')[0];
-      const status = document.getElementById('form-cert-status').value || 'Pending';
+      const certNo = 'MCC-' + Math.floor(100000 + Math.random() * 900000);
+      const certType = 'C&D Waste Clearance NOC';
+      const issueDate = new Date().toISOString().split('T')[0];
+      const status = 'Pending Inspection';
 
       // Dynamic Authority & Inspector Pin Matching
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
@@ -1224,14 +1046,16 @@
       
       // Sync tracking views
       renderApplicationsHistory();
-      renderCertificatesGrid();
     }
 
     function updateLiveTrackerUI(app) {
       if (!app) return;
       if (document.getElementById('tracker-app-id')) document.getElementById('tracker-app-id').innerText = app.id || '#MCC2026001234';
+      if (document.getElementById('tracker-authority-name')) {
+        document.getElementById('tracker-authority-name').innerText = app.authority || 'Mysuru Municipal Corporation (MCC Urban)';
+      }
       if (document.getElementById('tracker-assigned-inspector')) {
-        document.getElementById('tracker-assigned-inspector').innerText = `👷 Inspector: ${app.assignedInspectorName || 'Assigned Officer'} (${app.assignedInspectorEmail || 'Pending'})`;
+        document.getElementById('tracker-assigned-inspector').innerText = `${app.assignedInspectorName || 'Ward Officer'} (${app.assignedInspectorEmail || 'Pending'})`;
       }
       
       const status = app.status || 'Pending Inspection';
@@ -1241,16 +1065,19 @@
       const alertBox = document.getElementById('tracker-status-alert-box');
       const progressFill = document.getElementById('tracker-progress-bar-fill');
       const updatedTime = document.getElementById('tracker-updated-time');
+      const notesContainer = document.getElementById('tracker-notes-container');
+      const inspectorNotes = document.getElementById('tracker-inspector-notes');
 
       if (updatedTime) updatedTime.innerText = 'Updated: ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Reset step nodes
-      const steps = [1, 2, 3, 4, 5];
+      // Reset step nodes (4 stages: 1. Submitted, 2. Scheduled, 3. Audited, 4. Approved)
+      const steps = [1, 2, 3, 4];
       steps.forEach(s => {
         const node = document.getElementById('step-node-' + s);
         if (node) {
           const icon = node.querySelector('div');
           icon.className = 'size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold';
+          icon.innerText = String(s);
         }
       });
 
@@ -1272,15 +1099,23 @@
         }
       };
 
+      // Handle inspector notes display
+      if (app.inspectorNotes && notesContainer && inspectorNotes) {
+        notesContainer.classList.remove('hidden');
+        inspectorNotes.innerText = app.inspectorNotes;
+      } else if (notesContainer) {
+        notesContainer.classList.add('hidden');
+      }
+
       // Step 1 is always completed
       setNodeActive(1, true);
 
       if (status === 'Visit Scheduled') {
         if (statusPill) {
           statusPill.innerText = 'Visit Scheduled';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono font-bold border border-blue-500/30';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-mono font-bold border border-blue-500/30';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-1';
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>📅</span> <span>Site Visit Scheduled</span>';
         if (alertDesc) alertDesc.innerText = `Field inspection scheduled for ${app.inspectionTime ? new Date(app.inspectionTime).toLocaleString() : 'Upcoming slot'}. Inspector ${app.assignedInspectorName || 'Ward Officer'} will inspect site address and GPS.`;
         setNodeActive(1, true);
@@ -1289,48 +1124,56 @@
       } else if (status === 'On-Site Audit In Progress') {
         if (statusPill) {
           statusPill.innerText = 'Audit In Progress';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold border border-purple-500/30';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 text-[11px] font-mono font-bold border border-purple-500/30';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-1';
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>🚶</span> <span>Inspector On-Site Auditing</span>';
         if (alertDesc) alertDesc.innerText = `Field Officer ${app.assignedInspectorName || 'Inspector'} is currently at ${app.address || 'your site'} verifying GPS boundary, blueprints, and measuring rubble tonnage.`;
         setNodeActive(1, true);
         setNodeActive(2, true);
         setNodePulse(3, '🚶');
-        if (progressFill) progressFill.style.width = '60%';
+        if (progressFill) progressFill.style.width = '65%';
       } else if (status === 'Inspection Passed & Verified' || status === 'Under Review') {
         if (statusPill) {
           statusPill.innerText = 'Inspection Passed';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono font-bold border border-emerald-500/30';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1';
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>🟢</span> <span>Inspection Verified & Passed</span>';
-        if (alertDesc) alertDesc.innerText = `Physical site audit passed! Verified Tonnage: ${app.tonnage || 10} MT. Remarks: "${app.inspectorNotes || 'Debris verified for clearance.'}". Awaiting final Officer NOC signature.`;
+        if (alertDesc) alertDesc.innerText = `Physical site audit passed! Verified Tonnage: ${app.tonnage || 10} MT. Remarks: "${app.inspectorNotes || 'Debris verified for clearance.'}". Awaiting final Officer clearance approval.`;
         setNodeActive(1, true);
         setNodeActive(2, true);
         setNodeActive(3, true);
-        setNodeActive(4, true);
-        if (progressFill) progressFill.style.width = '80%';
+        if (progressFill) progressFill.style.width = '85%';
       } else if (status === 'Approved' || status === 'Issued' || status === 'Certificate Issued') {
         if (statusPill) {
-          statusPill.innerText = 'Certificate Issued';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-mono font-bold shadow-xs';
+          statusPill.innerText = 'Clearance Approved';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-mono font-bold shadow-xs';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-emerald-600 text-white text-xs space-y-1';
-        if (alertTitle) alertTitle.innerHTML = '<span>🏆</span> <span>Permit & Green Certificate Issued!</span>';
-        if (alertDesc) alertDesc.innerHTML = `Your municipal C&D clearance permit and Green Disposal Certificate are approved. <button onclick="switchTab('certificates')" class="underline font-bold text-white block mt-1 cursor-pointer">Click to View & Print Certificate &rarr;</button>`;
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-emerald-700 text-white text-xs space-y-1.5';
+        if (alertTitle) alertTitle.innerHTML = '<span>🏆</span> <span>Clearance Approved & Verified!</span>';
+        if (alertDesc) alertDesc.innerHTML = `Your municipal C&D clearance permit is approved and finalized. Verified Tonnage: ${app.tonnage || 10} MT. You are cleared for lawful haulage.`;
         setNodeActive(1, true);
         setNodeActive(2, true);
         setNodeActive(3, true);
         setNodeActive(4, true);
-        setNodeActive(5, true);
         if (progressFill) progressFill.style.width = '100%';
+      } else if (status === 'Cancelled' || status === 'Rejected') {
+        if (statusPill) {
+          statusPill.innerText = 'Cancelled';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-rose-500 text-white text-[11px] font-mono font-bold shadow-xs';
+        }
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1.5';
+        if (alertTitle) alertTitle.innerHTML = '<span>❌</span> <span>Complaint Cancelled / Rejected</span>';
+        if (alertDesc) alertDesc.innerText = `This complaint was closed/cancelled by officer: "${app.inspectorNotes || 'No debris detected or request withdrawn.'}". Lock has been released.`;
+        setNodeActive(1, true);
+        if (progressFill) progressFill.style.width = '0%';
       } else if (status === 'Action Required') {
         if (statusPill) {
           statusPill.innerText = 'Action Required';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold border border-amber-500/30';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold border border-amber-500/30';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1';
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>⚠️</span> <span>Action Required / Correction Needed</span>';
         if (alertDesc) alertDesc.innerText = `Inspector Note: "${app.inspectorNotes || 'Please provide clear site access or blueprint clarification.'}".`;
         setNodeActive(1, true);
@@ -1339,19 +1182,19 @@
       } else if (status === 'Flagged Violation') {
         if (statusPill) {
           statusPill.innerText = 'Flagged Violation';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-rose-500 text-white text-[11px] font-mono font-bold';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1';
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>❌</span> <span>Flagged Municipal Violation</span>';
         if (alertDesc) alertDesc.innerText = `Site flagged by inspector: "${app.inspectorNotes || 'Unauthorized hazardous disposal or zone violation.'}".`;
         setNodeActive(1, true);
         if (progressFill) progressFill.style.width = '20%';
       } else {
         if (statusPill) {
-          statusPill.innerText = 'Submitted';
-          statusPill.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30';
+          statusPill.innerText = 'Pending Inspection';
+          statusPill.className = 'px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold border border-amber-500/30';
         }
-        if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1';
+        if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5';
         if (alertTitle) alertTitle.innerHTML = '<span>📍</span> <span>Application Lodged · Inspector Alerted</span>';
         if (alertDesc) alertDesc.innerText = `Your application has been received and dispatched to ${app.authority || 'Mysuru Municipal Authority'}. Inspector ${app.assignedInspectorName || 'Ward Inspector'} will review GPS & photo evidence.`;
         setNodeActive(1, true);
@@ -1361,22 +1204,25 @@
 
     function resetLiveTrackerUI() {
       if (document.getElementById('tracker-app-id')) document.getElementById('tracker-app-id').innerText = 'No Active Request';
+      if (document.getElementById('tracker-authority-name')) document.getElementById('tracker-authority-name').innerText = 'Mysuru Municipal Corporation (MCC)';
       if (document.getElementById('tracker-assigned-inspector')) document.getElementById('tracker-assigned-inspector').innerText = 'Ready to lodge application';
       const statusPill = document.getElementById('tracker-current-status-pill');
       if (statusPill) {
         statusPill.innerText = 'Ready';
-        statusPill.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30';
+        statusPill.className = 'px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono font-bold border border-emerald-500/30';
       }
       const alertBox = document.getElementById('tracker-status-alert-box');
       const alertTitle = document.getElementById('tracker-alert-title');
       const alertDesc = document.getElementById('tracker-alert-desc');
-      if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1';
-      if (alertTitle) alertTitle.innerHTML = '<span>📄</span> <span>Apply for C&D Clearance Permit</span>';
+      const notesContainer = document.getElementById('tracker-notes-container');
+      if (notesContainer) notesContainer.classList.add('hidden');
+      if (alertBox) alertBox.className = 'p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5';
+      if (alertTitle) alertTitle.innerHTML = '<span>📄</span> <span>Ready to Lodge C&D Complaint</span>';
       if (alertDesc) alertDesc.innerText = 'Complete the form on the left with site address, PIN code, and camera photo to lodge your request.';
 
       const progressFill = document.getElementById('tracker-progress-bar-fill');
       if (progressFill) progressFill.style.width = '0%';
-      const steps = [1, 2, 3, 4, 5];
+      const steps = [1, 2, 3, 4];
       steps.forEach(s => {
         const node = document.getElementById('step-node-' + s);
         if (node) {
@@ -1406,7 +1252,6 @@
               resetLiveTrackerUI();
             }
             renderApplicationsHistory();
-            renderCertificatesGrid();
             checkActiveApplicationLock();
           }
         }
@@ -1464,75 +1309,6 @@
       `).join('');
     }
 
-    // Render Certificates Grid
-    function renderCertificatesGrid() {
-      const container = document.getElementById('certificates-grid');
-      if (!container) return;
-
-      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-      const myRequests = getLoggedInUserApplications(allApps);
-      const certs = myRequests.filter(r => r.status === 'Approved' || r.status === 'Issued');
-
-      if (certs.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center text-slate-400 font-medium text-xs">
-            No digital clearance certificates issued yet. Certificates will appear here immediately upon inspector verification and officer approval.
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = certs.map(c => `
-        <div class="p-5 rounded-2xl bg-white border border-emerald-200 shadow-sm space-y-3 relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="size-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">📜</span>
-              <div>
-                <h4 class="font-bold text-slate-900 text-xs">${c.certificateType || 'C&D Waste Clearance NOC'}</h4>
-                <span class="text-[10px] font-mono text-emerald-700 font-bold">${c.certificateNo || 'MYS-CERT-2026'}</span>
-              </div>
-            </div>
-            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold">✓ Approved</span>
-          </div>
-
-          <div class="bg-slate-50 p-3 rounded-xl space-y-1 text-[11px] text-slate-600">
-            <p><span class="font-bold">Applicant:</span> ${c.applicantName}</p>
-            <p><span class="font-bold">Property:</span> ${c.propertyId || c.address}</p>
-            <p><span class="font-bold">Jurisdiction:</span> ${c.authority}</p>
-          </div>
-
-          <button onclick="window.print()" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer">
-            🖨️ Download / Print NOC Certificate
-          </button>
-        </div>
-      `).join('');
-    }
-
-    // Render Notifications List
-    function renderNotificationsList() {
-      const container = document.getElementById('notifications-list');
-      if (!container) return;
-
-      const items = [
-        { id: 'NOTIF-01', title: 'Live GPS & PIN Route Initialized', desc: 'Your request is connected directly with the nearest Ward Inspector & PDO.', time: 'Just Now', icon: '📍' },
-        { id: 'NOTIF-02', title: 'Automated Inspector Assignment', desc: 'S. Nanjappa (INS-GP-02) assigned for physical site tonnage audit.', time: '10 Mins Ago', icon: '👷' },
-        { id: 'NOTIF-03', title: 'Monsoon Debris Protocol Active', desc: 'Mysuru City Corporation fast-track debris haulage SLA is active.', time: '2 Hours Ago', icon: '🏗️' }
-      ];
-
-      container.innerHTML = items.map(n => `
-        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-          <span class="size-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-sm shrink-0">${n.icon}</span>
-          <div class="flex-1">
-            <div class="flex items-center justify-between">
-              <h4 class="font-bold text-slate-900 text-xs">${n.title}</h4>
-              <span class="text-[10px] font-mono text-slate-400">${n.time}</span>
-            </div>
-            <p class="text-[11px] text-slate-600 mt-0.5">${n.desc}</p>
-          </div>
-        </div>
-      `).join('');
-    }
-
     // Initialize Default Form State & Auth
     function initDefaultValues() {
       const saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
@@ -1554,7 +1330,6 @@
       }
 
       renderPhotoPreviewSlots();
-      syncPreviewCards();
       autoDetectCustomerGPS();
       checkActiveApplicationLock();
       syncLiveCustomerApplications();
