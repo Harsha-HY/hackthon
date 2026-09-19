@@ -628,7 +628,7 @@
       </section>
 
       <!-- ===================================================================== -->
-      <!-- ENTITY 17: REPORTS & ANALYTICS                                         -->
+      <!-- ENTITY 17: REPORTS & ANALYTICS (CURRENT ACTUALS VS UPCOMING FORECAST)   -->
       <!-- ===================================================================== -->
       <section id="panel-reports" class="panel-view space-y-6">
         
@@ -636,71 +636,104 @@
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
           <div>
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-mono font-bold uppercase border border-violet-200 mb-1.5">
-              <span>📈 Jurisdictional Analytics Desk</span>
+              <span>📈 Current Actuals vs Upcoming Demand Forecast</span>
             </div>
-            <h2 class="text-xl font-bold text-slate-900">Operational C&D Debris Reports & Field Analytics</h2>
-            <p class="text-xs text-slate-500">Live tonnage hauled, recycling transformation metrics, and field inspector SLA turnaround.</p>
+            <h2 class="text-xl font-bold text-slate-900">Jurisdiction C&D Waste Reports & Predictive Analytics</h2>
+            <p class="text-xs text-slate-500">Analyze verified historical clearance data alongside scheduled upcoming demolition pipeline and recycling forecasts for this authority.</p>
           </div>
 
-          <!-- Controls: Export Button -->
-          <div class="flex items-center gap-2.5">
+          <!-- Controls: Data Horizon Selector & Export Button -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Data Horizon Mode Selector (Current vs Upcoming) -->
+            <div class="flex items-center gap-1 bg-violet-50 p-1 rounded-2xl border border-violet-200">
+              <button onclick="setOfficerReportsHorizon('all')" id="btn-officer-horizon-all" class="px-3 py-1.5 rounded-xl bg-violet-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1">
+                <span>📊</span> <span>Unified (All)</span>
+              </button>
+              <button onclick="setOfficerReportsHorizon('current')" id="btn-officer-horizon-current" class="px-3 py-1.5 rounded-xl text-violet-900 hover:bg-white/80 font-bold text-xs transition cursor-pointer flex items-center gap-1">
+                <span>✅</span> <span>Current Data</span>
+              </button>
+              <button onclick="setOfficerReportsHorizon('upcoming')" id="btn-officer-horizon-upcoming" class="px-3 py-1.5 rounded-xl text-violet-900 hover:bg-white/80 font-bold text-xs transition cursor-pointer flex items-center gap-1">
+                <span>🔮</span> <span>Upcoming Forecast</span>
+              </button>
+            </div>
+
+            <!-- Export Button -->
             <button onclick="exportOfficerReportsCSV()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
               <span>📥</span> <span>Export Authority CSV</span>
             </button>
           </div>
         </div>
 
-        <!-- 4 KPI Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
+        <!-- 5 KPI Metric Cards (Current vs Upcoming Aware) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Total Permits</span>
-              <span class="size-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">📁</span>
-            </div>
-            <span id="rep-total-permits" class="text-2xl font-black text-slate-900 block">0</span>
-            <div class="text-[11px] text-blue-700 font-semibold">Active & Processed Permits</div>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Total Waste Hauled</span>
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="officer-kpi-title-tonnage">Total Debris Volume</span>
               <span class="size-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold">🏗️</span>
             </div>
-            <span id="rep-debris-hauled" class="text-2xl font-black text-emerald-700 block">0 MT</span>
-            <div class="text-[11px] text-emerald-700 font-semibold">Verified Weight Collected</div>
+            <span id="rep-debris-hauled" class="text-2xl font-black text-emerald-800 block">0 MT</span>
+            <div class="flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold" id="rep-sub-tonnage">
+              <span>Realized + Upcoming Pipeline</span>
+            </div>
           </div>
 
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Recycling Conversion</span>
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="officer-kpi-title-recycling">Recycling Paver Yield</span>
               <span class="size-7 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-sm font-bold">♻️</span>
             </div>
             <span id="rep-recycling-rate" class="text-2xl font-black text-teal-700 block">92.4%</span>
-            <div class="text-[11px] text-teal-700 font-semibold">Processed into Pavers & M-Sand</div>
+            <div class="flex items-center gap-1.5 text-[11px] text-teal-700 font-semibold" id="rep-sub-recycling">
+              <span>0 Paver Blocks Output</span>
+            </div>
           </div>
 
-          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Clearance Revenue</span>
-              <span class="size-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold">💰</span>
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="officer-kpi-title-sla">Inspection SLA Turnaround</span>
+              <span class="size-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">⚡</span>
             </div>
-            <span id="rep-fee-collected" class="text-2xl font-black text-purple-700 block">₹0</span>
-            <div class="text-[11px] text-purple-700 font-semibold">Civic Disposal Fees Logged</div>
+            <span id="rep-sla-display" class="text-2xl font-black text-blue-700 block">2.6 Hours</span>
+            <div class="flex items-center gap-1.5 text-[11px] text-blue-700 font-semibold" id="rep-sub-sla">
+              <span>Standard SLA: 4.0 Hours</span>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="officer-kpi-title-permits">Permits & Cases</span>
+              <span class="size-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm font-bold">📁</span>
+            </div>
+            <span id="rep-total-permits" class="text-2xl font-black text-amber-700 block">0</span>
+            <div class="flex items-center gap-1.5 text-[11px] text-amber-700 font-semibold" id="rep-sub-permits">
+              <span id="rep-sub-approval-rate">0 Cleared · 0 Upcoming</span>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block" id="officer-kpi-title-next">Next Scheduled Audit</span>
+              <span class="size-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold">📅</span>
+            </div>
+            <span id="rep-next-inspection" class="text-xl font-black text-purple-700 block">20 Sep 2026</span>
+            <div class="flex items-center gap-1.5 text-[11px] text-purple-700 font-semibold" id="rep-sub-revenue">
+              <span id="rep-fee-collected">₹0 Clearance Fees</span>
+            </div>
           </div>
         </div>
 
-        <!-- 2 Visualizations Grid -->
+        <!-- 2x2 Visualizations Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          <!-- Chart 1: Monthly Intake Trend -->
+          <!-- Chart 1: Monthly Intake (Current Actuals vs Upcoming Forecast) -->
           <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h4 class="font-bold text-slate-900 text-sm">Monthly Debris Inflow vs Recycled Output</h4>
-                <p class="text-xs text-slate-500">Tonnage collected vs converted into recycled paver blocks (MT).</p>
+                <h4 class="font-bold text-slate-900 text-sm">Monthly Inflow: Current Actuals vs Upcoming Forecast</h4>
+                <p class="text-xs text-slate-500">Historical realized intake vs upcoming projected demolition volume (MT).</p>
               </div>
-              <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-200">
-                Monthly Trend
+              <span class="px-2.5 py-1 rounded-full bg-violet-50 text-violet-800 text-[10px] font-mono font-bold border border-violet-200">
+                Actuals + Forecast
               </span>
             </div>
             <div class="h-64 relative">
@@ -724,6 +757,38 @@
             </div>
           </div>
 
+          <!-- Chart 3: Inspector Workload Schedule -->
+          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">Inspector Workload: Cleared Audits vs Upcoming Pipeline</h4>
+                <p class="text-xs text-slate-500">Completed physical site verifications vs upcoming scheduled appointments.</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 text-[10px] font-mono font-bold border border-teal-200">
+                Workload Schedule
+              </span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="officer-chart-inspector-workload"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Recycling Product Yield & Value Realization -->
+          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">Recycled Product Output & Valorization</h4>
+                <p class="text-xs text-slate-500">Transformation yield of rubble into pavers, aggregates, and GSB base.</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-[10px] font-mono font-bold border border-amber-200">
+                Recycled Value
+              </span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="officer-chart-product-yield"></canvas>
+            </div>
+          </div>
+
         </div>
 
         <!-- Processing Plants & Recycling Yard Live Capacity -->
@@ -731,7 +796,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h4 class="font-bold text-slate-900 text-sm">🏭 Designated Processing Plant & Crushing Yard</h4>
-              <p class="text-xs text-slate-500">Operational status and daily throughput for this jurisdiction.</p>
+              <p class="text-xs text-slate-500">Current load capacity vs projected demand from upcoming demolition pipeline.</p>
             </div>
             <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
               <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -749,7 +814,7 @@
               <div class="space-y-1">
                 <div class="flex justify-between text-[11px] font-semibold text-slate-700">
                   <span>Capacity Utilization</span>
-                  <span class="text-emerald-700 font-bold">72%</span>
+                  <span class="text-emerald-700 font-bold" id="officer-plant-cap-text">72% Current · 84% Projected</span>
                 </div>
                 <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div class="h-full bg-emerald-500 rounded-full" style="width: 72%"></div>
@@ -799,7 +864,8 @@
                   <th class="px-4 py-3">Rubble Material</th>
                   <th class="px-4 py-3">Assigned Inspector</th>
                   <th class="px-4 py-3">Designated Plant</th>
-                  <th class="px-4 py-3">Recycling Output</th>
+                  <th class="px-4 py-3">Timeline / Scheduled</th>
+                  <th class="px-4 py-3">Data Type</th>
                   <th class="px-4 py-3">Clearance Status</th>
                 </tr>
               </thead>
@@ -809,6 +875,7 @@
         </div>
 
       </section>
+
 
       <!-- ===================================================================== -->
       <!-- ENTITY 18: USERS / ADMINS                                             -->
@@ -1153,6 +1220,87 @@
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
         gpsLocation: '12.2890° N, 76.6260° E',
+        photos: []
+      },
+      {
+        id: 'TP-2026-119',
+        applicantName: 'KIADB Industrial Shed Renovations',
+        phone: '+91 98450 77140',
+        propertyId: 'PID-TP-5021',
+        address: 'Koorgalli Industrial Area, Phase 2, Hootagalli',
+        pincode: '570018',
+        pin: '570018',
+        ward: 'TP Ward 04 (Koorgalli KIADB)',
+        propertyDetails: 'Factory RCC Flooring & Partition Clearance',
+        propertyType: 'Industrial Premise',
+        verifiedMaterial: 'Heavy RCC Slabs & Aggregate Rubble',
+        material: 'Heavy RCC Slabs & Aggregate Rubble',
+        verifiedTonnage: 24.0,
+        tonnage: 24.0,
+        status: 'Pending Inspection',
+        scheduledDate: '2026-09-21',
+        completionDate: 'Pending Final Clearance',
+        assignedInspectorName: 'M. Anand',
+        assignedInspectorEmail: 'anand.tp@gmail.com',
+        authority: 'Hootagalli Town Panchayat (CMC)',
+        authorityKey: 'tp',
+        headName: 'S. Ramesh (Chief Officer)',
+        headTitle: 'Chief Officer / Zonal Superintendent',
+        gpsLocation: '12.3512° N, 76.5680° E',
+        photos: []
+      },
+      {
+        id: 'GP-2026-125',
+        applicantName: 'Belavadi Agro Farmhouse (N. Gowda)',
+        phone: '+91 98450 88231',
+        propertyId: 'PID-GP-8832',
+        address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP',
+        pincode: '570026',
+        pin: '570026',
+        ward: 'GP Ward 03 (Belavadi Rural)',
+        propertyDetails: 'Old Compound Wall & Shed Clearance',
+        propertyType: 'Rural Residential Premise',
+        verifiedMaterial: 'Brick Rubble, Mortar & Clay Tiles',
+        material: 'Brick Rubble, Mortar & Clay Tiles',
+        verifiedTonnage: 9.5,
+        tonnage: 9.5,
+        status: 'Pending Inspection',
+        scheduledDate: '2026-09-22',
+        completionDate: 'Pending Final Clearance',
+        assignedInspectorName: 'Seervi',
+        assignedInspectorEmail: 'q@gmail.com',
+        authority: 'Bogadi Gram Panchayat',
+        authorityKey: 'gp',
+        headName: 'K. S. Manjunath (PDO)',
+        headTitle: 'Panchayat Development Officer',
+        gpsLocation: '12.2850° N, 76.5820° E',
+        photos: []
+      },
+      {
+        id: 'MCC-2026-130',
+        applicantName: 'Vijayanagar Commercial Plaza (Dr. S. Rao)',
+        phone: '+91 98450 33910',
+        propertyId: 'PID-7714-URBAN',
+        address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru',
+        pincode: '570017',
+        pin: '570017',
+        ward: 'Ward 28 (Vijayanagar 2nd Stage)',
+        propertyDetails: 'Commercial Complex Renovation Demolition',
+        propertyType: 'Commercial Complex',
+        verifiedMaterial: 'Reinforced Concrete & Ceramic Tiles',
+        material: 'Reinforced Concrete & Ceramic Tiles',
+        verifiedTonnage: 16.5,
+        tonnage: 16.5,
+        status: 'Pending Inspection',
+        scheduledDate: '2026-09-23',
+        completionDate: 'Pending Final Clearance',
+        assignedInspectorName: 'Rajesh Kumar',
+        assignedInspectorEmail: 'inspector.mcc@gmail.com',
+        authority: 'Mysuru City Corporation (MCC)',
+        authorityKey: 'mcc',
+        headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
+        headTitle: 'Municipal Commissioner',
+        gpsLocation: '12.3240° N, 76.6110° E',
         photos: []
       }
     ];
@@ -2341,7 +2489,44 @@
 
     function renderElectricityTable() {
       const tbody = document.getElementById('table-electricity');
+      if (!tbody) return;
       const apps = getAuthorityApplications();
+
+      let displayed = apps;
+      if (searchQueryOfficerElectricity) {
+        const q = searchQueryOfficerElectricity;
+        displayed = displayed.filter((a, i) =>
+          `chescom-noc-${String(i+401)}`.includes(q) ||
+          (a.address || '').toLowerCase().includes(q) ||
+          (a.applicantName || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (displayed.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-slate-400 font-medium">
+              No CHESCOM power grid isolation NOC requests matching "${searchQueryOfficerElectricity || 'queue'}".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayed.map((a, i) => `
+        <tr class="hover:bg-slate-50/80 transition">
+          <td class="px-4 py-3 font-mono font-bold text-amber-700">CHESCOM-NOC-${String(i+401)}</td>
+          <td class="px-4 py-3 font-semibold text-slate-900">${a.address || 'Mysuru Premise'}</td>
+          <td class="px-4 py-3 text-slate-800">${a.applicantName || 'Applicant'}</td>
+          <td class="px-4 py-3 font-mono text-slate-600">Service Line Isolated</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">
+              ✓ NOC Granted
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
 
     function openPhotoModal(appId) {
       viewPhoto(appId);
@@ -2366,28 +2551,77 @@
     }
 
     let searchQueryOfficerReports = '';
+    let currentOfficerReportsHorizon = 'all'; // 'all', 'current', 'upcoming'
     window.officerCharts = window.officerCharts || {};
+
+    function setOfficerReportsHorizon(horizon) {
+      currentOfficerReportsHorizon = horizon;
+      ['all', 'current', 'upcoming'].forEach(h => {
+        const btn = document.getElementById('btn-officer-horizon-' + h);
+        if (btn) {
+          if (h === horizon) {
+            btn.className = 'px-3 py-1.5 rounded-xl bg-violet-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-xl text-violet-900 hover:bg-white/80 font-bold text-xs transition cursor-pointer flex items-center gap-1';
+          }
+        }
+      });
+      renderReportsTable();
+    }
 
     function handleOfficerReportsTableSearch(query) {
       searchQueryOfficerReports = (query || '').toLowerCase().trim();
       renderReportsTable(false);
     }
 
+    function isOfficerAppCompleted(a) {
+      const s = (a.status || '').toLowerCase();
+      return s.includes('approved') || s.includes('issued') || s.includes('clearance') || s.includes('completed') || Boolean(a.certificateNo);
+    }
+
     function renderReportsTable(redrawCharts = true) {
-      const apps = getAuthorityApplications();
-      const totalPermits = apps.length;
-      let totalTonnage = 0;
+      const allAuthApps = getAuthorityApplications();
+      
+      const completedApps = allAuthApps.filter(isOfficerAppCompleted);
+      const upcomingApps = allAuthApps.filter(a => !isOfficerAppCompleted(a) && a.status !== 'Cancelled');
+
+      let realizedTonnage = 0;
+      completedApps.forEach(a => {
+        let t = parseFloat(a.verifiedTonnage || a.tonnage || 10);
+        if (isNaN(t) || t <= 0) t = 10;
+        realizedTonnage += t;
+      });
+
+      let upcomingTonnage = 0;
+      upcomingApps.forEach(a => {
+        let t = parseFloat(a.verifiedTonnage || a.tonnage || 10);
+        if (isNaN(t) || t <= 0) t = 10;
+        upcomingTonnage += t;
+      });
+
+      const totalCombinedTonnage = realizedTonnage + upcomingTonnage;
+
+      // Select active dataset based on Horizon toggle
+      let activeApps = allAuthApps;
+      let displayTonnage = totalCombinedTonnage;
+      if (currentOfficerReportsHorizon === 'current') {
+        activeApps = completedApps;
+        displayTonnage = realizedTonnage;
+      } else if (currentOfficerReportsHorizon === 'upcoming') {
+        activeApps = upcomingApps;
+        displayTonnage = upcomingTonnage;
+      }
+
+      // Material Breakdown for Active Horizon
       let concreteTonnage = 0;
       let brickTonnage = 0;
       let tilesTonnage = 0;
       let steelTonnage = 0;
       let mixedTonnage = 0;
 
-      apps.forEach(a => {
+      activeApps.forEach(a => {
         let t = parseFloat(a.verifiedTonnage || a.tonnage || 10);
         if (isNaN(t) || t <= 0) t = 10;
-        totalTonnage += t;
-
         const mat = (a.verifiedMaterial || a.material || a.propertyDetails || '').toLowerCase();
         if (mat.includes('concrete') || mat.includes('rcc') || mat.includes('slab')) {
           concreteTonnage += t;
@@ -2402,54 +2636,107 @@
         }
       });
 
-      if (concreteTonnage === 0 && totalTonnage > 0) {
-        concreteTonnage = totalTonnage * 0.46;
-        brickTonnage = totalTonnage * 0.28;
-        tilesTonnage = totalTonnage * 0.12;
-        steelTonnage = totalTonnage * 0.08;
-        mixedTonnage = totalTonnage * 0.06;
+      if (concreteTonnage === 0 && displayTonnage > 0) {
+        concreteTonnage = displayTonnage * 0.46;
+        brickTonnage = displayTonnage * 0.28;
+        tilesTonnage = displayTonnage * 0.12;
+        steelTonnage = displayTonnage * 0.08;
+        mixedTonnage = displayTonnage * 0.06;
       }
 
-      // Update KPIs
-      const elPermits = document.getElementById('rep-total-permits');
-      if (elPermits) elPermits.innerText = totalPermits;
+      // KPIs calculation
+      const realizedPavers = Math.round(realizedTonnage * 0.924 * 450);
+      const upcomingPavers = Math.round(upcomingTonnage * 0.924 * 450);
+      const realizedRevenue = Math.round(realizedTonnage * 1250);
+      const upcomingRevenue = Math.round(upcomingTonnage * 1250);
 
+      // Find next upcoming inspection date for this authority
+      let nextUpcomingDate = '20 Sep 2026';
+      if (upcomingApps.length > 0) {
+        const sortedUpcoming = [...upcomingApps].sort((a,b) => String(a.scheduledDate || '').localeCompare(String(b.scheduledDate || '')));
+        if (sortedUpcoming[0].scheduledDate) {
+          nextUpcomingDate = sortedUpcoming[0].scheduledDate;
+        }
+      }
+
+      // Update KPI DOM Elements
       const elHauled = document.getElementById('rep-debris-hauled');
-      if (elHauled) elHauled.innerText = totalTonnage.toFixed(1) + ' MT';
-
+      const elSubTonnage = document.getElementById('rep-sub-tonnage');
       const elRecycling = document.getElementById('rep-recycling-rate');
-      if (elRecycling) elRecycling.innerText = totalPermits > 0 ? '92.4%' : '0%';
-
+      const elSubRecycling = document.getElementById('rep-sub-recycling');
+      const elSla = document.getElementById('rep-sla-display');
+      const elSubSla = document.getElementById('rep-sub-sla');
+      const elPermits = document.getElementById('rep-total-permits');
+      const elSubPermits = document.getElementById('rep-sub-approval-rate');
+      const elNextInsp = document.getElementById('rep-next-inspection');
       const elFee = document.getElementById('rep-fee-collected');
-      if (elFee) elFee.innerText = '₹' + Math.round(totalTonnage * 1250).toLocaleString('en-IN');
 
-      // Update Plant Info
+      if (currentOfficerReportsHorizon === 'all') {
+        if (elHauled) elHauled.innerText = totalCombinedTonnage.toFixed(1) + ' MT';
+        if (elSubTonnage) elSubTonnage.innerHTML = `<span class="text-emerald-700 font-bold">${realizedTonnage.toFixed(1)} MT Realized</span> · <span class="text-violet-700 font-bold">${upcomingTonnage.toFixed(1)} MT Upcoming</span>`;
+        if (elRecycling) elRecycling.innerText = '92.4%';
+        if (elSubRecycling) elSubRecycling.innerText = `${(realizedPavers + upcomingPavers).toLocaleString()} Pavers Projected`;
+        if (elSla) elSla.innerText = '2.6 Hours';
+        if (elSubSla) elSubSla.innerText = 'Standard SLA: 4.0 Hours';
+        if (elPermits) elPermits.innerText = `${allAuthApps.length} Cases`;
+        if (elSubPermits) elSubPermits.innerText = `${completedApps.length} Cleared · ${upcomingApps.length} Upcoming Queue`;
+        if (elNextInsp) elNextInsp.innerText = nextUpcomingDate;
+        if (elFee) elFee.innerText = `₹${(realizedRevenue + upcomingRevenue).toLocaleString('en-IN')} Total Valuation`;
+      } else if (currentOfficerReportsHorizon === 'current') {
+        if (elHauled) elHauled.innerText = realizedTonnage.toFixed(1) + ' MT';
+        if (elSubTonnage) elSubTonnage.innerHTML = `<span class="text-emerald-700 font-bold">100% Cleared & Hauled</span>`;
+        if (elRecycling) elRecycling.innerText = '92.4%';
+        if (elSubRecycling) elSubRecycling.innerText = `${realizedPavers.toLocaleString()} Paver Blocks Produced`;
+        if (elSla) elSla.innerText = '2.6 Hours';
+        if (elSubSla) elSubSla.innerText = 'Avg Inspection SLA';
+        if (elPermits) elPermits.innerText = `${completedApps.length} NOCs`;
+        if (elSubPermits) elSubPermits.innerText = '100% Cleared & Compliant';
+        if (elNextInsp) elNextInsp.innerText = 'Completed';
+        if (elFee) elFee.innerText = `₹${realizedRevenue.toLocaleString('en-IN')} Realized Levy`;
+      } else if (currentOfficerReportsHorizon === 'upcoming') {
+        if (elHauled) elHauled.innerText = upcomingTonnage.toFixed(1) + ' MT';
+        if (elSubTonnage) elSubTonnage.innerHTML = `<span class="text-violet-700 font-bold">Demolition Pipeline</span>`;
+        if (elRecycling) elRecycling.innerText = '92.4% Exp.';
+        if (elSubRecycling) elSubRecycling.innerText = `${upcomingPavers.toLocaleString()} Projected Pavers`;
+        if (elSla) elSla.innerText = '4.0h Target';
+        if (elSubSla) elSubSla.innerText = 'Scheduled Dispatch SLA';
+        if (elPermits) elPermits.innerText = `${upcomingApps.length} In Queue`;
+        if (elSubPermits) elSubPermits.innerText = 'Pending Field Site Inspection';
+        if (elNextInsp) elNextInsp.innerText = nextUpcomingDate;
+        if (elFee) elFee.innerText = `₹${upcomingRevenue.toLocaleString('en-IN')} Expected Levy`;
+      }
+
+      // Update Plant Info & Projected Utilization
       const elPlantStatus = document.getElementById('officer-plant-status-text');
       const elPlantName = document.getElementById('officer-plant-name');
       const elPlantDesc = document.getElementById('officer-plant-desc');
       const elOutputDesc = document.getElementById('officer-output-desc');
+      const elPlantCapText = document.getElementById('officer-plant-cap-text');
 
       if (currentAuthorityKey === 'gp') {
         if (elPlantStatus) elPlantStatus.innerText = 'Rayanakere Secondary Recycling Yard';
         if (elPlantName) elPlantName.innerText = 'Rayanakere Secondary Yard';
         if (elPlantDesc) elPlantDesc.innerText = 'Secondary Aggregate Pulverizer & Road Sub-base Processing Unit.';
         if (elOutputDesc) elOutputDesc.innerText = 'Wet Mix Macadam (GSB) & Sub-grade Compacted Rubble.';
+        if (elPlantCapText) elPlantCapText.innerText = '68% Current · 82% Projected';
       } else if (currentAuthorityKey === 'tp') {
         if (elPlantStatus) elPlantStatus.innerText = 'Hootagalli KIADB Paving Press';
         if (elPlantName) elPlantName.innerText = 'Hootagalli Industrial Paving Facility';
         if (elPlantDesc) elPlantDesc.innerText = 'Hydraulic Compaction Unit for Heavy-Duty Interlocking Paver Blocks.';
         if (elOutputDesc) elOutputDesc.innerText = 'Interlocking Civic Paver Blocks & Manufactured Sand.';
+        if (elPlantCapText) elPlantCapText.innerText = '75% Current · 88% Projected';
       } else {
         if (elPlantStatus) elPlantStatus.innerText = 'Kumbarakoppal ZWM Processing Plant';
         if (elPlantName) elPlantName.innerText = 'Kumbarakoppal ZWM C&D Plant';
         if (elPlantDesc) elPlantDesc.innerText = 'Primary Heavy Jaw Crusher, Magnetic Separator & Vibratory Sieve.';
         if (elOutputDesc) elOutputDesc.innerText = 'Manufactured Sand (M-Sand) & 20mm Recycled Aggregates.';
+        if (elPlantCapText) elPlantCapText.innerText = '74% Current · 86% Projected';
       }
 
       // Breakdown Table
       const tableBody = document.getElementById('table-officer-reports-breakdown');
       if (tableBody) {
-        let displayApps = apps;
+        let displayApps = activeApps;
         if (searchQueryOfficerReports) {
           const q = searchQueryOfficerReports;
           displayApps = displayApps.filter(a => {
@@ -2459,6 +2746,7 @@
                    (a.pincode || a.pin || '').includes(q) ||
                    (a.verifiedMaterial || a.material || '').toLowerCase().includes(q) ||
                    (a.assignedInspectorName || '').toLowerCase().includes(q) ||
+                   (a.scheduledDate || '').includes(q) ||
                    (a.status || '').toLowerCase().includes(q);
           });
         }
@@ -2466,28 +2754,27 @@
         if (displayApps.length === 0) {
           tableBody.innerHTML = `
             <tr>
-              <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
-                No jurisdiction debris records matching "${searchQueryOfficerReports || 'current queue'}".
+              <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
+                No jurisdiction debris records matching "${searchQueryOfficerReports || 'current filter'}".
               </td>
             </tr>
           `;
         } else {
           tableBody.innerHTML = displayApps.map(a => {
             const t = parseFloat(a.verifiedTonnage || a.tonnage || 10).toFixed(1);
-            const isAppr = (a.status || '').toLowerCase().includes('approved') || 
-                           (a.status || '').toLowerCase().includes('issued') || 
-                           (a.status || '').toLowerCase().includes('clearance') || 
-                           (a.status || '').toLowerCase().includes('completed');
+            const isCompleted = isOfficerAppCompleted(a);
 
             let designatedPlant = 'Kumbarakoppal ZWM';
             let outputProduct = 'M-Sand & Aggregates';
-            if (currentAuthorityKey === 'gp') {
+            if (currentAuthorityKey === 'gp' || a.dept === 'gp') {
               designatedPlant = 'Rayanakere Secondary Yard';
               outputProduct = 'Wet Mix GSB';
-            } else if (currentAuthorityKey === 'tp') {
+            } else if (currentAuthorityKey === 'tp' || a.dept === 'tp') {
               designatedPlant = 'Hootagalli Paving Press';
               outputProduct = 'Paver Blocks';
             }
+
+            const dateStr = a.scheduledDate || (a.issueDate ? String(a.issueDate).split('T')[0] : '2026-09-20');
 
             return `
               <tr class="hover:bg-slate-50 transition">
@@ -2495,22 +2782,25 @@
                   <span class="block font-bold text-slate-900">${a.ward || 'Ward Jurisdiction'}</span>
                   <span class="text-[10px] font-mono text-slate-500">${a.address || 'Mysuru'} · PIN <strong>${a.pincode || a.pin}</strong></span>
                 </td>
-                <td class="px-4 py-3 font-mono font-bold text-emerald-900">${t} MT</td>
-                <td class="px-4 py-3 font-medium text-slate-700 max-w-[180px] truncate">
+                <td class="px-4 py-3 font-mono font-bold ${isCompleted ? 'text-emerald-900' : 'text-violet-900'}">${t} MT</td>
+                <td class="px-4 py-3 font-medium text-slate-700 max-w-[180px] truncate" title="${a.verifiedMaterial || a.material || 'Demolition Rubble'}">
                   ${a.verifiedMaterial || a.material || 'Demolition Rubble'}
                 </td>
                 <td class="px-4 py-3">
                   <span class="block font-semibold text-slate-800">👮 ${a.assignedInspectorName || 'Assigned Officer'}</span>
                 </td>
                 <td class="px-4 py-3 text-slate-600 font-medium">${designatedPlant}</td>
+                <td class="px-4 py-3 font-mono text-slate-700 text-xs">
+                  ${isCompleted ? `<span>🏁 Cleared</span>` : `<span class="font-bold text-violet-800 bg-violet-50 px-2 py-0.5 rounded border border-violet-200">📅 ${dateStr}</span>`}
+                </td>
                 <td class="px-4 py-3">
-                  <span class="px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 font-semibold text-[11px] border border-teal-200">
-                    ${outputProduct}
+                  <span class="badge-status ${isCompleted ? 'badge-approved' : 'bg-violet-100 text-violet-800 border border-violet-200'}">
+                    ${isCompleted ? '✓ Current Cleared' : '🔮 Upcoming Pipeline'}
                   </span>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="badge-status ${isAppr ? 'badge-approved' : 'badge-pending'}">
-                    ${isAppr ? '✓ Cleared' : '⏳ In Progress'}
+                  <span class="badge-status ${isCompleted ? 'badge-approved' : 'badge-pending'}">
+                    ${isCompleted ? '✓ Cleared' : '⏳ In Progress'}
                   </span>
                 </td>
               </tr>
@@ -2521,36 +2811,51 @@
 
       // Render Officer Charts
       if (redrawCharts && typeof Chart !== 'undefined') {
+        // Chart 1: Monthly Intake (Current Actuals vs Upcoming Forecast)
         const ctxMonthly = document.getElementById('officer-chart-monthly-trend');
         if (ctxMonthly) {
           if (window.officerCharts.monthlyTrend) window.officerCharts.monthlyTrend.destroy();
-          const sepTonnage = totalTonnage > 0 ? totalTonnage : 24.5;
-          const augTonnage = Math.round(sepTonnage * 0.85);
-          const julTonnage = Math.round(sepTonnage * 0.70);
-          const junTonnage = Math.round(sepTonnage * 0.60);
-          const mayTonnage = Math.round(sepTonnage * 0.50);
+          const sepRealized = realizedTonnage > 0 ? realizedTonnage : 24.5;
+          const augTonnage = Math.round(sepRealized * 0.85);
+          const julTonnage = Math.round(sepRealized * 0.70);
+          const junTonnage = Math.round(sepRealized * 0.60);
+          const mayTonnage = Math.round(sepRealized * 0.50);
+
+          const octForecast = Math.round((sepRealized + upcomingTonnage) * 1.15);
+          const novForecast = Math.round((sepRealized + upcomingTonnage) * 1.28);
 
           window.officerCharts.monthlyTrend = new Chart(ctxMonthly, {
             type: 'bar',
             data: {
-              labels: ['May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026 (Live)'],
+              labels: ['May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026 (Live)', 'Oct 2026 (Forecast)', 'Nov 2026 (Forecast)'],
               datasets: [
                 {
                   type: 'bar',
-                  label: 'Debris Inflow (MT)',
-                  data: [mayTonnage, junTonnage, julTonnage, augTonnage, sepTonnage],
+                  label: 'Realized C&D Intake (MT)',
+                  data: [mayTonnage, junTonnage, julTonnage, augTonnage, sepRealized, null, null],
                   backgroundColor: 'rgba(16, 185, 129, 0.85)',
-                  borderRadius: 8
+                  borderRadius: 8,
+                  borderSkipped: false
+                },
+                {
+                  type: 'bar',
+                  label: 'Upcoming Forecast Pipeline (MT)',
+                  data: [null, null, null, null, upcomingTonnage > 0 ? upcomingTonnage : null, octForecast, novForecast],
+                  backgroundColor: 'rgba(139, 92, 246, 0.85)',
+                  borderRadius: 8,
+                  borderSkipped: false
                 },
                 {
                   type: 'line',
-                  label: 'Recycled Paver Yield (MT)',
+                  label: 'Recycled Product Yield (MT)',
                   data: [
                     (mayTonnage * 0.91).toFixed(1),
                     (junTonnage * 0.92).toFixed(1),
                     (julTonnage * 0.91).toFixed(1),
                     (augTonnage * 0.93).toFixed(1),
-                    (sepTonnage * 0.924).toFixed(1)
+                    ((sepRealized + upcomingTonnage) * 0.924).toFixed(1),
+                    (octForecast * 0.924).toFixed(1),
+                    (novForecast * 0.924).toFixed(1)
                   ],
                   borderColor: '#6366f1',
                   backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -2567,13 +2872,14 @@
               maintainAspectRatio: false,
               plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } } },
               scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(226, 232, 240, 0.6)' } },
+                y: { beginAtZero: true, grid: { color: 'rgba(226, 232, 240, 0.6)' }, title: { display: true, text: 'Tonnage (MT)', font: { size: 10 } } },
                 x: { grid: { display: false } }
               }
             }
           });
         }
 
+        // Chart 2: Material Category Composition
         const ctxMaterial = document.getElementById('officer-chart-material-breakdown');
         if (ctxMaterial) {
           if (window.officerCharts.materialBreakdown) window.officerCharts.materialBreakdown.destroy();
@@ -2602,15 +2908,121 @@
             }
           });
         }
+
+        // Chart 3: Inspector Workload Schedule
+        const ctxWorkload = document.getElementById('officer-chart-inspector-workload');
+        if (ctxWorkload) {
+          if (window.officerCharts.inspectorWorkload) window.officerCharts.inspectorWorkload.destroy();
+
+          const inspectorMap = {};
+          allAuthApps.forEach(a => {
+            const insp = a.assignedInspectorName || 'Ward Officer';
+            if (!inspectorMap[insp]) {
+              inspectorMap[insp] = { cleared: 0, upcoming: 0 };
+            }
+            if (isOfficerAppCompleted(a)) inspectorMap[insp].cleared += 1;
+            else inspectorMap[insp].upcoming += 1;
+          });
+
+          const inspLabels = Object.keys(inspectorMap);
+          if (inspLabels.length === 0) {
+            inspLabels.push('Ward Officer 1', 'Ward Officer 2');
+            inspectorMap['Ward Officer 1'] = { cleared: 2, upcoming: 1 };
+            inspectorMap['Ward Officer 2'] = { cleared: 1, upcoming: 1 };
+          }
+
+          const clearedData = inspLabels.map(k => inspectorMap[k] ? inspectorMap[k].cleared : 1);
+          const upcomingData = inspLabels.map(k => inspectorMap[k] ? inspectorMap[k].upcoming : 1);
+
+          window.officerCharts.inspectorWorkload = new Chart(ctxWorkload, {
+            type: 'bar',
+            data: {
+              labels: inspLabels.map(l => l.length > 18 ? l.substring(0, 18) + '…' : l),
+              datasets: [
+                {
+                  label: '✅ Audited & Cleared',
+                  data: clearedData,
+                  backgroundColor: 'rgba(20, 184, 166, 0.85)',
+                  borderRadius: 6
+                },
+                {
+                  label: '🔮 Upcoming Scheduled Audits',
+                  data: upcomingData,
+                  backgroundColor: 'rgba(168, 85, 247, 0.85)',
+                  borderRadius: 6
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Number of Cases', font: { size: 10 } },
+                  ticks: { stepSize: 1 }
+                },
+                x: {
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+        }
+
+        // Chart 4: Recycling Product Yield & Valorization
+        const ctxProduct = document.getElementById('officer-chart-product-yield');
+        if (ctxProduct) {
+          if (window.officerCharts.productYield) window.officerCharts.productYield.destroy();
+
+          const totalT = realizedTonnage + upcomingTonnage;
+          const paverYieldT = (totalT * 0.45).toFixed(1);
+          const msandYieldT = (totalT * 0.35).toFixed(1);
+          const gsbYieldT = (totalT * 0.124).toFixed(1);
+          const residualT = (totalT * 0.076).toFixed(1);
+
+          window.officerCharts.productYield = new Chart(ctxProduct, {
+            type: 'bar',
+            data: {
+              labels: ['Interlocking Pavers', 'M-Sand Fine Aggregate', 'GSB Road Base Sub-grade', 'Non-Recyclable Residual'],
+              datasets: [{
+                label: 'Converted Output (MT)',
+                data: [paverYieldT, msandYieldT, gsbYieldT, residualT],
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#94a3b8'],
+                borderRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Output Weight (MT)', font: { size: 10 } }
+                },
+                x: {
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+        }
       }
     }
 
     function exportOfficerReportsCSV() {
       const apps = getAuthorityApplications();
       let csvContent = 'data:text/csv;charset=utf-8,';
-      csvContent += 'Application ID,Applicant Name,Phone,Address,PIN,Ward,Inspector,Material,Verified Tonnage (MT),Status,Issue Date\r\n';
+      csvContent += 'Application ID,Applicant Name,Phone,Address,PIN,Ward,Jurisdiction,Inspector,Material,Verified Tonnage (MT),Recycled Output,Plant Destination,Timeline,Data Type,Status\r\n';
 
       apps.forEach(a => {
+        const isCompleted = isOfficerAppCompleted(a);
         const row = [
           a.id || '',
           (a.applicantName || 'Citizen').replace(/,/g, ' '),
@@ -2618,11 +3030,15 @@
           (a.address || '').replace(/,/g, ' '),
           a.pincode || a.pin || '',
           (a.ward || '').replace(/,/g, ' '),
+          currentAuthorityKey.toUpperCase(),
           (a.assignedInspectorName || '').replace(/,/g, ' '),
           (a.verifiedMaterial || a.material || 'Demolition Rubble').replace(/,/g, ' '),
           a.verifiedTonnage || a.tonnage || '10',
-          a.status || 'Pending',
-          a.issueDate || '2026-09-19'
+          currentAuthorityKey === 'gp' ? 'Wet Mix GSB Road Base' : (currentAuthorityKey === 'tp' ? 'Interlocking Paver Blocks' : 'M-Sand & 20mm Aggregates'),
+          currentAuthorityKey === 'gp' ? 'Rayanakere Secondary Yard' : (currentAuthorityKey === 'tp' ? 'Hootagalli KIADB Paving Unit' : 'Kumbarakoppal ZWM'),
+          a.scheduledDate || a.issueDate || '2026-09-20',
+          isCompleted ? 'Current / Realized' : 'Upcoming Forecast Pipeline',
+          a.status || 'Pending'
         ];
         csvContent += row.join(',') + '\r\n';
       });
@@ -2630,12 +3046,13 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `Mysuru_Authority_${currentAuthorityKey.toUpperCase()}_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `Mysuru_Authority_${currentAuthorityKey.toUpperCase()}_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       showToast('Authority analytics dataset exported successfully!');
     }
+
 
     function renderUsersTable() {
       const tbody = document.getElementById('table-users');
