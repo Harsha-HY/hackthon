@@ -358,27 +358,30 @@
                   </span>
                 </div>
 
-                <!-- Hidden camera capture input -->
-                <input id="camera-capture-input" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelect(event)"/>
+                <!-- Hidden file/camera capture inputs -->
+                <input id="camera-capture-input" type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event)" multiple/>
 
                 <div class="bg-[#f2faf7] border border-[#bbf0df] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div class="flex items-center gap-3">
                     <div class="size-11 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shrink-0">
-                      📷
+                      📸
                     </div>
                     <div>
-                      <h4 class="font-bold text-slate-900 text-xs">Capture Live On-Site Photo</h4>
-                      <p class="text-[11px] text-slate-500">Take a live photo directly from your camera. Uploading saved photos is disabled for authenticity.</p>
+                      <h4 class="font-bold text-slate-900 text-xs">Site Debris Photo Evidence</h4>
+                      <p class="text-[11px] text-slate-500">Capture live with your camera or select site photo from your gallery/device.</p>
                     </div>
                   </div>
 
-                  <div>
-                    <button type="button" onclick="triggerCameraCapture()" class="px-5 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer">
-                      <span>📷</span> <span>Capture Live Photo</span>
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="triggerCameraCapture()" class="px-4 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-1.5 transition cursor-pointer">
+                      <span>📷 Live Camera</span>
+                    </button>
+                    <button type="button" onclick="document.getElementById('camera-capture-input').click()" class="px-4 py-2.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer">
+                      <span>📁 Upload File</span>
                     </button>
                   </div>
                 </div>
-                <span class="text-[11px] text-slate-400 block">Capture up to 5 live site photos with automatic GPS geotagging.</span>
+                <span class="text-[11px] text-slate-400 block">Add up to 5 site photos. Photos will be geotagged with your current location.</span>
               </div>
 
               <!-- 5. Certificate Details -->
@@ -513,16 +516,16 @@
                 <div class="flex items-center justify-between">
                   <div>
                     <span class="text-[9px] font-mono text-slate-400 uppercase tracking-wider block">Active Application ID</span>
-                    <span id="tracker-app-id" class="font-mono font-bold text-sm text-emerald-400 block">#MCC2026001234</span>
+                    <span id="tracker-app-id" class="font-mono font-bold text-sm text-emerald-400 block">No Active Request</span>
                   </div>
                   <button onclick="copyAppId()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition cursor-pointer" title="Copy ID">
                     📋
                   </button>
                 </div>
                 <div class="flex items-center justify-between text-[11px] pt-1.5 border-t border-white/10 text-slate-300">
-                  <span id="tracker-assigned-inspector" class="truncate font-medium">👷 Inspector: Rajesh Kumar</span>
+                  <span id="tracker-assigned-inspector" class="truncate font-medium">Ready to lodge application</span>
                   <span id="tracker-current-status-pill" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30">
-                    Submitted
+                    Ready
                   </span>
                 </div>
               </div>
@@ -530,10 +533,10 @@
               <!-- Dynamic Status Alert Box -->
               <div id="tracker-status-alert-box" class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1">
                 <div class="flex items-center gap-1.5 font-bold text-slate-900 text-[11px]" id="tracker-alert-title">
-                  <span>📍</span> <span>Application Received</span>
+                  <span>📄</span> <span>Apply for C&D Clearance Permit</span>
                 </div>
                 <p class="text-[11px] text-slate-600 leading-snug" id="tracker-alert-desc">
-                  Your application has been received and routed to your ward inspector.
+                  Provide your site details and camera photo to submit a clearance request.
                 </p>
               </div>
 
@@ -542,21 +545,21 @@
                 <div class="relative flex items-center justify-between">
                   <!-- Connecting Progress Line -->
                   <div class="absolute left-3 right-3 top-3 h-0.5 bg-slate-200 -z-0">
-                    <div id="tracker-progress-bar-fill" class="h-full bg-emerald-500 transition-all duration-500" style="width: 15%"></div>
+                    <div id="tracker-progress-bar-fill" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
                   </div>
                   
                   <!-- Step 1: Submitted -->
                   <div class="flex flex-col items-center relative z-10" id="step-node-1">
-                    <div class="size-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
-                      ✓
+                    <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
+                      1
                     </div>
-                    <span class="text-[9px] font-bold text-emerald-800 mt-1">Submitted</span>
+                    <span class="text-[9px] font-semibold text-slate-500 mt-1">Submitted</span>
                   </div>
 
                   <!-- Step 2: Visit Scheduled -->
                   <div class="flex flex-col items-center relative z-10" id="step-node-2">
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
-                      📅
+                      2
                     </div>
                     <span class="text-[9px] font-semibold text-slate-500 mt-1">Scheduled</span>
                   </div>
@@ -564,7 +567,7 @@
                   <!-- Step 3: On-Site Audit -->
                   <div class="flex flex-col items-center relative z-10" id="step-node-3">
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
-                      🚶
+                      3
                     </div>
                     <span class="text-[9px] font-semibold text-slate-500 mt-1">Audit</span>
                   </div>
@@ -572,7 +575,7 @@
                   <!-- Step 4: Inspection Passed -->
                   <div class="flex flex-col items-center relative z-10" id="step-node-4">
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
-                      🔍
+                      4
                     </div>
                     <span class="text-[9px] font-semibold text-slate-500 mt-1">Verified</span>
                   </div>
@@ -580,7 +583,7 @@
                   <!-- Step 5: Certificate Issued -->
                   <div class="flex flex-col items-center relative z-10" id="step-node-5">
                     <div class="size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold">
-                      🏆
+                      5
                     </div>
                     <span class="text-[9px] font-semibold text-slate-500 mt-1">Certificate</span>
                   </div>
@@ -1366,6 +1369,20 @@
       if (alertBox) alertBox.className = 'p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1';
       if (alertTitle) alertTitle.innerHTML = '<span>📄</span> <span>Apply for C&D Clearance Permit</span>';
       if (alertDesc) alertDesc.innerText = 'Complete the form on the left with site address, PIN code, and camera photo to lodge your request.';
+
+      const progressFill = document.getElementById('tracker-progress-bar-fill');
+      if (progressFill) progressFill.style.width = '0%';
+      const steps = [1, 2, 3, 4, 5];
+      steps.forEach(s => {
+        const node = document.getElementById('step-node-' + s);
+        if (node) {
+          const icon = node.querySelector('div');
+          if (icon) {
+            icon.className = 'size-6 rounded-full bg-slate-100 text-slate-400 border border-slate-300 flex items-center justify-center text-[10px] font-bold';
+            icon.innerText = String(s);
+          }
+        }
+      });
     }
 
     async function syncLiveCustomerApplications() {

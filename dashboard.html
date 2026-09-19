@@ -2035,8 +2035,39 @@
         dutyZone: off.jurisdiction || 'Assigned Ward'
       }));
 
-      // Combine only created/configured accounts (no mock/fake squad)
-      const allOfficers = [...baseOfficers, ...customSquad];
+      // Registered Field Inspectors from Supabase
+      const registeredUsersList = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      const registeredInspectors = registeredUsersList.filter(u => (u.role || '').toLowerCase() === 'inspector' || (u.authority || '').toLowerCase().includes('inspector'));
+      
+      const inspectorSquad = registeredInspectors.map(ins => {
+        let insType = 'mcc';
+        const d = (ins.department || '').toLowerCase();
+        const dn = (ins.departmentName || '').toLowerCase();
+        const pin = String(ins.assignedPin || ins.pin || '');
+        if (d.includes('gp') || d.includes('panchayat') || dn.includes('panchayat') || pin.startsWith('570026')) insType = 'gp';
+        else if (d.includes('tp') || d.includes('town') || dn.includes('town') || pin.startsWith('570018')) insType = 'tp';
+
+        return {
+          id: ins.id,
+          type: insType,
+          organization: ins.departmentName || ins.department || (insType === 'gp' ? 'Bogadi Gram Panchayat' : (insType === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)')),
+          headName: ins.name,
+          designation: ins.designation || 'Field Inspector',
+          empId: ins.id,
+          role: 'Field Inspector',
+          email: ins.email,
+          phone: ins.phone,
+          jurisdiction: ins.assignedArea || 'Assigned Area',
+          pinCodes: ins.assignedPin || '',
+          password: ins.password || '123456',
+          icon: '👷',
+          activeCases: 'Active Inspector',
+          dutyZone: ins.assignedArea || 'Ward Zone'
+        };
+      });
+
+      // Combine configured department accounts, custom officers, and registered inspectors
+      const allOfficers = [...baseOfficers, ...customSquad, ...inspectorSquad];
 
       // Update Department Summary Counters
       const mccCount = allOfficers.filter(o => o.type === 'mcc').length;
