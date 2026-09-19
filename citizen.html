@@ -1087,26 +1087,66 @@
       const issueDate = document.getElementById('form-cert-date').value || new Date().toISOString().split('T')[0];
       const status = document.getElementById('form-cert-status').value || 'Pending';
 
-      // Authority & Inspector Pin Matching
+      // Dynamic Authority & Inspector Pin Matching
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
       let authorityKey = 'mcc';
       let authority = 'Mysuru Municipal Corporation (MCC Urban)';
-      if (pin.startsWith('570026') || pin.startsWith('571130') || pin.startsWith('570028')) {
+      let assignedInspectorName = 'Rajesh Kumar';
+      let assignedInspectorEmail = 'inspector.mcc@gmail.com';
+      let assignedOfficerEmail = 'mcc@gmail.com';
+
+      const isGp = GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
+      const isTp = TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
+
+      if (isGp) {
         authorityKey = 'gp';
         authority = 'Bogadi Gram Panchayat (Rural)';
-      } else if (pin.startsWith('570018') || pin.startsWith('570017')) {
+        assignedInspectorName = 'S. Nanjappa';
+        assignedInspectorEmail = 'nanjappa.gp@gmail.com';
+        assignedOfficerEmail = 'gp@gmail.com';
+      } else if (isTp) {
         authorityKey = 'tp';
         authority = 'Hootagalli Town Panchayat';
+        assignedInspectorName = 'M. Anand';
+        assignedInspectorEmail = 'anand.tp@gmail.com';
+        assignedOfficerEmail = 'tp@gmail.com';
       }
 
-      const allUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-      const matchedInspector = allInspectors.find(ins => {
+      const customMatch = allInspectors.find(ins => {
         const insPin = String(ins.assignedPin || ins.pin || '').trim();
-        return insPin === pin || insPin.includes(pin);
+        if (!insPin) return false;
+        const pList = insPin.split(/[\s,]+/).map(p => p.trim());
+        return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
       });
 
-      const assignedInspectorEmail = matchedInspector ? matchedInspector.email : (authorityKey === 'gp' ? 'nanjappa.gp@gmail.com' : (authorityKey === 'tp' ? 'anand.tp@gmail.com' : 'inspector.mcc@gmail.com'));
-      const assignedInspectorName = matchedInspector ? matchedInspector.name : (authorityKey === 'gp' ? 'S. Nanjappa' : (authorityKey === 'tp' ? 'M. Anand' : 'Rajesh Kumar'));
+      if (customMatch) {
+        const insDept = (customMatch.department || '').toLowerCase();
+        const insDeptName = (customMatch.departmentName || '').toLowerCase();
+        if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
+          authorityKey = 'gp';
+          authority = 'Bogadi Gram Panchayat (Rural)';
+          assignedOfficerEmail = 'gp@gmail.com';
+        } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
+          authorityKey = 'tp';
+          authority = 'Hootagalli Town Panchayat';
+          assignedOfficerEmail = 'tp@gmail.com';
+        }
+        assignedInspectorName = customMatch.name;
+        assignedInspectorEmail = customMatch.email;
+      } else {
+        const deptInspector = allInspectors.find(ins => {
+          const d = (ins.department || '').toLowerCase();
+          const dn = (ins.departmentName || '').toLowerCase();
+          return d === authorityKey || (authorityKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (authorityKey === 'tp' && (d.includes('town') || dn.includes('town')));
+        });
+        if (deptInspector) {
+          assignedInspectorName = deptInspector.name;
+          assignedInspectorEmail = deptInspector.email;
+        }
+      }
 
       const appId = '#MCC' + new Date().getFullYear() + String(Math.floor(100000 + Math.random() * 900000));
       const newApplication = {
@@ -1132,6 +1172,7 @@
         authorityKey,
         assignedInspectorName,
         assignedInspectorEmail,
+        assignedOfficerEmail,
         submittedAt: new Date().toISOString()
       };
 

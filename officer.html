@@ -779,10 +779,16 @@
           const email = (currentUser.email || '').toLowerCase();
           const auth = (currentUser.authority || '').toLowerCase();
           const role = (currentUser.role || '').toLowerCase();
+          const dept = (currentUser.department || '').toLowerCase();
+          const deptName = (currentUser.departmentName || currentUser.department_name || '').toLowerCase();
+          const pin = String(currentUser.assignedPin || currentUser.pin || '').trim();
 
-          if (email === 'gp@gmail.com' || email.includes('gp.') || auth.includes('panchayat') || role.includes('gp')) {
+          const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+          const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
+          if (email === 'gp@gmail.com' || email.includes('gp') || dept === 'gp' || dept.includes('panchayat') || dept.includes('gram') || deptName.includes('panchayat') || auth.includes('panchayat') || GP_PINS.some(p => pin.includes(p))) {
             currentAuthorityKey = 'gp';
-          } else if (email === 'tp@gmail.com' || email.includes('tp.') || auth.includes('town') || role.includes('tp')) {
+          } else if (email === 'tp@gmail.com' || email.includes('tp') || dept === 'tp' || dept.includes('town') || deptName.includes('town') || auth.includes('town') || TP_PINS.some(p => pin.includes(p))) {
             currentAuthorityKey = 'tp';
           } else {
             currentAuthorityKey = 'mcc';
@@ -914,23 +920,23 @@
 
     // Strict Authority Isolation: Only show applications belonging to this officer's authority
     function getAuthorityApplications() {
-      const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
-      const deptPins = (dept.pinCodes || '').split(',').map(p => p.trim()).filter(Boolean);
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
 
       return applicationsList.filter(app => {
-        // 1. If explicit authorityKey matches
-        if (app.authorityKey) {
-          return app.authorityKey.toLowerCase() === currentAuthorityKey.toLowerCase();
-        }
-        // 2. If authority string matches
-        const authStr = (app.authority || '').toLowerCase();
-        if (currentAuthorityKey === 'gp' && (authStr.includes('panchayat') || authStr.includes('rural') || authStr.includes('bogadi'))) return true;
-        if (currentAuthorityKey === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli'))) return true;
-        if (currentAuthorityKey === 'mcc' && (authStr.includes('mcc') || authStr.includes('mysuru urban') || authStr.includes('city'))) return true;
-
-        // 3. Fallback PIN code check
         const appPin = String(app.pincode || app.pin || '').trim();
-        if (appPin && deptPins.includes(appPin)) return true;
+        const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
+        const authStr = (app.authority || '').toLowerCase();
+
+        // 1. If explicit authorityKey matches
+        if (appAuthKey) {
+          return appAuthKey === currentAuthorityKey.toLowerCase();
+        }
+        
+        // 2. If authority string matches
+        if (currentAuthorityKey === 'gp' && (authStr.includes('panchayat') || authStr.includes('rural') || authStr.includes('bogadi') || GP_PINS.some(p => appPin.startsWith(p)))) return true;
+        if (currentAuthorityKey === 'tp' && (authStr.includes('town') || authStr.includes('hootagalli') || TP_PINS.some(p => appPin.startsWith(p)))) return true;
+        if (currentAuthorityKey === 'mcc' && (authStr.includes('mcc') || authStr.includes('mysuru urban') || authStr.includes('city') || (!GP_PINS.some(p => appPin.startsWith(p)) && !TP_PINS.some(p => appPin.startsWith(p))))) return true;
 
         return false;
       });

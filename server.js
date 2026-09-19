@@ -417,39 +417,89 @@ const server = http.createServer(async (req, res) => {
           mergedItem.photo = mergedItem.photo || (mergedItem.photos && mergedItem.photos[0]) || null;
           mergedItem.submittedAt = mergedItem.submittedAt || new Date().toISOString();
 
-          // Auto-route by PIN code to designated Authority & Inspector if not set
-          if (!mergedItem.authorityKey) {
-            if (pin.startsWith('570026') || pin.startsWith('571130') || pin.startsWith('570028') || pin.startsWith('571311')) {
-              mergedItem.authorityKey = 'gp';
-              mergedItem.authority = mergedItem.authority || 'Bogadi Gram Panchayat';
-              mergedItem.assignedInspectorName = mergedItem.assignedInspectorName || 'S. Nanjappa';
-              mergedItem.assignedInspectorEmail = mergedItem.assignedInspectorEmail || 'nanjappa.gp@gmail.com';
-              mergedItem.assignedOfficerEmail = 'gp@gmail.com';
-            } else if (pin.startsWith('570018') || pin.startsWith('570017') || pin.startsWith('570027') || pin.startsWith('571607')) {
-              mergedItem.authorityKey = 'tp';
-              mergedItem.authority = mergedItem.authority || 'Hootagalli Town Panchayat';
-              mergedItem.assignedInspectorName = mergedItem.assignedInspectorName || 'M. Anand';
-              mergedItem.assignedInspectorEmail = mergedItem.assignedInspectorEmail || 'anand.tp@gmail.com';
-              mergedItem.assignedOfficerEmail = 'tp@gmail.com';
-            } else {
-              mergedItem.authorityKey = 'mcc';
-              mergedItem.authority = mergedItem.authority || 'Mysuru Municipal Corporation (MCC Urban)';
-              mergedItem.assignedInspectorName = mergedItem.assignedInspectorName || 'Rajesh Kumar';
-              mergedItem.assignedInspectorEmail = mergedItem.assignedInspectorEmail || 'inspector.mcc@gmail.com';
-              mergedItem.assignedOfficerEmail = 'mcc@gmail.com';
+          // Fetch all inspectors from Supabase & memory
+          let allInspectors = [];
+          if (supabase) {
+            try {
+              const { data: suUsers } = await supabase.from('users').select('*');
+              if (Array.isArray(suUsers)) {
+                allInspectors = suUsers.map(mapDbToUser).filter(u => u.role === 'inspector');
+              }
+            } catch(e) {}
+          }
+          (db.registeredUsers || []).filter(u => u.role === 'inspector').forEach(ins => {
+            if (!allInspectors.some(ai => (ai.email || '').toLowerCase() === (ins.email || '').toLowerCase())) {
+              allInspectors.push(ins);
+            }
+          });
+
+          // Dynamic PIN routing
+          const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+          const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
+          let resolvedAuthKey = 'mcc';
+          let resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
+          let resolvedInspName = 'Rajesh Kumar';
+          let resolvedInspEmail = 'inspector.mcc@gmail.com';
+          let resolvedOfficerEmail = 'mcc@gmail.com';
+
+          const isGp = GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
+          const isTp = TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin) || pin === p);
+
+          if (isGp) {
+            resolvedAuthKey = 'gp';
+            resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
+            resolvedInspName = 'S. Nanjappa';
+            resolvedInspEmail = 'nanjappa.gp@gmail.com';
+            resolvedOfficerEmail = 'gp@gmail.com';
+          } else if (isTp) {
+            resolvedAuthKey = 'tp';
+            resolvedAuthName = 'Hootagalli Town Panchayat';
+            resolvedInspName = 'M. Anand';
+            resolvedInspEmail = 'anand.tp@gmail.com';
+            resolvedOfficerEmail = 'tp@gmail.com';
+          }
+
+          // Check if a custom registered inspector has this PIN assigned
+          const customPinMatch = allInspectors.find(ins => {
+            const insPin = String(ins.assignedPin || ins.pin || '').trim();
+            if (!insPin) return false;
+            const pList = insPin.split(/[\s,]+/).map(p => p.trim());
+            return pList.some(p => p && (p === pin || pin.startsWith(p) || p.startsWith(pin)));
+          });
+
+          if (customPinMatch) {
+            const insDept = (customPinMatch.department || '').toLowerCase();
+            const insDeptName = (customPinMatch.departmentName || '').toLowerCase();
+            if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
+              resolvedAuthKey = 'gp';
+              resolvedAuthName = 'Bogadi Gram Panchayat (Rural)';
+              resolvedOfficerEmail = 'gp@gmail.com';
+            } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
+              resolvedAuthKey = 'tp';
+              resolvedAuthName = 'Hootagalli Town Panchayat';
+              resolvedOfficerEmail = 'tp@gmail.com';
+            }
+            resolvedInspName = customPinMatch.name;
+            resolvedInspEmail = customPinMatch.email;
+          } else {
+            // Check if any registered inspector exists for this authority
+            const deptInspector = allInspectors.find(ins => {
+              const d = (ins.department || '').toLowerCase();
+              const dn = (ins.departmentName || '').toLowerCase();
+              return d === resolvedAuthKey || (resolvedAuthKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (resolvedAuthKey === 'tp' && (d.includes('town') || dn.includes('town')));
+            });
+            if (deptInspector) {
+              resolvedInspName = deptInspector.name;
+              resolvedInspEmail = deptInspector.email;
             }
           }
 
-          // Check if custom inspector was registered for this PIN
-          const customInspectors = (db.registeredUsers || []).filter(u => u.role === 'inspector');
-          const matchedCustom = customInspectors.find(ins => {
-            const insPin = String(ins.assignedPin || ins.pin || '').trim();
-            return insPin === pin || insPin.includes(pin);
-          });
-          if (matchedCustom) {
-            mergedItem.assignedInspectorName = matchedCustom.name;
-            mergedItem.assignedInspectorEmail = matchedCustom.email;
-          }
+          mergedItem.authorityKey = resolvedAuthKey;
+          mergedItem.authority = resolvedAuthName;
+          mergedItem.assignedInspectorName = resolvedInspName;
+          mergedItem.assignedInspectorEmail = resolvedInspEmail;
+          mergedItem.assignedOfficerEmail = resolvedOfficerEmail;
 
           // Upsert to Supabase
           if (supabase) {

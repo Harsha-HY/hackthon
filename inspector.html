@@ -462,14 +462,15 @@
           currentUser = JSON.parse(saved);
           
           const dept = (currentUser.department || '').toLowerCase();
+          const deptName = (currentUser.departmentName || currentUser.department_name || '').toLowerCase();
           const auth = (currentUser.authority || '').toLowerCase();
           const email = (currentUser.email || '').toLowerCase();
           const pin = String(currentUser.assignedPin || currentUser.pin || '570001').trim();
 
           // Determine which Panchayat / Authority created this inspector
-          if (dept === 'gp' || auth.includes('panchayat') || email.includes('gp') || AUTHORITY_CONFIGS.gp.defaultPins.includes(pin)) {
+          if (dept === 'gp' || dept.includes('panchayat') || dept.includes('gram') || deptName.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || AUTHORITY_CONFIGS.gp.defaultPins.some(p => pin.includes(p))) {
             currentAuthorityKey = 'gp';
-          } else if (dept === 'tp' || auth.includes('town') || email.includes('tp') || AUTHORITY_CONFIGS.tp.defaultPins.includes(pin)) {
+          } else if (dept === 'tp' || dept.includes('town') || deptName.includes('town') || auth.includes('town') || email.includes('tp') || AUTHORITY_CONFIGS.tp.defaultPins.some(p => pin.includes(p))) {
             currentAuthorityKey = 'tp';
           } else {
             currentAuthorityKey = 'mcc';
@@ -533,26 +534,42 @@
       renderAllPanels();
     }
 
-    // Strictly filter applications for this inspector's assigned PIN
+    // Strictly filter applications for this inspector's assigned Authority & PIN
     function getMyAssignedApplications() {
       if (!currentUser) return [];
-      const myPin = String(currentUser.assignedPin || currentUser.pin || '570001').trim();
+      const myPin = String(currentUser.assignedPin || currentUser.pin || '').trim();
       const myEmail = (currentUser.email || '').toLowerCase().trim();
+
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
 
       return applicationsList.filter(app => {
         const appPin = String(app.pincode || app.pin || '').trim();
+        const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
         const appInspectorEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
 
         // 1. Direct inspector email assignment match
         if (appInspectorEmail && appInspectorEmail === myEmail) return true;
-        
-        // 2. Assigned PIN code exact or substring match
-        if (appPin && myPin && (appPin === myPin || myPin.includes(appPin) || appPin.includes(myPin))) return true;
 
-        // 3. Fallback for unassigned first PIN if matching default authority
-        if (myPin === '570001' && (appPin.startsWith('570001') || appPin === '')) return true;
+        // 2. Strict Authority Isolation: Gram Panchayat inspector ONLY gets GP applications
+        let appTargetAuth = appAuthKey;
+        if (!appTargetAuth) {
+          if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) appTargetAuth = 'gp';
+          else if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) appTargetAuth = 'tp';
+          else appTargetAuth = 'mcc';
+        }
 
-        return false;
+        // Must match the inspector's authority
+        if (appTargetAuth !== currentAuthorityKey) return false;
+
+        // 3. Assigned PIN code exact or substring match
+        if (myPin && appPin) {
+          const pinList = myPin.split(/[\s,]+/).map(p => p.trim());
+          if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
+        }
+
+        // 4. Default authority fallback (e.g. all unassigned GP complaints route to GP inspector)
+        return true;
       });
     }
 
