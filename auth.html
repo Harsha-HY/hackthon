@@ -436,7 +436,13 @@
         if (isInspector) {
           window.location.href = 'inspector.html';
         } else if (isOfficer) {
-          window.location.href = 'officer.html';
+          let deptKey = 'mcc';
+        if (email === 'gp@gmail.com' || (user.department === 'gp') || auth.includes('gram') || auth.includes('panchayat') || (user.assignedPin && ['570026','571130'].some(p=>user.assignedPin.includes(p)))) {
+          deptKey = 'gp';
+        } else if (email === 'tp@gmail.com' || (user.department === 'tp') || auth.includes('town') || (user.assignedPin && ['570018','570017'].some(p=>user.assignedPin.includes(p)))) {
+          deptKey = 'tp';
+        }
+        window.location.href = 'officer.html?auth=' + deptKey;
         } else if (isSuperAdmin) {
           window.location.href = 'dashboard.html';
         } else {

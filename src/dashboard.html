@@ -492,6 +492,7 @@
               <button onclick="resetDeptDefaults()" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition cursor-pointer">
                 Reset Defaults
               </button>
+              <button type="button" onclick="launchOfficerPortal(currentSelectedDept)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition cursor-pointer flex items-center gap-1.5"><span>🚀 Open Dashboard</span></button>
               <button onclick="saveDepartmentConfig()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer flex items-center gap-2">
                 <span>💾 Save & Create Officer Login</span>
               </button>
@@ -3508,6 +3509,36 @@
       showToast('Reset ' + currentSelectedDept.toUpperCase() + ' to official default settings.');
     }
 
+    function launchOfficerPortal(deptKey) {
+      const d = departmentsState[deptKey] || {
+        organization: deptKey === 'gp' ? 'Gram Panchayat (Bogadi Rural)' : (deptKey === 'tp' ? 'Town Panchayat (Hootagalli Town)' : 'Mysuru City Corporation (MCC)'),
+        headName: deptKey === 'gp' ? 'K. S. Manjunath' : (deptKey === 'tp' ? 'S. Ramesh' : 'Dr. N. Chandrashekar, IAS'),
+        email: deptKey === 'gp' ? 'gp@gmail.com' : (deptKey === 'tp' ? 'tp@gmail.com' : 'mcc@gmail.com'),
+        designation: deptKey === 'gp' ? 'Panchayat Development Officer (PDO)' : (deptKey === 'tp' ? 'Chief Officer' : 'Commissioner')
+      };
+
+      const officerUser = {
+        id: 'u_' + deptKey,
+        name: d.headName || 'Panchayat Officer',
+        email: d.email || (deptKey + '@gmail.com'),
+        role: 'officer',
+        department: deptKey,
+        authority: d.organization,
+        designation: d.designation || 'Officer',
+        assignedPin: d.pinCodes || ''
+      };
+
+      localStorage.setItem('current_user', JSON.stringify(officerUser));
+      sessionStorage.setItem('current_user', JSON.stringify(officerUser));
+
+      if (typeof showToast === 'function') {
+        showToast('Opening ' + (d.organization || 'Panchayat') + ' Dashboard...', 'success');
+      }
+      setTimeout(() => {
+        window.open('officer.html?auth=' + deptKey, '_blank');
+      }, 350);
+    }
+
     function renderAuthoritiesTable() {
       const tbody = document.getElementById('table-authorities');
       if (!tbody) return;
@@ -3551,15 +3582,20 @@
               <span class="badge-status ${item.status === 'Active' ? 'badge-approved' : 'badge-pending'}">${item.status || 'Active'}</span>
             </td>
             <td class="px-4 py-3.5 text-right">
-              ${!isCustom ? `
-                <button onclick="selectDepartment('${keys[index]}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
-                  Edit Form
-                </button>
-              ` : `
-                <button onclick="removeCustomOfficer(${index - 3})" class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition cursor-pointer">
-                  Remove
-                </button>
-              `}
+              `<div class="flex items-center justify-end gap-2">
+      <button onclick="launchOfficerPortal('${keys[index] || (index===0?'mcc':index===1?'gp':'tp')}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-xs flex items-center gap-1">
+        <span>🚀 Open Dashboard</span>
+      </button>
+      ${!isCustom ? `
+        <button onclick="selectDepartment('${keys[index]}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer">
+          Edit Form
+        </button>
+      ` : `
+        <button onclick="removeCustomOfficer(${index - 3})" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition cursor-pointer">
+          Delete
+        </button>
+      `}
+    </div>`
             </td>
           </tr>
         `;
