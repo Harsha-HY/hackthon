@@ -410,9 +410,12 @@ const server = http.createServer(async (req, res) => {
 
             const activeExisting = (db.applications || []).find(a => {
               if (isFinalized(a.status)) return false;
-              if (reqPhone && String(a.phone || '').trim() === reqPhone) return true;
-              if (reqEmail && String(a.email || '').toLowerCase().trim() === reqEmail) return true;
-              if (reqName && String(a.applicantName || '').toLowerCase().trim() === reqName) return true;
+              const aEmail = String(a.email || '').toLowerCase().trim();
+              const aPhone = String(a.phone || '').trim();
+              const aName = String(a.applicantName || a.applicant_name || '').toLowerCase().trim();
+
+              if (reqEmail && aEmail && aEmail === reqEmail) return true;
+              if (reqPhone && aPhone && reqPhone.length >= 10 && aPhone === reqPhone && reqName && aName && reqName === aName) return true;
               return false;
             });
 

@@ -327,6 +327,7 @@
 
       // Save user session in localStorage and sessionStorage
       try {
+        localStorage.removeItem('cust_my_requests');
         const registered = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
         if (!registered.find(r => (r.email || '').toLowerCase().trim() === user.email.toLowerCase().trim())) {
           registered.push(user);
@@ -385,6 +386,7 @@
 
       // Save user session in BOTH localStorage and sessionStorage
       try {
+        localStorage.removeItem('cust_my_requests');
         localStorage.setItem('current_user', JSON.stringify(user));
         sessionStorage.setItem('current_user', JSON.stringify(user));
       } catch(e) {}
