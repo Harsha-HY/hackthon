@@ -8,6 +8,10 @@
   <meta http-equiv="Expires" content="0"/>
   <title>Field Inspector Console — Smart Civic Waste Mysuru</title>
   
+  <!-- Supabase JS Client & Universal Civic DB -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -946,13 +950,20 @@
       } catch(e) {}
 
       let fetched = [];
-      try {
-        const res = await fetch('/api/applications');
-        if (res.ok) fetched = await res.json();
-      } catch(e) {}
+      if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+        try {
+          fetched = await window.civicDb.fetchApplications();
+        } catch(e) {}
+      } else {
+        try {
+          const res = await fetch('/api/applications');
+          if (res.ok) fetched = await res.json();
+        } catch(e) {}
+      }
+
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
       const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+      const combined = [...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
       const uniqueMap = new Map();
       combined.forEach(a => {
         if (!a) return;
@@ -965,6 +976,7 @@
         }
       });
       applicationsList = Array.from(uniqueMap.values());
+      localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
 
       renderAllPanels();
     }
@@ -1464,14 +1476,22 @@
           }
         }
 
-        // 1. Post updated status to Server Backend API
-        try {
-          await fetch('/api/applications', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(app)
-          });
-        } catch(err) {}
+        // 1. Save directly to Supabase Cloud Database + Server Backend
+        if (window.civicDb && typeof window.civicDb.saveApplication === 'function') {
+          try {
+            await window.civicDb.saveApplication(app);
+          } catch(err) {
+            console.warn('civicDb saveApplication err:', err);
+          }
+        } else {
+          try {
+            await fetch('/api/applications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(app)
+            });
+          } catch(err) {}
+        }
 
         // 2. Save locally in master applications list
         localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
@@ -1632,9 +1652,17 @@
 
     initInspectorSession();
     loadInspectorData();
+
+    // Subscribe to live Supabase database events
+    if (window.civicDb && typeof window.civicDb.subscribeToApplications === 'function') {
+      window.civicDb.subscribeToApplications(() => {
+        loadInspectorData();
+      });
+    }
+
     setInterval(() => {
       loadInspectorData();
-    }, 1000);
+    }, 3000);
   </script>
 
   <!-- ========================================================================= -->

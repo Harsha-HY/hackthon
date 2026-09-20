@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Portal Access — Smart Civic Construction & Demolition Routing Mysuru</title>
   
+  <!-- Supabase JS Client & Universal Civic DB -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -316,20 +320,45 @@
       const password = document.getElementById('reg-password').value.trim();
 
       let user = null;
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, phone, password })
-        });
-        const data = await res.json();
-        if (!data.success) {
-          showToast(data.message || 'Registration failed. Email might already exist.', 'error');
-          return;
+
+      // 1. Direct Supabase / Backend registration
+      if (window.civicDb && typeof window.civicDb.registerUser === 'function') {
+        try {
+          const res = await window.civicDb.registerUser({
+            id: 'u_' + Date.now(),
+            name,
+            email,
+            phone,
+            password,
+            role: 'citizen',
+            authority: 'Customer',
+            createdAt: new Date().toISOString()
+          });
+          if (res && res.user) {
+            user = res.user;
+          }
+        } catch(err) {
+          console.warn('civicDb registerUser err:', err);
         }
-        user = data.user;
-      } catch(err) {
-        // Local fallback
+      }
+
+      // 2. Serverless API fallback
+      if (!user) {
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone, password })
+          });
+          const data = await res.json();
+          if (data && data.success && data.user) {
+            user = data.user;
+          }
+        } catch(err) {}
+      }
+
+      // 3. Local fallback
+      if (!user) {
         const allUsers = getAllUsers();
         if (allUsers.find(u => (u.email || '').toLowerCase().trim() === email)) {
           showToast('An account with this email already exists. Please sign in.', 'error');
@@ -388,26 +417,36 @@
 
       let user = null;
 
-      // 1. Authenticate with Supabase Database Backend (Enables instant multi-device login)
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailInput, password: passwordInput })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.user) {
-            if (deletedUsers.includes((data.user.email || '').toLowerCase().trim())) {
-              showToast('This account has been deactivated or removed by authority.', 'error');
-              return;
-            }
-            user = data.user;
+      // 1. Direct Supabase login
+      if (window.civicDb && typeof window.civicDb.login === 'function') {
+        try {
+          const authRes = await window.civicDb.login(emailInput, passwordInput);
+          if (authRes && authRes.success && authRes.user) {
+            user = authRes.user;
           }
+        } catch(err) {
+          console.warn('civicDb login err:', err);
         }
-      } catch(err) {}
+      }
 
-      // 2. Local fallback if offline
+      // 2. Serverless API login fallback
+      if (!user) {
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput, password: passwordInput })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.user) {
+              user = data.user;
+            }
+          }
+        } catch(err) {}
+      }
+
+      // 3. Local fallback if offline
       if (!user) {
         const allUsers = getAllUsers();
         user = allUsers.find(u => checkUserCredentials(u, emailInput, passwordInput));
@@ -416,6 +455,11 @@
       // If invalid credentials
       if (!user) {
         showToast('Invalid email or password. Please check your credentials.', 'error');
+        return;
+      }
+
+      if (deletedUsers.includes((user.email || '').toLowerCase().trim())) {
+        showToast('This account has been deactivated or removed by authority.', 'error');
         return;
       }
 

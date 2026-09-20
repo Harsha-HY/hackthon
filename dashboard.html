@@ -13,6 +13,10 @@
   <!-- Chart.js CDN for High-Performance Visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Supabase JS Client & Universal Civic DB -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -2254,10 +2258,40 @@
       }
     ];
 
+    let cachedApplications = [];
+    async function syncAdminDatabase() {
+      try {
+        if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+          const apps = await window.civicDb.fetchApplications();
+          if (Array.isArray(apps) && apps.length > 0) {
+            cachedApplications = apps;
+            localStorage.setItem('civic_applications', JSON.stringify(apps));
+            renderDemolitionRequestsTable();
+          }
+        }
+      } catch(e) {}
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        syncAdminDatabase();
+        if (window.civicDb && typeof window.civicDb.subscribeToApplications === 'function') {
+          window.civicDb.subscribeToApplications(() => syncAdminDatabase());
+        }
+        setInterval(syncAdminDatabase, 4000);
+      });
+    } else {
+      syncAdminDatabase();
+      if (window.civicDb && typeof window.civicDb.subscribeToApplications === 'function') {
+        window.civicDb.subscribeToApplications(() => syncAdminDatabase());
+      }
+      setInterval(syncAdminDatabase, 4000);
+    }
+
     function getOriginalDemolitionApplications() {
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
       const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(cachedApplications || []), ...local, ...custReqs];
+      const combined = [...(cachedApplications || []), ...local, ...custReqs];
       const uniqueMap = new Map();
 
       combined.forEach(a => {

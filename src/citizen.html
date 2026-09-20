@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Customer Dashboard — Smart Civic C&D Mysuru</title>
   
+  <!-- Supabase JS Client & Universal Civic DB -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -1629,30 +1633,48 @@
         submittedAt: new Date().toISOString()
       };
 
-      // 1. Post to Server Backend
-      try {
-        const postRes = await fetch('/api/applications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newApplication)
-        });
-        if (!postRes.ok) {
-          const resData = await postRes.json();
-          if (resData && resData.message) {
-            showToast('⚠️ ' + resData.message, 'error');
-            checkActiveApplicationLock();
-            return;
-          }
+      // 1. Save directly to Supabase Cloud Database + Server Backend
+      if (window.civicDb && typeof window.civicDb.saveApplication === 'function') {
+        try {
+          await window.civicDb.saveApplication(newApplication);
+        } catch(err) {
+          console.warn('civicDb saveApplication err:', err);
         }
-      } catch(err) {}
+      } else {
+        try {
+          const postRes = await fetch('/api/applications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newApplication)
+          });
+          if (!postRes.ok) {
+            const resData = await postRes.json();
+            if (resData && resData.message) {
+              showToast('⚠️ ' + resData.message, 'error');
+              checkActiveApplicationLock();
+              return;
+            }
+          }
+        } catch(err) {}
+      }
 
       // 2. Save in LocalStorage
       const apps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-      apps.unshift(newApplication);
+      const existIdx = apps.findIndex(a => a.id === newApplication.id);
+      if (existIdx >= 0) {
+        apps[existIdx] = newApplication;
+      } else {
+        apps.unshift(newApplication);
+      }
       localStorage.setItem('civic_applications', JSON.stringify(apps));
 
       const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      myRequests.unshift(newApplication);
+      const myExistIdx = myRequests.findIndex(a => a.id === newApplication.id);
+      if (myExistIdx >= 0) {
+        myRequests[myExistIdx] = newApplication;
+      } else {
+        myRequests.unshift(newApplication);
+      }
       localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
 
       // 3. Broadcast to all open tabs immediately
@@ -2427,6 +2449,19 @@
       }).join('');
     }
 
+    async function syncLiveCustomerApplications() {
+      try {
+        if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+          const apps = await window.civicDb.fetchApplications();
+          if (Array.isArray(apps) && apps.length > 0) {
+            localStorage.setItem('civic_applications', JSON.stringify(apps));
+            renderApplicationsHistory();
+            checkActiveApplicationLock();
+          }
+        }
+      } catch(e) {}
+    }
+
     // Initialize Default Form State & Auth
     function initDefaultValues() {
       const saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
@@ -2451,7 +2486,16 @@
       autoDetectCustomerGPS();
       checkActiveApplicationLock();
       syncLiveCustomerApplications();
-      setInterval(syncLiveCustomerApplications, 3000);
+      renderApplicationsHistory();
+
+      // Subscribe to live database changes
+      if (window.civicDb && typeof window.civicDb.subscribeToApplications === 'function') {
+        window.civicDb.subscribeToApplications(() => {
+          syncLiveCustomerApplications();
+        });
+      }
+
+      setInterval(syncLiveCustomerApplications, 4000);
     }
 
     initDefaultValues();

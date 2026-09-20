@@ -8,6 +8,10 @@
   <!-- Chart.js CDN for High-Performance Visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Supabase JS Client & Universal Civic DB -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -1051,12 +1055,16 @@
     async function loadData() {
       syncLocalData();
       let fetchedUsers = [];
-      try {
-        const res = await fetch('/api/auth/users');
-        if (res.ok) {
-          fetchedUsers = await res.json();
-        }
-      } catch(e) {}
+      if (window.civicDb && typeof window.civicDb.fetchUsers === 'function') {
+        try {
+          fetchedUsers = await window.civicDb.fetchUsers();
+        } catch(e) {}
+      } else {
+        try {
+          const res = await fetch('/api/auth/users');
+          if (res.ok) fetchedUsers = await res.json();
+        } catch(e) {}
+      }
       
       const localUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const userMap = new Map();
@@ -1089,10 +1097,17 @@
       }
 
       let fetched = [];
-      try {
-        const res = await fetch('/api/applications');
-        if (res.ok) fetched = await res.json();
-      } catch(e) {}
+      if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+        try {
+          fetched = await window.civicDb.fetchApplications();
+        } catch(e) {}
+      } else {
+        try {
+          const res = await fetch('/api/applications');
+          if (res.ok) fetched = await res.json();
+        } catch(e) {}
+      }
+
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
       const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : [])];
       const uniqueMap = new Map();
@@ -1107,6 +1122,7 @@
         }
       });
       applicationsList = Array.from(uniqueMap.values());
+      localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
 
       renderCurrentAuthorityUI();
       renderAllTables();
