@@ -500,15 +500,19 @@
                     </div>
                   </div>
 
-                  <div id="camera-action-container" class="flex items-center gap-2 shrink-0">
-                    <button id="btn-camera-trigger" type="button" onclick="triggerCameraCapture()" class="px-5 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer">
-                      <span>📷</span> <span>Capture Real Location Photo</span>
+                  <div id="camera-action-container" class="flex flex-wrap items-center gap-2 shrink-0">
+                    <button id="btn-camera-trigger" type="button" onclick="triggerCameraCapture()" class="px-4 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer">
+                      <span>📷</span> <span>Capture Live Photo</span>
                     </button>
+                    <label for="citizen-photo-file-input" class="px-4 py-2.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition cursor-pointer">
+                      <span>📁</span> <span>Upload Photo Files</span>
+                    </label>
+                    <input id="citizen-photo-file-input" type="file" multiple accept="image/*" onchange="handleFileUpload(event)" class="hidden"/>
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
-                  <span>🔒</span>
-                  <span>Single live geotagged photo permitted per order. Once captured or submitted, photo cannot be modified until next order.</span>
+                  <span>📸</span>
+                  <span>Attach up to 5 site photos (Live camera geotag or file upload from your device).</span>
                 </div>
               </div>
 
@@ -1062,10 +1066,10 @@
       }
     }
 
-    // Photo Capture Handling (Strict 100% Live Camera Geotagging & 1-Photo Lock)
+    // Photo Capture & File Upload Handling (Up to 5 Photos with Geotag)
     async function triggerCameraCapture() {
-      if (uploadedPhotos && uploadedPhotos.length >= 1) {
-        showToast('🔒 Real location photo is already captured & locked for this order. You cannot alter or upload another photo until your next order.', 'info');
+      if (uploadedPhotos && uploadedPhotos.length >= 5) {
+        showToast('You have already attached the maximum 5 site photos.', 'info');
         return;
       }
 
@@ -1119,13 +1123,17 @@
           if (loading) loading.classList.add('hidden');
         } catch (err) {
           if (loading) loading.classList.add('hidden');
-          showToast('⚠️ Camera access failed or was denied. Please allow camera permissions.', 'error');
+          showToast('⚠️ Camera access denied or not found. You can use the "Upload Photo Files" button.', 'info');
           closeCameraModal();
+          const fileInput = document.getElementById('citizen-photo-file-input');
+          if (fileInput) fileInput.click();
         }
       } else {
         if (loading) loading.classList.add('hidden');
-        showToast('⚠️ Live camera is not supported in this browser.', 'error');
+        showToast('⚠️ Live camera is not supported. Opening file picker...', 'info');
         closeCameraModal();
+        const fileInput = document.getElementById('citizen-photo-file-input');
+        if (fileInput) fileInput.click();
       }
     }
 
@@ -1181,8 +1189,9 @@
       const canvas = document.getElementById('camera-canvas');
       if (!video) return;
 
-      if (uploadedPhotos && uploadedPhotos.length >= 1) {
-        showToast('Only 1 live geotagged photo is permitted per order.', 'info');
+      if (!uploadedPhotos) uploadedPhotos = [];
+      if (uploadedPhotos.length >= 5) {
+        showToast('Maximum 5 site photos reached.', 'info');
         closeCameraModal();
         return;
       }
@@ -1215,15 +1224,14 @@
       // 3. Update form fields with real location data immediately
       const addrInput = document.getElementById('form-cust-address');
       const pinInput = document.getElementById('form-cust-pin');
-      if (addrInput) addrInput.value = addressStr;
-      if (pinInput) pinInput.value = pinStr;
+      if (addrInput && !addrInput.value) addrInput.value = addressStr;
+      if (pinInput && !pinInput.value) pinInput.value = pinStr;
       handlePinChange();
 
       // 4. Render Authentic Tamper-Evident Geotag Watermark Overlay on Canvas
       const bannerHeight = Math.max(88, Math.round(height * 0.17));
       const bannerY = height - bannerHeight;
 
-      // Dark gradient background
       const grad = ctx.createLinearGradient(0, bannerY, 0, height);
       grad.addColorStop(0, 'rgba(0, 0, 0, 0.40)');
       grad.addColorStop(0.25, 'rgba(8, 29, 25, 0.88)');
@@ -1231,16 +1239,13 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, bannerY, width, bannerHeight);
 
-      // Top emerald accent strip
       ctx.fillStyle = '#10b981';
       ctx.fillRect(0, bannerY, width, 3.5);
 
-      // Watermark Text Rendering
       const fontSize = Math.max(13, Math.round(width * 0.020));
       const subFontSize = Math.max(11, Math.round(width * 0.016));
       ctx.textBaseline = 'middle';
 
-      // Line 1: Real GPS Coordinates & IST Timestamp
       ctx.font = `bold ${fontSize}px "JetBrains Mono", monospace, sans-serif`;
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
@@ -1248,27 +1253,56 @@
       const nowStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
       ctx.fillText(`📍 GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E   |   ${nowStr} IST`, 24, bannerY + bannerHeight * 0.30);
 
-      // Line 2: Authentic Reverse-Geocoded Site Address & PIN
       ctx.font = `600 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
       ctx.fillStyle = '#a7f3d0';
       ctx.fillText(`🏠 Site Address: ${addressStr}  ·  PIN: ${pinStr}`, 24, bannerY + bannerHeight * 0.60);
 
-      // Line 3: Official Verification Registry Badge
       ctx.font = `bold ${Math.max(9, Math.round(width * 0.013))}px "Plus Jakarta Sans", sans-serif`;
       ctx.fillStyle = '#34d399';
-      ctx.fillText(`✓ MYSURU C&D WASTE COMPLIANCE REGISTRY · VERIFIED TAMPER-EVIDENT GEOTAG`, 24, bannerY + bannerHeight * 0.84);
+      ctx.fillText(`✓ MYSURU C&D WASTE COMPLIANCE REGISTRY · PHOTO #${uploadedPhotos.length + 1}`, 24, bannerY + bannerHeight * 0.84);
 
-      ctx.shadowBlur = 0; // reset shadow
+      ctx.shadowBlur = 0;
 
       // 5. Convert canvas to compressed JPEG
       const rawDataUrl = canvas.toDataURL('image/jpeg', 0.88);
       const dataUrl = await compressImage(rawDataUrl, 1200, 1200, 0.82);
 
-      uploadedPhotos = [dataUrl];
+      uploadedPhotos.push(dataUrl);
       renderPhotoPreviewSlots();
       closeCameraModal();
 
-      showToast('🎉 Real location photo captured with GPS Geotag and real site address!', 'success');
+      showToast(`🎉 Geotagged photo (${uploadedPhotos.length}/5) captured!`, 'success');
+    }
+
+    async function handleFileUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      if (!uploadedPhotos) uploadedPhotos = [];
+
+      let addedCount = 0;
+      for (let i = 0; i < files.length && uploadedPhotos.length < 5; i++) {
+        const file = files[i];
+        const dataUrl = await compressImage(file, 1200, 1200, 0.82);
+        if (dataUrl) {
+          uploadedPhotos.push(dataUrl);
+          addedCount++;
+        }
+      }
+      renderPhotoPreviewSlots();
+      if (addedCount > 0) {
+        showToast(`📁 Attached ${addedCount} photo(s) (Total: ${uploadedPhotos.length}/5)`, 'success');
+      } else if (uploadedPhotos.length >= 5) {
+        showToast('Maximum 5 photos already attached.', 'info');
+      }
+      event.target.value = '';
+    }
+
+    function removePhoto(idx) {
+      if (uploadedPhotos && uploadedPhotos.length > idx) {
+        uploadedPhotos.splice(idx, 1);
+        renderPhotoPreviewSlots();
+        showToast('Photo removed.', 'info');
+      }
     }
 
     function renderPhotoPreviewSlots() {
@@ -1276,53 +1310,59 @@
       const badge = document.getElementById('photo-count-badge');
       const btnTrigger = document.getElementById('btn-camera-trigger');
 
-      if (uploadedPhotos && uploadedPhotos.length > 0) {
-        if (badge) {
-          badge.innerText = `● 1/1 photo (Geotagged & Locked)`;
-          badge.className = 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-mono font-bold border border-emerald-300';
-        }
-        if (btnTrigger) {
+      if (!uploadedPhotos) uploadedPhotos = [];
+      const count = uploadedPhotos.length;
+
+      if (badge) {
+        badge.innerText = `● ${count}/5 photos attached`;
+        badge.className = count > 0 
+          ? 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-mono font-bold border border-emerald-300'
+          : 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-mono font-bold border border-slate-200';
+      }
+
+      if (btnTrigger) {
+        if (count >= 5) {
           btnTrigger.disabled = true;
           btnTrigger.className = 'px-4 py-2.5 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-2 cursor-not-allowed shadow-none';
-          btnTrigger.innerHTML = `<span>🔒 Photo Captured & Geotagged (1/1)</span>`;
+          btnTrigger.innerHTML = `<span>🔒 Max 5 Photos Captured</span>`;
+        } else {
+          btnTrigger.disabled = false;
+          btnTrigger.className = 'px-4 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer';
+          btnTrigger.innerHTML = `<span>📷</span> <span>Capture Live Photo (${count}/5)</span>`;
         }
+      }
 
-        if (grid) {
+      if (grid) {
+        if (count > 0) {
           grid.innerHTML = `
-            <div class="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-md bg-slate-950 cursor-pointer group" onclick="openPhotoLightbox(uploadedPhotos, 0)" title="Click to view full-size geotagged photo">
-              <img src="${uploadedPhotos[0]}" alt="Geotagged Site Photo" class="w-full h-full object-cover group-hover:scale-102 transition duration-300"/>
-              <div class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-xs text-emerald-300 border border-emerald-400/40 text-[10px] font-mono font-bold flex items-center gap-1.5 shadow-sm">
-                <span class="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>✓ Live Geotagged</span>
-              </div>
-              <div class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-xs text-white text-[10px] font-bold flex items-center gap-1 border border-white/20">
-                <span>🔒 Locked (1 of 1)</span>
-              </div>
-              <div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-emerald-900/90 text-emerald-100 text-[10px] font-bold border border-emerald-500/50 flex items-center gap-1 opacity-90 group-hover:opacity-100 transition">
-                <span>🔍 Click to Enlarge</span>
-              </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              ${uploadedPhotos.map((p, idx) => `
+                <div class="relative aspect-video rounded-xl overflow-hidden border-2 border-emerald-500 shadow-sm bg-slate-950 group">
+                  <img src="${p}" alt="Site Photo ${idx+1}" class="w-full h-full object-cover group-hover:scale-105 transition cursor-pointer" onclick="openPhotoLightbox(uploadedPhotos, ${idx})" title="Click to enlarge"/>
+                  <div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs text-emerald-300 text-[9px] font-mono font-bold">
+                    #${idx+1}
+                  </div>
+                  <button type="button" onclick="removePhoto(${idx})" class="absolute top-1.5 right-1.5 size-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center justify-center cursor-pointer shadow-xs transition" title="Remove Photo">
+                    &times;
+                  </button>
+                </div>
+              `).join('')}
+              ${count < 5 ? `
+                <div onclick="triggerCameraCapture()" class="aspect-video rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/50 flex flex-col items-center justify-center p-3 text-center cursor-pointer transition group">
+                  <span class="text-xl">➕</span>
+                  <span class="text-[10px] font-bold text-slate-600 mt-1">Add Photo (${count}/5)</span>
+                </div>
+              ` : ''}
             </div>
           `;
-        }
-      } else {
-        if (badge) {
-          badge.innerText = `● 0/1 photo`;
-          badge.className = 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-mono font-bold border border-slate-200';
-        }
-        if (btnTrigger) {
-          btnTrigger.disabled = false;
-          btnTrigger.className = 'px-5 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer';
-          btnTrigger.innerHTML = `<span>📷</span> <span>Capture Real Location Photo</span>`;
-        }
-
-        if (grid) {
+        } else {
           grid.innerHTML = `
             <div onclick="triggerCameraCapture()" class="w-full aspect-video rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/40 flex flex-col items-center justify-center p-6 text-center cursor-pointer transition group">
               <div class="size-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-xs">
                 📸
               </div>
-              <h5 class="font-bold text-slate-800 text-xs mt-3">Take Real Location Photo</h5>
-              <p class="text-[11px] text-slate-400 mt-0.5">Live camera capture with GPS Geotag & authentic address.</p>
+              <h5 class="font-bold text-slate-800 text-xs mt-3">Attach Site Photo Evidence (1 to 5 Photos)</h5>
+              <p class="text-[11px] text-slate-400 mt-0.5">Live camera capture with GPS Geotag or direct file upload from your phone/PC.</p>
             </div>
           `;
         }
