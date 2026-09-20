@@ -642,16 +642,17 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs min-w-[920px]">
+            <table class="w-full text-left text-xs min-w-[1020px]">
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Application ID</th>
-                  <th class="px-4 py-3">Applicant Details</th>
+                  <th class="px-4 py-3">Applicant / Customer</th>
                   <th class="px-4 py-3">Site Location & PIN</th>
+                  <th class="px-4 py-3">Panchayat Office & Inspector</th>
                   <th class="px-4 py-3">Site Photo</th>
-                  <th class="px-4 py-3">Estimated Tonnage</th>
+                  <th class="px-4 py-3">Rubble Volume</th>
                   <th class="px-4 py-3">Status</th>
-                  <th class="px-4 py-3">Action</th>
+                  <th class="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody id="table-applications" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
@@ -1265,16 +1266,21 @@
     async function loadData() {
       syncLocalData();
       let fetchedUsers = [];
-      if (window.civicDb && typeof window.civicDb.fetchUsers === 'function') {
-        try {
+      try {
+        if (window.civicDb && typeof window.civicDb.fetchUsers === 'function') {
           fetchedUsers = await window.civicDb.fetchUsers();
-        } catch(e) {}
-      } else {
-        try {
-          const res = await fetch('/api/auth/users');
-          if (res.ok) fetchedUsers = await res.json();
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
+
+      try {
+        const res = await fetch('/api/auth/users');
+        if (res.ok) {
+          const apiUsers = await res.json();
+          if (Array.isArray(apiUsers) && apiUsers.length > 0) {
+            fetchedUsers = [...(Array.isArray(fetchedUsers) ? fetchedUsers : []), ...apiUsers];
+          }
+        }
+      } catch(e) {}
       
       const localUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const userMap = new Map();
@@ -1306,20 +1312,26 @@
         if (deptOfficer.assignedPin) d.pinCodes = deptOfficer.assignedPin;
       }
 
-      let fetched = [];
-      if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
-        try {
-          fetched = await window.civicDb.fetchApplications();
-        } catch(e) {}
-      } else {
-        try {
-          const res = await fetch('/api/applications');
-          if (res.ok) fetched = await res.json();
-        } catch(e) {}
-      }
+      let fetchedApps = [];
+      try {
+        if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+          fetchedApps = await window.civicDb.fetchApplications();
+        }
+      } catch(e) {}
+
+      try {
+        const res = await fetch('/api/applications');
+        if (res.ok) {
+          const apiApps = await res.json();
+          if (Array.isArray(apiApps) && apiApps.length > 0) {
+            fetchedApps = [...(Array.isArray(fetchedApps) ? fetchedApps : []), ...apiApps];
+          }
+        }
+      } catch(e) {}
 
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-      const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : [])];
+      const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
+      const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(Array.isArray(fetchedApps) ? fetchedApps : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
       const uniqueMap = new Map();
       combined.forEach(a => {
         if (!a) return;
@@ -1875,7 +1887,7 @@
 
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
               ${isCompletedView ? 'No completed / approved applications in this list yet.' : (isPendingView ? 'No pending applications for this jurisdiction currently.' : 'No clearance applications matching query.')}
             </td>
           </tr>
@@ -1904,13 +1916,18 @@
         }
 
         const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
+        const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey] || DEFAULT_DEPARTMENTS.mcc;
+        const orgName = a.authority || dept.name || 'Panchayat Office';
+        const inspectorName = a.assignedInspectorName || (currentAuthorityKey === 'gp' ? 'Seervi' : (currentAuthorityKey === 'tp' ? 'M. Anand' : 'Rajesh Kumar'));
+        const inspectorEmail = a.assignedInspectorEmail || (currentAuthorityKey === 'gp' ? 'q@gmail.com' : (currentAuthorityKey === 'tp' ? 'anand.tp@gmail.com' : 'inspector.mcc@gmail.com'));
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
             <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
             <td class="px-4 py-3">
               <span class="font-bold text-slate-900 block">${a.applicantName || 'Citizen'}</span>
-              <span class="font-mono text-slate-500 text-[11px] block">${a.phone || ''}</span>
+              <span class="font-mono text-slate-500 text-[11px] block">📱 ${a.phone || ''}</span>
+              ${a.email ? `<span class="font-mono text-slate-400 text-[10px] block">${a.email}</span>` : ''}
             </td>
             <td class="px-4 py-3">
               <span class="text-slate-800 block">${a.address || 'Mysuru'}</span>
@@ -1923,6 +1940,11 @@
               ` : ''}
             </td>
             <td class="px-4 py-3">
+              <span class="font-bold text-slate-900 block text-xs">🏛️ ${orgName}</span>
+              <span class="font-semibold text-emerald-800 text-[11px] block mt-0.5">👮 ${inspectorName}</span>
+              <span class="text-slate-400 font-mono text-[10px] block">${inspectorEmail}</span>
+            </td>
+            <td class="px-4 py-3">
               ${photoHtml}
             </td>
             <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.verifiedTonnage || a.tonnage || 10} MT</td>
@@ -1931,9 +1953,9 @@
                 ${a.status || 'Pending Review'}
               </span>
             </td>
-            <td class="px-4 py-3">
+            <td class="px-4 py-3 text-right">
               ${isApproved ? `
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center justify-end gap-1.5">
                   <span class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">✓ Approved</span>
                   <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px] transition cursor-pointer flex items-center gap-1 shadow-2xs" title="View Official NOC Certificate">
                     <span>📜</span> <span>NOC</span>
@@ -1942,7 +1964,7 @@
               ` : (a.status === 'Cancelled' ? `
                 <span class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-bold text-[11px]">✗ Cancelled</span>
               ` : `
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center justify-end gap-1.5">
                   <button onclick="approveApplication('${a.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition cursor-pointer shadow-xs">
                     ✓ Agree
                   </button>
