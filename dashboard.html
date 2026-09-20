@@ -210,20 +210,32 @@
             <span class="icon-box bg-cyan-500/10 text-cyan-400">👷</span>
             <span>4. Inspectors / Officers</span>
           </button>
+          <button onclick="switchView('inspections')" id="btn-inspections" class="nav-btn">
+            <span class="icon-box bg-teal-500/10 text-teal-400">🔍</span>
+            <span>5. Site Inspections</span>
+          </button>
           <button onclick="switchView('demolition_requests')" id="btn-demolition_requests" class="nav-btn">
             <span class="icon-box bg-orange-500/10 text-orange-400">🏗️</span>
-            <span>5. Demolition Requests</span>
+            <span>6. Demolition Requests</span>
           </button>
         </div>
       </div>
 
       <!-- Group 3: Governance & Certificates -->
       <div>
-        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Governance & Benefits</span>
+        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Governance & Settings</span>
         <div class="space-y-1">
           <button onclick="switchView('certificates')" id="btn-certificates" class="nav-btn">
             <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
-            <span>6. Certificates</span>
+            <span>7. Certificates</span>
+          </button>
+          <button onclick="switchView('notifications')" id="btn-notifications" class="nav-btn">
+            <span class="icon-box bg-purple-500/10 text-purple-400">📢</span>
+            <span>8. Notifications</span>
+          </button>
+          <button onclick="switchView('settings')" id="btn-settings" class="nav-btn">
+            <span class="icon-box bg-slate-500/10 text-slate-400">⚙️</span>
+            <span>9. Settings & Policies</span>
           </button>
         </div>
       </div>
@@ -607,13 +619,15 @@
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                 <tr>
+                  <th class="px-4 py-3">Inspector ID</th>
                   <th class="px-4 py-3">Officer Name & Designation</th>
-                  <th class="px-4 py-3">Department & Authority</th>
-                  <th class="px-4 py-3">Employee ID</th>
-                  <th class="px-4 py-3">Official Gmail & Phone</th>
-                  <th class="px-4 py-3">Assigned Jurisdiction & PINs</th>
-                  <th class="px-4 py-3">Active Cases</th>
-                  <th class="px-4 py-3">Login Status</th>
+                  <th class="px-4 py-3">📍 Assigned Area & Panchayat</th>
+                  <th class="px-4 py-3">Official Gmail / Email</th>
+                  <th class="px-4 py-3">🔑 Password / Login Key</th>
+                  <th class="px-4 py-3">Contact Phone</th>
+                  <th class="px-4 py-3">Mapped PIN Code</th>
+                  <th class="px-4 py-3">Linked Requests</th>
+                  <th class="px-4 py-3">Status</th>
                   <th class="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
@@ -864,6 +878,34 @@
     }
     checkAdminAuth();
     
+    const civicSyncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('civic_sync_channel') : null;
+    if (civicSyncChannel) {
+      civicSyncChannel.onmessage = (event) => {
+        if (event.data) {
+          const type = event.data.type;
+          if (type === 'INSPECTOR_CREATED' || type === 'INSPECTOR_UPDATED' || type === 'OFFICER_CREATED') {
+            renderInspectorsTable();
+            renderPinMappingInspectors();
+            renderAuthoritiesTable();
+          }
+          if (type === 'APPLICATION_UPDATED' || type === 'APPLICATION_CREATED') {
+            renderDemolitionRequestsTable();
+            renderCertificatesTable();
+            renderInspectorsTable();
+          }
+          loadData();
+        }
+      };
+    }
+
+    window.addEventListener('storage', (e) => {
+      renderInspectorsTable();
+      renderPinMappingInspectors();
+      renderAuthoritiesTable();
+      renderDemolitionRequestsTable();
+      renderCertificatesTable();
+    });
+
     const views = [
       'dashboard', 'pinmapping', 'authorities',
       'inspectors', 'inspections', 'demolition_requests',
@@ -875,11 +917,11 @@
       'pinmapping': '2. PIN Code & Area Mapping Engine',
       'authorities': '3. Corporations & Civic Authorities',
       'inspectors': '4. Inspectors & Field Officers',
-      'inspections': '5. Inspection Management',
-      'demolition_requests': '5. Building Demolition Clearance Requests',
-      'certificates': '6. Green Disposal Certificates',
-      'notifications': '7. Notifications Dispatch Center',
-      'settings': '8. System Configurations & Settings'
+      'inspections': '5. Site Inspections & Audits',
+      'demolition_requests': '6. Building Demolition Clearance Requests',
+      'certificates': '7. Green Disposal Certificates',
+      'notifications': '8. Notifications Dispatch Center',
+      'settings': '9. System Configurations & Settings'
     };
 
     function switchView(viewName) {
@@ -1510,13 +1552,13 @@
 
     function getComprehensiveInspectorsList() {
       const defaultSquad = [
-        { id: 'MCC-001', headName: 'Rajesh Kumar', designation: 'Ward Health Inspector', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 14 (Palace & Devaraja Market)', pinCodes: '570001', icon: '🏛️', activeCases: 'Active Inspector', dutyZone: 'Ward 14 Core' },
-        { id: 'GP-001', headName: 'Seervi', designation: 'Panchayat Health Inspector', email: 'q@gmail.com', password: '123456', phone: '+91 98450 11005', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 01 (Bogadi Rural)', pinCodes: '570026', icon: '🏡', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 1' },
-        { id: 'GP-002', headName: 'Dimple', designation: 'Rural Field Inspector', email: 'dim@gmail.com', password: '123456', phone: '+91 98450 11006', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 02 (Maratikyathanahalli)', pinCodes: '570026, 571130', icon: '🏡', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 2' },
-        { id: 'GP-003', headName: 'S. Nanjappa', designation: 'Panchayat Field Inspector', email: 'nanjappa.gp@gmail.com', password: '123456', phone: '+91 98450 11002', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 03 (Belavadi Rural)', pinCodes: '570026, 570028', icon: '🏡', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 3' },
-        { id: 'TP-001', headName: 'M. Anand', designation: 'Town Municipal Inspector', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 01 (Hootagalli Town)', pinCodes: '570018', icon: '🏭', activeCases: 'Active Inspector', dutyZone: 'Hootagalli Ward 1' },
-        { id: 'TP-004', headName: 'K. Suresh', designation: 'KIADB Industrial Inspector', email: 'suresh.tp@gmail.com', password: '123456', phone: '+91 98450 11008', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 04 (Belagola KIADB)', pinCodes: '570018, 571607', icon: '🏭', activeCases: 'Active Inspector', dutyZone: 'KIADB Belagola' },
-        { id: 'MCC-012', headName: 'P. Ramesh', designation: 'Urban Sanitation Inspector', email: 'ramesh.mcc@gmail.com', password: '123456', phone: '+91 98450 11004', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 32 (Kuvempunagar & Jayanagar)', pinCodes: '570023', icon: '🏛️', activeCases: 'Active Inspector', dutyZone: 'Ward 32 Zone' }
+        { id: 'MCC-001', headName: 'Rajesh Kumar', designation: 'Ward Health Inspector', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 14 (Palace & Devaraja Market)', pinCodes: '570001', icon: '🏛️', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Ward 14 Core' },
+        { id: 'GP-001', headName: 'Seervi', designation: 'Panchayat Health Inspector', email: 'q@gmail.com', password: '123456', phone: '+91 98450 11005', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 01 (Bogadi Rural)', pinCodes: '570026', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 1' },
+        { id: 'GP-002', headName: 'Dimple', designation: 'Rural Field Inspector', email: 'dim@gmail.com', password: '123456', phone: '+91 98450 11006', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 02 (Maratikyathanahalli)', pinCodes: '570026, 571130', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 2' },
+        { id: 'GP-003', headName: 'S. Nanjappa', designation: 'Panchayat Field Inspector', email: 'nanjappa.gp@gmail.com', password: '123456', phone: '+91 98450 11002', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 03 (Belavadi Rural)', pinCodes: '570026, 570028', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 3' },
+        { id: 'TP-001', headName: 'M. Anand', designation: 'Town Municipal Inspector', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 01 (Hootagalli Town)', pinCodes: '570018', icon: '🏭', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Hootagalli Ward 1' },
+        { id: 'TP-004', headName: 'K. Suresh', designation: 'KIADB Industrial Inspector', email: 'suresh.tp@gmail.com', password: '123456', phone: '+91 98450 11008', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 04 (Belagola KIADB)', pinCodes: '570018, 571607', icon: '🏭', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'KIADB Belagola' },
+        { id: 'MCC-012', headName: 'P. Ramesh', designation: 'Urban Sanitation Inspector', email: 'ramesh.mcc@gmail.com', password: '123456', phone: '+91 98450 11004', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 32 (Kuvempunagar & Jayanagar)', pinCodes: '570023', icon: '🏛️', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Ward 32 Zone' }
       ];
 
       let regUsers = [];
@@ -1529,6 +1571,9 @@
         customIns = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
       } catch(e) {}
 
+      const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
+      const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
+
       const merged = [...defaultSquad];
 
       [...regUsers, ...customIns].forEach(ins => {
@@ -1539,22 +1584,27 @@
 
         const existing = merged.find(m => m.email.toLowerCase().trim() === email);
         let insType = 'mcc';
-        const d = (ins.department || '').toLowerCase();
-        const dn = (ins.departmentName || '').toLowerCase();
-        const pin = String(ins.assignedPin || ins.pin || '');
-        if (d.includes('gp') || d.includes('panchayat') || dn.includes('panchayat') || pin.startsWith('570026') || pin.startsWith('571130')) insType = 'gp';
-        else if (d.includes('tp') || d.includes('town') || dn.includes('town') || pin.startsWith('570018') || pin.startsWith('571607')) insType = 'tp';
+        const d = (ins.department || '').toLowerCase().trim();
+        const dn = (ins.departmentName || '').toLowerCase().trim();
+        const auth = (ins.authority || '').toLowerCase().trim();
+        const pin = String(ins.assignedPin || ins.pin || '').trim();
+
+        if (d === 'gp' || d.includes('panchayat') || d.includes('gram') || dn.includes('panchayat') || dn.includes('bogadi') || auth.includes('panchayat') || email.includes('gp') || email === 'q@gmail.com' || email === 'dim@gmail.com' || GP_PINS.some(p => pin.includes(p))) {
+          insType = 'gp';
+        } else if (d === 'tp' || d.includes('town') || dn.includes('town') || dn.includes('hootagalli') || auth.includes('town') || email.includes('tp') || TP_PINS.some(p => pin.includes(p))) {
+          insType = 'tp';
+        }
 
         let prefix = insType === 'gp' ? 'GP-' : (insType === 'tp' ? 'TP-' : 'MCC-');
         let rawNum = String(ins.id || ins.empId || '').replace(/[^0-9]/g, '');
         if (!rawNum) rawNum = String(merged.length + 1).padStart(3, '0');
         else if (rawNum.length < 3) rawNum = rawNum.padStart(3, '0');
-        const formattedEmpId = prefix + rawNum;
+        const formattedEmpId = ins.id && String(ins.id).startsWith('INS-') ? ins.id : (prefix + rawNum);
 
         const formatted = {
           id: formattedEmpId,
           headName: ins.name || ins.headName || 'Field Inspector',
-          designation: ins.designation || 'Field Inspector',
+          designation: ins.designation || (insType === 'gp' ? 'Panchayat Health Inspector' : (insType === 'tp' ? 'Town Municipal Inspector' : 'Ward Health Inspector')),
           email: ins.email,
           password: ins.password || '123456',
           phone: ins.phone || '+91 98450 11000',
@@ -1563,6 +1613,7 @@
           jurisdiction: ins.assignedArea || 'Ward Jurisdiction',
           pinCodes: ins.assignedPin || ins.pin || (insType === 'gp' ? '570026' : (insType === 'tp' ? '570018' : '570001')),
           icon: insType === 'gp' ? '🏡' : (insType === 'tp' ? '🏭' : '🏛️'),
+          status: ins.status || 'Active (On Duty)',
           activeCases: 'Active Inspector',
           dutyZone: ins.assignedArea || 'Ward Zone'
         };
@@ -1570,11 +1621,62 @@
         if (existing) {
           Object.assign(existing, formatted);
         } else {
-          merged.push(formatted);
+          merged.unshift(formatted);
         }
       });
 
       return merged;
+    }
+
+    function toggleInspectorStatus(email) {
+      let inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      let users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      const targetEmail = (email || '').toLowerCase().trim();
+
+      const ins = inspectors.find(i => (i.email || '').toLowerCase().trim() === targetEmail);
+      if (ins) {
+        ins.status = (ins.status || 'Active').includes('Leave') ? 'Active (On Duty)' : 'On Leave';
+        localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+      }
+      const u = users.find(i => (i.email || '').toLowerCase().trim() === targetEmail);
+      if (u) {
+        u.status = (u.status || 'Active').includes('Leave') ? 'Active (On Duty)' : 'On Leave';
+        localStorage.setItem('civic_registered_users', JSON.stringify(users));
+      }
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        const channel = new BroadcastChannel('civic_sync_channel');
+        channel.postMessage({ type: 'INSPECTOR_UPDATED', email: targetEmail });
+      }
+      window.dispatchEvent(new Event('storage'));
+      renderInspectorsTable();
+      renderPinMappingInspectors();
+      showToast('Status updated for ' + (ins ? (ins.name || ins.headName) : email), 'success');
+    }
+
+    function loginDirectlyAsInspector(email, password) {
+      const users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      const inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      const ins = inspectors.find(i => (i.email||'').toLowerCase() === email.toLowerCase()) || users.find(u => (u.email||'').toLowerCase() === email.toLowerCase());
+      if (ins) {
+        localStorage.setItem('current_user', JSON.stringify(ins));
+        sessionStorage.setItem('current_user', JSON.stringify(ins));
+        showToast('Logging into Field Inspector Console for ' + (ins.name || ins.headName || email) + '...', 'success');
+        setTimeout(() => { window.location.href = 'inspector.html'; }, 350);
+      } else {
+        const baseIns = {
+          name: email.split('@')[0],
+          email: email,
+          role: 'inspector',
+          password: password || '123456',
+          department: email.includes('gp') ? 'gp' : (email.includes('tp') ? 'tp' : 'mcc'),
+          status: 'Active (On Duty)'
+        };
+        localStorage.setItem('current_user', JSON.stringify(baseIns));
+        sessionStorage.setItem('current_user', JSON.stringify(baseIns));
+        showToast('Logging into Field Inspector Console...', 'success');
+        setTimeout(() => { window.location.href = 'inspector.html'; }, 350);
+      }
     }
 
     function renderPinMappingInspectors(filter = currentPinDeptFilter) {
@@ -1612,7 +1714,7 @@
       if (displayed.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="10" class="px-4 py-8 text-center text-slate-400 font-medium">
               No field inspectors found matching "${searchQueryPinInspectors || 'jurisdiction filter'}".
             </td>
           </tr>
@@ -1727,7 +1829,7 @@
       if (displayed.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="10" class="px-4 py-8 text-center text-slate-400 font-medium">
               No officers or field inspectors found matching "${searchQueryOfficersList || 'current filter'}".
             </td>
           </tr>
@@ -1742,49 +1844,77 @@
           ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
           : (ins.type === 'gp' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-blue-100 text-blue-800 border-blue-200');
 
-        const activeCount = allApps.filter(a => (a.assignedInspectorEmail || '').toLowerCase().trim() === (ins.email || '').toLowerCase().trim() || a.dept === ins.type).length;
+        const insEmail = (ins.email || '').toLowerCase().trim();
+        const insName = (ins.headName || '').toLowerCase().trim();
+        const insPin = String(ins.pinCodes || '').trim();
+
+        const myCases = allApps.filter(a => {
+          const appPin = String(a.pincode || a.pin || '').trim();
+          const appInspEmail = (a.assignedInspectorEmail || '').toLowerCase().trim();
+          const appInspName = (a.assignedInspectorName || a.assignedInspector || '').toLowerCase().trim();
+          return (appInspEmail && appInspEmail === insEmail) || (insName && appInspName.includes(insName)) || (insPin && appPin.includes(insPin));
+        });
+
+        const activeCount = myCases.filter(c => !c.isApproved && !String(c.status || '').toLowerCase().includes('cancel') && !String(c.status || '').toLowerCase().includes('reject')).length;
+        const solvedCount = myCases.filter(c => c.isApproved || String(c.status || '').toLowerCase().includes('certificate') || String(c.status || '').toLowerCase().includes('approved')).length;
+        const workloadText = `${activeCount} Active (${solvedCount} Solved · ${myCases.length} Assigned)`;
+        const password = ins.password || '123456';
 
         return `
           <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3.5 font-mono font-bold text-emerald-900 bg-emerald-50/60 px-2.5 py-1 rounded-lg border border-emerald-200 text-xs">
+              ${ins.id}
+            </td>
             <td class="px-4 py-3.5">
               <div class="flex items-center gap-2.5">
                 <span class="size-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-sm shadow-xs">${ins.icon || '👷'}</span>
                 <div>
                   <span class="block font-bold text-slate-900">${ins.headName}</span>
-                  <span class="block text-[11px] text-slate-500 font-medium">${ins.designation || 'Field Officer'}</span>
+                  <span class="block text-[11px] text-slate-500 font-medium">${ins.designation || 'Field Inspector'}</span>
                 </div>
               </div>
             </td>
             <td class="px-4 py-3.5">
-              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${deptBadgeColor} inline-flex items-center gap-1">
+              <span class="block font-semibold text-slate-800 text-xs">${ins.jurisdiction || ins.dutyZone}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${deptBadgeColor} inline-flex items-center gap-1 mt-0.5">
                 <span>${ins.icon || '🏛️'}</span>
                 <span>${ins.organization}</span>
               </span>
             </td>
-            <td class="px-4 py-3.5 font-mono font-bold text-emerald-900 bg-emerald-50/60 px-2 py-1 rounded-lg border border-emerald-200 text-xs">${ins.id}</td>
             <td class="px-4 py-3.5 font-mono text-[11px]">
               <span class="block text-emerald-950 font-bold bg-emerald-50/80 px-2 py-0.5 rounded border border-emerald-200 mb-0.5 inline-block">${ins.email}</span>
-              <span class="block text-slate-500">${ins.phone}</span>
             </td>
             <td class="px-4 py-3.5">
-              <span class="block text-slate-800 font-semibold text-xs">${ins.jurisdiction || ins.dutyZone}</span>
-              <span class="block font-mono text-emerald-800 text-[10px] font-bold">PIN: ${ins.pinCodes}</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-950 font-mono font-bold text-xs border border-amber-300 shadow-2xs">
+                <span>🔑 ${password}</span>
+                <button type="button" onclick="navigator.clipboard.writeText('${password}'); showToast('Copied password: ${password}', 'success')" class="text-amber-700 hover:text-amber-900 cursor-pointer ml-1" title="Copy password">📋</button>
+              </span>
+            </td>
+            <td class="px-4 py-3.5 font-mono text-slate-700 text-xs">${ins.phone}</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-950 font-mono font-bold text-xs border border-emerald-200 block w-fit">
+                📍 PIN: ${ins.pinCodes}
+              </span>
             </td>
             <td class="px-4 py-3.5">
               <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold font-mono text-xs border border-slate-200 block w-fit">
-                ${activeCount} Cases
+                ${workloadText}
               </span>
             </td>
             <td class="px-4 py-3.5">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Active (On Duty)</span>
-              </span>
+              <button type="button" onclick="toggleInspectorStatus('${ins.email}')" class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold transition cursor-pointer border ${(ins.status || 'Active').includes('Leave') ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-emerald-100 hover:text-emerald-900' : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-amber-100 hover:text-amber-900'}" title="Click to toggle Active / On Leave">
+                ${(ins.status || 'Active').includes('Leave') ? '⏸️ On Leave' : '✓ Active (On Duty)'}
+              </button>
             </td>
             <td class="px-4 py-3.5 text-right">
-              <button onclick="copyOfficerLogin('${ins.email}', '${ins.password || '123456'}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
-                Copy Login
-              </button>
+              <div class="flex items-center justify-end gap-1.5">
+                <button onclick="loginDirectlyAsInspector('${ins.email}', '${password}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer flex items-center gap-1" title="Sign In as Inspector">
+                  <span>🚀 Sign In</span>
+                </button>
+                <button onclick="copyOfficerLogin('${ins.email}', '${password}')" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer" title="Copy Login Details">
+                  📋
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -3727,220 +3857,6 @@
       }
     }
 
-    // =========================================================================
-    // 5. INSPECTORS & OFFICERS DIRECTORY CONSOLE (SYNCS WITH DEPARTMENTS)
-    // =========================================================================
-    let currentOfficerFilter = 'all';
-
-    function filterOfficersByDept(dept) {
-      currentOfficerFilter = dept;
-      ['all', 'mcc', 'gp', 'tp'].forEach(k => {
-        const btn = document.getElementById('btn-filter-' + k);
-        if (btn) {
-          if (k === dept) {
-            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer';
-          } else {
-            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer';
-          }
-        }
-      });
-      renderInspectorsTable(dept);
-    }
-
-    function renderInspectorsTable(filter = currentOfficerFilter) {
-      const tbody = document.getElementById('table-inspectors');
-      if (!tbody) return;
-
-      // Fetch all cases to dynamically calculate real active cases for Panchayat Heads and Field Inspectors
-      const allCases = getOriginalDemolitionApplications();
-
-      // Real configured department accounts
-      const baseOfficers = [
-        { ...departmentsState.mcc, type: 'mcc', dutyZone: departmentsState.mcc.jurisdiction || 'MCC Urban Zones' },
-        { ...departmentsState.gp, type: 'gp', dutyZone: departmentsState.gp.jurisdiction || 'Bogadi Rural Cluster' },
-        { ...departmentsState.tp, type: 'tp', dutyZone: departmentsState.tp.jurisdiction || 'Hootagalli Industrial' }
-      ];
-
-      // Custom officers created via "+ Add Office Member"
-      const customSquad = additionalOfficers.map(off => ({
-        ...off,
-        dutyZone: off.jurisdiction || 'Assigned Ward'
-      }));
-
-      // Registered Field Inspectors from Supabase
-      const registeredUsersList = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
-      const registeredInspectors = registeredUsersList.filter(u => (u.role || '').toLowerCase() === 'inspector' || (u.authority || '').toLowerCase().includes('inspector'));
-      
-      const inspectorSquad = registeredInspectors.map(ins => {
-        let insType = 'mcc';
-        const d = (ins.department || '').toLowerCase();
-        const dn = (ins.departmentName || '').toLowerCase();
-        const pin = String(ins.assignedPin || ins.pin || '');
-        if (d.includes('gp') || d.includes('panchayat') || dn.includes('panchayat') || pin.startsWith('570026') || pin.startsWith('571130')) insType = 'gp';
-        else if (d.includes('tp') || d.includes('town') || dn.includes('town') || pin.startsWith('570018') || pin.startsWith('571607')) insType = 'tp';
-
-        let prefix = insType === 'gp' ? 'GP-' : (insType === 'tp' ? 'TP-' : 'MCC-');
-        let rawNum = String(ins.id || ins.empId || '').replace(/[^0-9]/g, '');
-        if (!rawNum) rawNum = '001';
-        else if (rawNum.length < 3) rawNum = rawNum.padStart(3, '0');
-        const formattedEmpId = prefix + rawNum;
-
-        return {
-          id: formattedEmpId,
-          type: insType,
-          organization: ins.departmentName || ins.department || (insType === 'gp' ? 'Bogadi Gram Panchayat' : (insType === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation (MCC)')),
-          headName: ins.name || ins.headName || 'Field Inspector',
-          designation: ins.designation || 'Field Inspector',
-          empId: formattedEmpId,
-          role: 'Field Inspector',
-          email: ins.email,
-          phone: ins.phone,
-          jurisdiction: ins.assignedArea || 'Assigned Area',
-          pinCodes: ins.assignedPin || ins.pin || (insType === 'gp' ? '570026' : (insType === 'tp' ? '570018' : '570001')),
-          password: ins.password || '123456',
-          icon: insType === 'gp' ? '🏡' : (insType === 'tp' ? '🏭' : '👷'),
-          dutyZone: ins.assignedArea || 'Ward Zone'
-        };
-      });
-
-      // Combine configured department accounts, custom officers, and registered inspectors
-      const allOfficers = [...baseOfficers, ...customSquad, ...inspectorSquad];
-
-      // DYNAMIC CALCULATION: Active cases & workload based on Panchayat Head oversight and Field Inspector assignments
-      allOfficers.forEach(officer => {
-        const isInspector = (officer.role || '').toLowerCase().includes('inspector') || (officer.designation || '').toLowerCase().includes('inspector');
-        
-        if (isInspector) {
-          // Field Inspector: calculate cases assigned specifically to this inspector
-          const insEmail = (officer.email || '').toLowerCase().trim();
-          const insName = (officer.headName || officer.name || '').toLowerCase().trim();
-          const insPin = String(officer.pinCodes || '').trim();
-
-          const myCases = allCases.filter(c => {
-            const cInspEmail = (c.assignedInspectorEmail || '').toLowerCase().trim();
-            const cInspName = (c.assignedInspector || c.assignedInspectorName || '').toLowerCase().trim();
-            const cLoc = (c.location || '').toLowerCase();
-            return (insEmail && cInspEmail === insEmail) || (insName && cInspName.includes(insName)) || (insPin && cLoc.includes(insPin));
-          });
-
-          const activeCount = myCases.filter(c => !c.isApproved && !String(c.status).toLowerCase().includes('cancel')).length;
-          const solvedCount = myCases.filter(c => c.isApproved).length;
-          officer.activeCases = `${activeCount} Active (${solvedCount} Solved · ${myCases.length} Assigned)`;
-        } else {
-          // Panchayat Officer / Head: calculate all incoming cases for this Panchayat
-          const deptType = officer.type || 'mcc';
-          const pCases = allCases.filter(c => c.dept === deptType);
-          const activeCount = pCases.filter(c => !c.isApproved && !String(c.status).toLowerCase().includes('cancel')).length;
-          const solvedCount = pCases.filter(c => c.isApproved).length;
-          const deptInspectorsCount = inspectorSquad.filter(i => i.type === deptType).length;
-          
-          officer.activeCases = `${activeCount} Active (${pCases.length} Cases · ${deptInspectorsCount || 1} Inspector${deptInspectorsCount > 1 ? 's' : ''})`;
-        }
-      });
-
-      // Update Department Summary Counters
-      const mccCount = allOfficers.filter(o => o.type === 'mcc').length;
-      const gpCount = allOfficers.filter(o => o.type === 'gp').length;
-      const tpCount = allOfficers.filter(o => o.type === 'tp').length;
-
-      const statTotal = document.getElementById('stat-total-officers');
-      const statMcc = document.getElementById('stat-mcc-officers');
-      const statGp = document.getElementById('stat-gp-officers');
-      const statTp = document.getElementById('stat-tp-officers');
-
-      if (statTotal) statTotal.innerText = allOfficers.length + ' Active';
-      if (statMcc) statMcc.innerText = mccCount + ' Assigned';
-      if (statGp) statGp.innerText = gpCount + ' Assigned';
-      if (statTp) statTp.innerText = tpCount + ' Assigned';
-
-      // Filter
-      let displayed = allOfficers;
-      if (filter && filter !== 'all') {
-        displayed = allOfficers.filter(o => o.type === filter);
-      }
-
-      if (searchQueryOfficers) {
-        const q = searchQueryOfficers;
-        displayed = displayed.filter(o =>
-          (o.empId || '').toLowerCase().includes(q) ||
-          (o.id || '').toLowerCase().includes(q) ||
-          (o.headName || '').toLowerCase().includes(q) ||
-          (o.email || '').toLowerCase().includes(q) ||
-          (o.phone || '').toLowerCase().includes(q) ||
-          (o.organization || '').toLowerCase().includes(q) ||
-          (o.jurisdiction || '').toLowerCase().includes(q) ||
-          (o.dutyZone || '').toLowerCase().includes(q) ||
-          (o.pinCodes || '').toLowerCase().includes(q) ||
-          (o.role || '').toLowerCase().includes(q) ||
-          (o.designation || '').toLowerCase().includes(q)
-        );
-      }
-
-      if (displayed.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No officers or inspectors found matching "${searchQueryOfficers || 'department filter'}".
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = displayed.map(officer => {
-        const deptBadgeColor = officer.type === 'mcc' 
-          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
-          : (officer.type === 'gp' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-blue-100 text-blue-800 border-blue-200');
-
-        return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3.5">
-              <div class="flex items-center gap-2.5">
-                <span class="size-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-sm shadow-xs">${officer.icon || '🏛️'}</span>
-                <div>
-                  <span class="block font-bold text-slate-900">${officer.headName}</span>
-                  <span class="block text-[11px] text-slate-500 font-medium">${officer.designation || 'Officer'}</span>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3.5">
-              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${deptBadgeColor} inline-block">
-                ${officer.organization}
-              </span>
-            </td>
-            <td class="px-4 py-3.5 font-mono">
-              <span class="font-bold text-slate-900">${officer.empId}</span><br>
-              <span class="text-[10px] text-slate-500 uppercase">${officer.role || 'Officer'}</span>
-            </td>
-            <td class="px-4 py-3.5 font-mono text-[11px]">
-              <span class="block text-emerald-950 font-bold bg-emerald-50/80 px-2 py-0.5 rounded border border-emerald-200 mb-0.5 inline-block">${officer.email}</span>
-              <span class="block text-slate-500 text-[10px]">${officer.phone}</span>
-            </td>
-            <td class="px-4 py-3.5 text-slate-700">
-              <span class="block font-semibold text-xs text-slate-900">${officer.jurisdiction || officer.dutyZone || 'Mysuru District'}</span>
-              <span class="block font-mono text-[10px] text-emerald-700 font-bold">PIN: ${officer.pinCodes || 'All PINs'}</span>
-            </td>
-            <td class="px-4 py-3.5">
-              <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px] border border-slate-200 inline-flex items-center gap-1">
-                📍 <span>${officer.activeCases || '2 Active'}</span>
-              </span>
-            </td>
-            <td class="px-4 py-3.5">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Active Login</span>
-              </span>
-            </td>
-            <td class="px-4 py-3.5 text-right">
-              <button onclick="copyOfficerLogin('${officer.email}', '${officer.password || 'admin123'}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
-                Copy Login
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
     function copyOfficerLogin(email, pwd) {
       const text = 'Official Gmail: ' + email + '\nPassword: ' + pwd;
       if (navigator.clipboard) {
@@ -4414,30 +4330,6 @@
       }
     }
 
-    // Real-Time High Speed Synchronization
-    const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
-    if (civicSyncChannel) {
-      civicSyncChannel.onmessage = (event) => {
-        loadData();
-        renderAuthoritiesTable();
-        renderInspectorsTable();
-        renderPinMappingInspectors();
-        renderApplicationsTable();
-        renderDemolitionRequestsTable();
-        renderCertificatesTable();
-      };
-    }
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'civic_applications' || e.key === 'civic_registered_users' || e.key === 'civic_departments_config' || e.key === 'civic_additional_officers' || e.key === 'civic_inspectors') {
-        loadData();
-        renderAuthoritiesTable();
-        renderInspectorsTable();
-        renderPinMappingInspectors();
-        renderApplicationsTable();
-        renderDemolitionRequestsTable();
-        renderCertificatesTable();
-      }
-    });
 
     // =========================================================================
     // NOC CERTIFICATE (Clearance) & LIVE CERTIFICATE EDITOR

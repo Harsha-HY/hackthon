@@ -2003,6 +2003,12 @@
         u.status = (u.status || 'Active').includes('Leave') ? 'Active (On Duty)' : 'On Leave';
         localStorage.setItem('civic_registered_users', JSON.stringify(users));
       }
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        const channel = new BroadcastChannel('civic_sync_channel');
+        channel.postMessage({ type: 'INSPECTOR_UPDATED', email: targetEmail });
+      }
+      window.dispatchEvent(new Event('storage'));
       renderInspectorsTable();
       showToast('Status updated for ' + (ins ? ins.name : email), 'success');
     }
@@ -2063,6 +2069,13 @@
         inspectors.unshift(newInspector);
       }
       localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+
+      // Real-time broadcast sync across tabs & admin console
+      if (typeof BroadcastChannel !== 'undefined') {
+        const channel = new BroadcastChannel('civic_sync_channel');
+        channel.postMessage({ type: 'INSPECTOR_CREATED', inspector: newInspector });
+      }
+      window.dispatchEvent(new Event('storage'));
 
       closeModal();
       await loadData();
@@ -3622,14 +3635,16 @@
         if (event && event.data) {
           initOfficerSession();
           loadData();
+          renderInspectorsTable();
+          renderAllTables();
         }
       };
     }
     window.addEventListener('storage', (e) => {
-      if (e.key === 'civic_applications' || e.key === 'civic_registered_users' || e.key === 'civic_departments_config' || e.key === 'civic_inspectors') {
-        initOfficerSession();
-        loadData();
-      }
+      initOfficerSession();
+      loadData();
+      renderInspectorsTable();
+      renderAllTables();
     });
 
     initOfficerSession();
