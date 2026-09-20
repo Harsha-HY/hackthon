@@ -1111,10 +1111,11 @@
       const nameEl = document.getElementById('officer-name-display');
       const emailEl = document.getElementById('officer-email-display');
       const avatarEl = document.getElementById('officer-avatar');
-      if (nameEl) nameEl.innerText = dept.headName;
-      if (emailEl) emailEl.innerText = dept.email;
+      if (nameEl) nameEl.innerText = (currentUser && currentUser.name) ? currentUser.name : dept.headName;
+      if (emailEl) emailEl.innerText = (currentUser && currentUser.email) ? currentUser.email : dept.email;
       if (avatarEl) {
-        const initials = dept.headName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        const disp = (currentUser && currentUser.name) ? currentUser.name : dept.headName;
+        const initials = disp.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
         avatarEl.innerText = initials || 'OF';
       }
 
@@ -1259,10 +1260,6 @@
     
     
 
-    function handleOfficerWardsSearch(q) {
-      searchQueryOfficerWards = (q || '').toLowerCase().trim();
-      renderWardsTable();
-    }
     function handleOfficerCitizensSearch(q) {
       searchQueryOfficerCitizens = (q || '').toLowerCase().trim();
       renderCitizensTable();
@@ -1279,10 +1276,6 @@
       searchQueryOfficerInspectors = (q || '').toLowerCase().trim();
       renderInspectorsTable();
     }
-    function handleOfficerInspectionsSearch(q) {
-      searchQueryOfficerInspections = (q || '').toLowerCase().trim();
-      renderInspectionsTable();
-    }
     function handleOfficerDemolitionSearch(q) {
       searchQueryOfficerDemolition = (q || '').toLowerCase().trim();
       renderDemolitionRequestsTable();
@@ -1290,277 +1283,6 @@
     function handleOfficerCertificatesSearch(q) {
       searchQueryOfficerCertificates = (q || '').toLowerCase().trim();
       renderCertificatesTable();
-    }
-    function handleOfficerWaterSearch(q) {
-      searchQueryOfficerWater = (q || '').toLowerCase().trim();
-      renderWaterTable();
-    }
-    function handleOfficerElectricitySearch(q) {
-      searchQueryOfficerElectricity = (q || '').toLowerCase().trim();
-      renderElectricityTable();
-    }
-    function handleOfficerUsersSearch(q) {
-      searchQueryOfficerUsers = (q || '').toLowerCase().trim();
-      renderUsersTable();
-    }
-
-    function renderInspectionsTable() {
-      const tbody = document.getElementById('table-inspections');
-      if (!tbody) return;
-      const apps = getAuthorityApplications();
-      let displayed = apps;
-      if (searchQueryOfficerInspections) {
-        const q = searchQueryOfficerInspections;
-        displayed = displayed.filter(a =>
-          (a.id || '').toLowerCase().includes(q) ||
-          (a.applicantName || '').toLowerCase().includes(q) ||
-          (a.assignedInspectorName || '').toLowerCase().includes(q) ||
-          (a.assignedInspectorEmail || '').toLowerCase().includes(q) ||
-          (a.scheduledDate || '').toLowerCase().includes(q) ||
-          (a.status || '').toLowerCase().includes(q)
-        );
-      }
-
-      if (displayed.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No on-ground site inspections found matching "${searchQueryOfficerInspections || 'current queue'}".
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = displayed.map((a, i) => {
-        const isApproved = isOfficerAppCompleted(a);
-        const insId = `INSP-${currentAuthorityKey.toUpperCase()}-${String(i+101)}`;
-        return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${insId}</td>
-            <td class="px-4 py-3 font-mono font-semibold text-slate-900">${a.id}</td>
-            <td class="px-4 py-3 font-bold text-slate-800">
-              <span>👮 ${a.assignedInspectorName || 'Ward Officer'}</span>
-              <span class="block font-mono text-[10px] text-slate-500 font-normal">${a.assignedInspectorEmail || ''}</span>
-            </td>
-            <td class="px-4 py-3 font-mono text-slate-700 text-xs">
-              <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200">📅 ${a.scheduledDate || '2026-09-20'}</span>
-            </td>
-            <td class="px-4 py-3">
-              <span class="badge-status ${isApproved ? 'badge-approved' : 'badge-pending'}">
-                ${isApproved ? '✓ Site Audited & Cleared' : '⏳ Scheduled for Audit'}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderDemolitionRequestsTable() {
-      const tbody = document.getElementById('table-demolition_requests');
-      if (!tbody) return;
-      const apps = getAuthorityApplications();
-      let displayed = apps;
-      if (searchQueryOfficerDemolition) {
-        const q = searchQueryOfficerDemolition;
-        displayed = displayed.filter(a =>
-          (a.id || '').toLowerCase().includes(q) ||
-          (a.propertyDetails || a.material || '').toLowerCase().includes(q) ||
-          (a.address || '').toLowerCase().includes(q) ||
-          (a.pincode || a.pin || '').toString().includes(q) ||
-          (a.scheduledDate || '').toLowerCase().includes(q) ||
-          (a.status || '').toLowerCase().includes(q)
-        );
-      }
-
-      if (displayed.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No demolition clearance requests found matching "${searchQueryOfficerDemolition || 'current queue'}".
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = displayed.map(a => {
-        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
-        const isApproved = isOfficerAppCompleted(a);
-        return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
-            <td class="px-4 py-3">
-              <span class="font-bold text-slate-900 block">${a.propertyDetails || 'Demolition Clearance'}</span>
-              <span class="text-xs text-slate-600 block">${a.verifiedMaterial || a.material || 'Masonry Rubble'} (${a.verifiedTonnage || a.tonnage || 10} MT)</span>
-            </td>
-            <td class="px-4 py-3 text-slate-800">
-              <span class="block font-medium">${a.address || 'Mysuru'}</span>
-              <span class="font-mono text-emerald-800 text-[10px] font-bold">PIN: ${a.pincode || a.pin || ''}</span>
-            </td>
-            <td class="px-4 py-3 font-mono text-xs text-slate-700">${a.scheduledDate || '2026-09-20'}</td>
-            <td class="px-4 py-3 font-mono text-xs text-slate-700">${a.completionDate || (isApproved ? 'Cleared' : 'Pending')}</td>
-            <td class="px-4 py-3">
-              ${photos.length > 0 ? `
-                <button onclick="viewPhoto('${a.id}')" class="px-2 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-bold hover:bg-emerald-100">
-                  📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''}
-                </button>
-              ` : `<span class="text-slate-400 font-mono text-[10px]">No photo</span>`}
-            </td>
-            <td class="px-4 py-3">
-              <span class="badge-status ${isApproved ? 'badge-approved' : 'badge-pending'}">
-                ${isApproved ? '✓ Cleared' : (a.status || 'Pending Review')}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Manage &rarr;</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderDemolitionCasesTable() {
-      renderDemolitionRequestsTable();
-    }
-
-    function renderAllTables() {
-      renderWardsTable();
-      renderAreasTable();
-      renderPinCodesTable();
-      renderCitizensTable();
-      renderPropertiesTable();
-      renderApplicationsTable();
-      renderDocumentsTable();
-      renderInspectorsTable();
-      renderInspectionsTable();
-      renderDemolitionRequestsTable();
-      renderDemolitionCasesTable();
-      renderCertificatesTable();
-      renderWaterTable();
-      renderElectricityTable();
-      renderNotificationsTable();
-      renderReportsTable();
-      renderUsersTable();
-    }
-
-    function renderWardsTable() {
-      const tbody = document.getElementById('table-wards');
-      if (!tbody) return;
-      let baseWards = [];
-      if (currentAuthorityKey === 'mcc') {
-        baseWards = [
-          { no: 'Ward 01', name: 'Chamundipuram', zone: 'Zone 1 (South)', supervisor: 'Officer K. Raman', sites: 2 },
-          { no: 'Ward 04', name: 'Krishnaraja Boulevard', zone: 'Zone 2 (Central)', supervisor: 'Officer S. Suresh', sites: 3 },
-          { no: 'Ward 12', name: 'Gokulam 3rd Stage', zone: 'Zone 3 (West)', supervisor: 'Officer M. Vinay', sites: 1 },
-          { no: 'Ward 24', name: 'Kuvempunagar Central', zone: 'Zone 5 (South-West)', supervisor: 'Officer R. Nagaraj', sites: 4 },
-          { no: 'Ward 35', name: 'Vijayanagar 2nd Stage', zone: 'Zone 7 (West)', supervisor: 'Officer P. Lokesh', sites: 2 }
-        ];
-      } else if (currentAuthorityKey === 'gp') {
-        baseWards = [
-          { no: 'GP Ward 01', name: 'Bogadi Rural North', zone: 'Mysuru Rural', supervisor: 'PDO In-charge', sites: 1 },
-          { no: 'GP Ward 02', name: 'Maratikyathanahalli', zone: 'Mysuru Rural', supervisor: 'Village Accountant', sites: 0 },
-          { no: 'GP Ward 03', name: 'Kadakola Grama', zone: 'Nanjangud Border', supervisor: 'PDO Assistant', sites: 2 }
-        ];
-      } else {
-        baseWards = [
-          { no: 'TP Ward 01', name: 'Hootagalli Town Center', zone: 'TMC Zone 1', supervisor: 'Chief Officer Squad', sites: 2 },
-          { no: 'TP Ward 07', name: 'Koorgalli Industrial Estate', zone: 'TMC Industrial', supervisor: 'Sanitary Inspector', sites: 3 },
-          { no: 'TP Ward 14', name: 'Belawadi Sub-Urban', zone: 'TMC Zone 2', supervisor: 'Revenue Officer', sites: 1 }
-        ];
-      }
-
-      if (searchQueryOfficerWards) {
-        const q = searchQueryOfficerWards;
-        baseWards = baseWards.filter(w =>
-          (w.no || '').toLowerCase().includes(q) ||
-          (w.name || '').toLowerCase().includes(q) ||
-          (w.zone || '').toLowerCase().includes(q) ||
-          (w.supervisor || '').toLowerCase().includes(q) ||
-          String(w.sites || '').includes(q)
-        );
-      }
-
-      if (baseWards.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No wards found matching "${searchQueryOfficerWards}".
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = baseWards.map(w => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${w.no}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">${w.name}</td>
-          <td class="px-4 py-3 text-slate-600">${w.zone}</td>
-          <td class="px-4 py-3 text-slate-700">${w.supervisor}</td>
-          <td class="px-4 py-3 font-mono font-bold text-slate-900">${w.sites} Active</td>
-          <td class="px-4 py-3">
-            <button class="text-xs font-bold text-emerald-600 hover:text-emerald-700">Inspect &rarr;</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function renderAreasTable() {
-      const tbody = document.getElementById('table-areas');
-      let baseAreas = [];
-      if (currentAuthorityKey === 'mcc') {
-        baseAreas = [
-          { name: 'Sayyaji Rao Road Corridor', ward: 'Ward 04', pin: '570001', risk: 'Medium', yard: 'Kumbarakoppal Recycling Yard' },
-          { name: 'KRS Road Industrial Belt', ward: 'Ward 18', pin: '570020', risk: 'High', yard: 'Hebbal Processing Plant' },
-          { name: 'Gokulam 2nd & 3rd Stage', ward: 'Ward 12', pin: '570002', risk: 'Low', yard: 'Kumbarakoppal Recycling Yard' }
-        ];
-      } else if (currentAuthorityKey === 'gp') {
-        baseAreas = [
-          { name: 'Bogadi Outer Ring Road Junction', ward: 'GP Ward 01', pin: '570026', risk: 'High (Dumping Zone)', yard: 'Bogadi Rural Dump Site' },
-          { name: 'Kadakola Industrial Area', ward: 'GP Ward 03', pin: '571311', risk: 'High', yard: 'Nanjangud Road Yard' }
-        ];
-      } else {
-        baseAreas = [
-          { name: 'Hootagalli Main Industrial Layout', ward: 'TP Ward 01', pin: '570018', risk: 'High', yard: 'Koorgalli Heavy C&D Yard' },
-          { name: 'Belawadi Urban Extension', ward: 'TP Ward 14', pin: '570017', risk: 'Medium', yard: 'Hebbal Processing Plant' }
-        ];
-      }
-
-      tbody.innerHTML = baseAreas.map(a => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-semibold text-slate-900">${a.name}</td>
-          <td class="px-4 py-3 text-slate-600 font-mono">${a.ward}</td>
-          <td class="px-4 py-3 font-mono font-bold text-emerald-700">${a.pin}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold ${a.risk.includes('High') ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">${a.risk}</span>
-          </td>
-          <td class="px-4 py-3 text-slate-600">${a.yard}</td>
-          <td class="px-4 py-3">
-            <button class="text-xs font-bold text-slate-600 hover:text-slate-900">Map Route</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function renderPinCodesTable() {
-      const tbody = document.getElementById('table-pincodes');
-      const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
-      const pins = (dept.pinCodes || '').split(',').map(p => p.trim());
-
-      tbody.innerHTML = pins.map(pin => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-extrabold text-emerald-800 text-sm">${pin}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">${dept.name}</td>
-          <td class="px-4 py-3 text-slate-600 font-mono">${dept.role}</td>
-          <td class="px-4 py-3 font-mono text-slate-700">${dept.email}</td>
-          <td class="px-4 py-3">
-            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-mono text-[10px] border border-emerald-200">
-              ✓ Active Routing
-            </span>
-          </td>
-        </tr>
-      `).join('');
     }
 
     function renderCitizensTable() {
@@ -2279,21 +2001,13 @@
     }
 
     function renderAllTables() {
-      renderWardsTable();
-      renderAreasTable();
-      renderPinCodesTable();
-      renderCitizensTable();
-      renderPropertiesTable();
-      renderApplicationsTable();
-      renderDocumentsTable();
-      renderInspectorsTable();
-      renderInspectionsTable();
-      renderDemolitionRequestsTable();
-      renderDemolitionCasesTable();
-      renderCertificatesTable();
-      renderNotificationsTable();
-      renderReportsTable();
-      renderUsersTable();
+      try { renderAuthorityFields(); } catch(e) { console.warn('renderAuthorityFields error:', e); }
+      try { renderCitizensTable(); } catch(e) { console.warn('renderCitizensTable error:', e); }
+      try { renderPropertiesTable(); } catch(e) { console.warn('renderPropertiesTable error:', e); }
+      try { renderApplicationsTable(); } catch(e) { console.warn('renderApplicationsTable error:', e); }
+      try { renderInspectorsTable(); } catch(e) { console.warn('renderInspectorsTable error:', e); }
+      try { renderDemolitionRequestsTable(); } catch(e) { console.warn('renderDemolitionRequestsTable error:', e); }
+      try { renderCertificatesTable(); } catch(e) { console.warn('renderCertificatesTable error:', e); }
     }
 
     function renderInspectorsTable() {
