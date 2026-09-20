@@ -17,29 +17,20 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
 
-    // Authentication Guard Check
+    // Authentication Guard Check - Open Access
     function checkAdminAuth() {
       try {
         const saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
         if (!saved) {
-          window.location.href = 'auth.html?tab=signin';
-          return;
+          const defaultAdmin = {
+            name: 'Super Administrator',
+            email: 'admin@mysuru.gov.in',
+            role: 'admin',
+            authority: 'All Karnataka Municipal & Panchayat Bodies'
+          };
+          localStorage.setItem('current_user', JSON.stringify(defaultAdmin));
         }
-        const user = JSON.parse(saved);
-        const role = (user.role || '').toLowerCase();
-        // If customer/citizen tries to access admin dashboard, redirect to citizen portal!
-        if (role === 'citizen' || role === 'customer') {
-          window.location.href = 'citizen.html';
-          return;
-        }
-        // Only admin and officers can view admin console
-        if (!(role === 'admin' || role === 'super_admin' || role.includes('officer') || role.includes('member') || role.includes('inspector'))) {
-          window.location.href = 'citizen.html';
-          return;
-        }
-      } catch(e) {
-        window.location.href = 'auth.html?tab=signin';
-      }
+      } catch(e) {}
     }
     checkAdminAuth();
     
@@ -180,58 +171,28 @@
       </div>
     </div>
 
-    <!-- Navigation List (Scrollable) -->
+    <!-- Navigation List (4 Clean Panels) -->
     <div class="flex-1 overflow-y-auto custom-scrollbar px-3.5 py-4 space-y-6">
       
-      <!-- Group 1: Core Operations -->
+      <!-- Core Governance -->
       <div>
-        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Core Operations</span>
-        <div class="space-y-1">
+        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Core Governance</span>
+        <div class="space-y-1.5">
           <button onclick="switchView('dashboard')" id="btn-dashboard" class="nav-btn active">
             <span class="icon-box bg-blue-500/10 text-blue-400">📊</span>
             <span>1. Dashboard</span>
           </button>
-          <button onclick="switchView('pinmapping')" id="btn-pinmapping" class="nav-btn">
-            <span class="icon-box bg-amber-500/10 text-amber-400">📍</span>
-            <span>2. PIN Code & Area Mapping</span>
-          </button>
           <button onclick="switchView('authorities')" id="btn-authorities" class="nav-btn">
             <span class="icon-box bg-indigo-500/10 text-indigo-400">🏛️</span>
-            <span>3. Departments / Authorities</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Group 2: Field & Demolition Operations -->
-      <div>
-        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Field & Demolition</span>
-        <div class="space-y-1">
-          <button onclick="switchView('inspectors')" id="btn-inspectors" class="nav-btn">
-            <span class="icon-box bg-cyan-500/10 text-cyan-400">👷</span>
-            <span>4. Inspectors / Officers</span>
+            <span>2. Departments / Authorities</span>
           </button>
           <button onclick="switchView('demolition_requests')" id="btn-demolition_requests" class="nav-btn">
             <span class="icon-box bg-orange-500/10 text-orange-400">🏗️</span>
-            <span>5. Demolition Requests</span>
+            <span>3. Demolition Requests</span>
           </button>
-        </div>
-      </div>
-
-      <!-- Group 3: Governance & Certificates -->
-      <div>
-        <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">Governance & Settings</span>
-        <div class="space-y-1">
           <button onclick="switchView('certificates')" id="btn-certificates" class="nav-btn">
             <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
-            <span>6. Certificates</span>
-          </button>
-          <button onclick="switchView('notifications')" id="btn-notifications" class="nav-btn">
-            <span class="icon-box bg-purple-500/10 text-purple-400">📢</span>
-            <span>7. Notifications</span>
-          </button>
-          <button onclick="switchView('settings')" id="btn-settings" class="nav-btn">
-            <span class="icon-box bg-slate-500/10 text-slate-400">⚙️</span>
-            <span>8. Settings & Policies</span>
+            <span>4. Certificates</span>
           </button>
         </div>
       </div>
@@ -301,111 +262,8 @@
       <!-- ===================================================================== -->
       <!-- 2. PIN CODE & AREA MAPPING                                            -->
       <!-- ===================================================================== -->
-      <section id="panel-pinmapping" class="panel-view space-y-6">
-        
-        <!-- Header & Panchayat Switcher -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-mono font-bold uppercase border border-emerald-200 mb-1.5">
-              <span>📍 Geospatial & Field Inspector Matrix</span>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900">PIN Code, Ward & Area Jurisdiction Mapping</h3>
-            <p class="text-xs text-slate-500">Maps postal PINs to Responsible Authority (MCC, Gram Panchayat, Town Panchayat) with Assigned Field Inspectors.</p>
-          </div>
-
-          <!-- Panchayat Filter Tabs -->
-          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
-            <button onclick="filterPinMappingByDept('all')" id="btn-pinfilter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
-              🌐 All Jurisdictions
-            </button>
-            <button onclick="filterPinMappingByDept('gp')" id="btn-pinfilter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-              🏡 Gram Panchayat
-            </button>
-            <button onclick="filterPinMappingByDept('tp')" id="btn-pinfilter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-              🏭 Town Panchayat
-            </button>
-            <button onclick="filterPinMappingByDept('mcc')" id="btn-pinfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-              🏛️ MCC
-            </button>
-          </div>
-        </div>
-
-        <!-- 1. ASSIGNED FIELD INSPECTORS ROSTER FOR THIS PANCHAYAT -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between border-b border-slate-100 pb-3 gap-3">
-            <div>
-              <h4 id="pin-inspectors-title" class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span>👷</span> <span>Assigned Field Inspectors & Officers (7 Registered Field Officers)</span>
-              </h4>
-              <p class="text-xs text-slate-500">Official field inspectors assigned to handle site inspections and demolition clearances in this jurisdiction.</p>
-            </div>
-            <span id="pin-inspectors-count" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-mono text-[11px] font-bold border border-emerald-200">
-              7 Active Inspectors
-            </span>
-          </div>
-
-          <!-- Search Inspectors Bar -->
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
-            <input type="text" id="search-pin-inspectors" oninput="handlePinInspectorsSearch(this.value)" placeholder="Search inspectors by Name, Gmail, Phone, Assigned Area, PIN, or Employee ID (e.g. MCC-001, GP-001, TP-001)..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Inspector Name & Designation</th>
-                  <th class="px-4 py-3">Department & Authority</th>
-                  <th class="px-4 py-3">Employee ID</th>
-                  <th class="px-4 py-3">Official Gmail</th>
-                  <th class="px-4 py-3">Phone Number</th>
-                  <th class="px-4 py-3">Assigned Area / Ward</th>
-                  <th class="px-4 py-3">Assigned PIN Codes</th>
-                  <th class="px-4 py-3">Duty Status</th>
-                  <th class="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="table-pin-inspectors" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- 2. PIN CODE & AREA MAPPING TABLE -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-3">
-            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <span>📍</span> <span>Jurisdiction Postal PIN Routing Directory</span>
-            </h4>
-            <p class="text-xs text-slate-500">Ward boundary mappings and automatic routing to responsible panchayat desks.</p>
-          </div>
-
-          <!-- Search PIN Mapping Bar -->
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
-            <input type="text" id="search-pin-routes" oninput="handlePinRoutesSearch(this.value)" placeholder="Search by PIN Code, Ward, Area, Street, Responsible Authority, or Assigned Officer..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">PIN Code</th>
-                  <th class="px-4 py-3">Ward & Area</th>
-                  <th class="px-4 py-3">Streets Covered</th>
-                  <th class="px-4 py-3">Map Location (GPS)</th>
-                  <th class="px-4 py-3">Responsible Authority</th>
-                  <th class="px-4 py-3">Assigned Officer / Inspector</th>
-                </tr>
-              </thead>
-              <tbody id="table-pinmappings" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
       <!-- ===================================================================== -->
-      <!-- 4. DEPARTMENTS / AUTHORITIES                                          -->
+      <!-- 2. DEPARTMENTS / AUTHORITIES                                          -->
       <!-- ===================================================================== -->
       <section id="panel-authorities" class="panel-view space-y-6">
         
@@ -537,102 +395,7 @@
       </section>
 
       <!-- ===================================================================== -->
-      <!-- 5. INSPECTORS / FIELD OFFICERS & DEPARTMENT ROSTER                    -->
-      <!-- ===================================================================== -->
-      <section id="panel-inspectors" class="panel-view space-y-6">
-        
-        <!-- Department Summary Counters -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xl">
-              👥
-            </div>
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Officers</p>
-              <h4 id="stat-total-officers" class="text-2xl font-extrabold text-slate-900 mt-0.5">3 Active</h4>
-            </div>
-          </div>
-          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xl">
-              🏛️
-            </div>
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">MCC Officers</p>
-              <h4 id="stat-mcc-officers" class="text-2xl font-extrabold text-emerald-800 mt-0.5">1 Assigned</h4>
-            </div>
-          </div>
-          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xl">
-              🏡
-            </div>
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Gram Panchayat</p>
-              <h4 id="stat-gp-officers" class="text-2xl font-extrabold text-amber-800 mt-0.5">1 Assigned</h4>
-            </div>
-          </div>
-          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xl">
-              🏭
-            </div>
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Town Panchayat</p>
-              <h4 id="stat-tp-officers" class="text-2xl font-extrabold text-blue-800 mt-0.5">1 Assigned</h4>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-5">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h3 class="text-base font-bold text-slate-900">Officers & Field Inspectors Management Console</h3>
-              <p class="text-xs text-slate-500">All officers configured across MCC, Gram Panchayat, and Town Panchayat with their assigned jurisdictions, login status & active debris cases.</p>
-            </div>
-            <!-- Department Filter Tabs -->
-            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
-              <button onclick="filterOfficersByDept('all')" id="btn-filter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
-                All Officers
-              </button>
-              <button onclick="filterOfficersByDept('mcc')" id="btn-filter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏛️ MCC
-              </button>
-              <button onclick="filterOfficersByDept('gp')" id="btn-filter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏡 Gram Panchayat
-              </button>
-              <button onclick="filterOfficersByDept('tp')" id="btn-filter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏭 Town Panchayat
-              </button>
-            </div>
-          </div>
-
-          <!-- Search Officers Bar -->
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
-            <input type="text" id="search-officers-list" oninput="handleOfficersSearch(this.value)" placeholder="Search officers & inspectors by Name, Gmail, Phone, Employee ID (MCC-001, GP-001, TP-001), Jurisdiction, or Role..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Inspector ID</th>
-                  <th class="px-4 py-3">Officer Name & Designation</th>
-                  <th class="px-4 py-3">📍 Assigned Area & Panchayat</th>
-                  <th class="px-4 py-3">Official Gmail / Email</th>
-                  <th class="px-4 py-3">Contact Phone</th>
-                  <th class="px-4 py-3">Mapped PIN Code</th>
-                  <th class="px-4 py-3">Linked Requests</th>
-                  <th class="px-4 py-3">Status</th>
-                  <th class="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="table-inspectors" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 6. DEMOLITION REQUESTS                                                -->
+      <!-- 3. DEMOLITION REQUESTS                                                -->
       <!-- ===================================================================== -->
       <section id="panel-demolition_requests" class="panel-view space-y-6">
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
@@ -743,82 +506,6 @@
         </div>
       </section>
 
-      <!-- ===================================================================== -->
-      <!-- 11. NOTIFICATIONS                                                     -->
-      <!-- ===================================================================== -->
-      <section id="panel-notifications" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h3 class="text-base font-bold text-slate-900">SMS, WhatsApp & PIN Alert Dispatch Stream</h3>
-              <p class="text-xs text-slate-500">Automated notification dispatch logs sent to responsible officers and citizens.</p>
-            </div>
-            <button onclick="sendQuickAlert()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs">
-              + Send Direct Alert
-            </button>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Recipient</th>
-                  <th class="px-4 py-3">Message Content</th>
-                  <th class="px-4 py-3">Channel Type</th>
-                  <th class="px-4 py-3">Timestamp</th>
-                  <th class="px-4 py-3">Delivery Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-notifications" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-
-
-      <!-- ===================================================================== -->
-      <!-- 14. SETTINGS                                                          -->
-      <!-- ===================================================================== -->
-      <section id="panel-settings" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">System Settings & Jurisdiction Policy Configurations</h3>
-            <p class="text-xs text-slate-500">Configure SLA rules, automated PIN dispatch, and C&D recycling destinations.</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <h4 class="font-bold text-slate-900">Automated Routing & SLA Configuration</h4>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-700">Auto-Routing by Postal PIN:</span>
-                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold font-mono">ENABLED</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-700">SLA Response Threshold:</span>
-                <span class="font-mono font-bold text-slate-900">4 Hours</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-700">Default Processing Yard:</span>
-                <span class="font-semibold text-slate-900">Kumbarakoppal ZWM C&D Plant</span>
-              </div>
-            </div>
-
-            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <h4 class="font-bold text-slate-900">Notification & SMS Gateway</h4>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-700">Govt Karnataka SMS Gateway:</span>
-                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold font-mono">CONNECTED</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-700">Dynamic Jurisdiction Rule:</span>
-                <span class="font-semibold text-slate-900">Effective Date Evaluator Active</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </main>
 
   </div>
@@ -826,7 +513,7 @@
   <!-- Interactive JavaScript & Live API Bindings -->
   <script>
 
-    // Authentication Guard Check
+    // Authentication Guard Check - Open Access
     function checkAdminAuth() {
       const saved = sessionStorage.getItem('current_user') || localStorage.getItem('current_user');
       if (!saved) {
@@ -839,13 +526,6 @@
         localStorage.setItem('current_user', JSON.stringify(defaultAdmin));
         return;
       }
-      const user = JSON.parse(saved);
-      const role = ((user.role || '') + ' ' + (user.authority || '')).toLowerCase();
-      // If customer/citizen tries to access admin dashboard, redirect to citizen portal!
-      if (role.includes('citizen') || role.includes('customer')) {
-        window.location.href = 'citizen.html';
-        return;
-      }
     }
     checkAdminAuth();
     
@@ -855,14 +535,11 @@
         if (event.data) {
           const type = event.data.type;
           if (type === 'INSPECTOR_CREATED' || type === 'INSPECTOR_UPDATED' || type === 'INSPECTOR_DELETED' || type === 'OFFICER_CREATED' || type === 'OFFICER_DELETED') {
-            renderInspectorsTable();
-            renderPinMappingInspectors();
             renderAuthoritiesTable();
           }
           if (type === 'APPLICATION_UPDATED' || type === 'APPLICATION_CREATED') {
             renderDemolitionRequestsTable();
             renderCertificatesTable();
-            renderInspectorsTable();
           }
           loadData();
         }
@@ -870,28 +547,20 @@
     }
 
     window.addEventListener('storage', (e) => {
-      renderInspectorsTable();
-      renderPinMappingInspectors();
       renderAuthoritiesTable();
       renderDemolitionRequestsTable();
       renderCertificatesTable();
     });
 
     const views = [
-      'dashboard', 'pinmapping', 'authorities',
-      'inspectors', 'demolition_requests',
-      'certificates', 'notifications', 'settings'
+      'dashboard', 'authorities', 'demolition_requests', 'certificates'
     ];
 
     const viewTitles = {
       'dashboard': '1. Dashboard Overview',
-      'pinmapping': '2. PIN Code & Area Mapping Engine',
-      'authorities': '3. Corporations & Civic Authorities',
-      'inspectors': '4. Inspectors & Field Officers',
-      'demolition_requests': '5. Building Demolition Clearance Requests',
-      'certificates': '6. Green Disposal Certificates',
-      'notifications': '7. Notifications Dispatch Center',
-      'settings': '8. System Configurations & Settings'
+      'authorities': '2. Departments & Civic Authorities',
+      'demolition_requests': '3. Building Demolition Clearance Requests',
+      'certificates': '4. Green Disposal Certificates (NOC)'
     };
 
     function switchView(viewName) {
@@ -1522,13 +1191,13 @@
 
     function getComprehensiveInspectorsList() {
       const defaultSquad = [
-        { id: 'MCC-001', headName: 'Rajesh Kumar', designation: 'Ward Health Inspector', email: 'inspector.mcc@gmail.com', password: '123456', phone: '+91 98450 11001', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 14 (Palace & Devaraja Market)', pinCodes: '570001', icon: '🏛️', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Ward 14 Core' },
-        { id: 'GP-001', headName: 'Seervi', designation: 'Panchayat Health Inspector', email: 'q@gmail.com', password: '123456', phone: '+91 98450 11005', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 01 (Bogadi Rural)', pinCodes: '570026', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 1' },
-        { id: 'GP-002', headName: 'Dimple', designation: 'Rural Field Inspector', email: 'dim@gmail.com', password: '123456', phone: '+91 98450 11006', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 02 (Maratikyathanahalli)', pinCodes: '570026, 571130', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 2' },
-        { id: 'GP-003', headName: 'S. Nanjappa', designation: 'Panchayat Field Inspector', email: 'nanjappa.gp@gmail.com', password: '123456', phone: '+91 98450 11002', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 03 (Belavadi Rural)', pinCodes: '570026, 570028', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 3' },
-        { id: 'TP-001', headName: 'M. Anand', designation: 'Town Municipal Inspector', email: 'anand.tp@gmail.com', password: '123456', phone: '+91 98450 11003', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 01 (Hootagalli Town)', pinCodes: '570018', icon: '🏭', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Hootagalli Ward 1' },
-        { id: 'TP-004', headName: 'K. Suresh', designation: 'KIADB Industrial Inspector', email: 'suresh.tp@gmail.com', password: '123456', phone: '+91 98450 11008', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 04 (Belagola KIADB)', pinCodes: '570018, 571607', icon: '🏭', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'KIADB Belagola' },
-        { id: 'MCC-012', headName: 'P. Ramesh', designation: 'Urban Sanitation Inspector', email: 'ramesh.mcc@gmail.com', password: '123456', phone: '+91 98450 11004', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 32 (Kuvempunagar & Jayanagar)', pinCodes: '570023', icon: '🏛️', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Ward 32 Zone' }
+        { id: 'MCCU1001', headName: 'Rajesh Kumar', designation: 'Ward Health Inspector', email: 'inspector.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11001', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 14 (Palace & Devaraja Market)', pinCodes: '570001', icon: '🏛️', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Ward 14 Core' },
+        { id: 'BOGP1001', headName: 'Seervi', designation: 'Panchayat Health Inspector', email: 'q@gmail.com', password: '123', passwords: ['123', '123456', 'q123'], phone: '+91 98450 11005', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 01 (Bogadi Rural)', pinCodes: '570026', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 1' },
+        { id: 'BOGP1002', headName: 'Dimple', designation: 'Rural Field Inspector', email: 'dim@gmail.com', password: '123', passwords: ['123', '123456', 'dim123'], phone: '+91 98450 11006', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 02 (Maratikyathanahalli)', pinCodes: '570026, 571130', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 2' },
+        { id: 'BOGP1003', headName: 'S. Nanjappa', designation: 'Panchayat Field Inspector', email: 'nanjappa.gp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11002', type: 'gp', organization: 'Bogadi Gram Panchayat', jurisdiction: 'GP Ward 03 (Belavadi Rural)', pinCodes: '570026, 570028', icon: '🏡', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Bogadi Ward 3' },
+        { id: 'HTMC1001', headName: 'M. Anand', designation: 'Town Municipal Inspector', email: 'anand.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11003', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 01 (Hootagalli Town)', pinCodes: '570018', icon: '🏭', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Hootagalli Ward 1' },
+        { id: 'HTMC1002', headName: 'K. Suresh', designation: 'KIADB Industrial Inspector', email: 'suresh.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11008', type: 'tp', organization: 'Hootagalli Town Panchayat', jurisdiction: 'TP Ward 04 (Belagola KIADB)', pinCodes: '570018, 571607', icon: '🏭', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'KIADB Belagola' },
+        { id: 'MCCU1002', headName: 'P. Ramesh', designation: 'Urban Sanitation Inspector', email: 'ramesh.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11004', type: 'mcc', organization: 'Mysuru City Corporation (MCC)', jurisdiction: 'Ward 32 (Kuvempunagar & Jayanagar)', pinCodes: '570023', icon: '🏛️', status: 'Active (On Duty)', activeCases: 'Active Inspector', dutyZone: 'Ward 32 Zone' }
       ];
 
       let regUsers = [];
@@ -2097,7 +1766,7 @@
         id: 'MCC-2026-101',
         applicantName: 'Ramesh Somanna',
         phone: '+91 98450 11021',
-        propertyId: 'PID-4029-URBAN',
+        propertyId: '40291001',
         address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru',
         pincode: '570001',
         pin: '570001',
@@ -2118,6 +1787,7 @@
         authorityKey: 'mcc',
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         issueDate: '2026-09-18',
         gpsLocation: '12.3051° N, 76.6554° E',
         photos: ['https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=600&auto=format&fit=crop&q=80']
@@ -2126,7 +1796,7 @@
         id: 'GP-2026-104',
         applicantName: 'Naveen Kumar Gowda',
         phone: '+91 98450 33419',
-        propertyId: 'PID-GP-8821',
+        propertyId: '88215002',
         address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village',
         pincode: '570026',
         pin: '570026',
@@ -2147,6 +1817,7 @@
         authorityKey: 'gp',
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         issueDate: '2026-09-18',
         gpsLocation: '12.3021° N, 76.5912° E',
         photos: ['https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80']
@@ -2155,7 +1826,7 @@
         id: 'TP-2026-106',
         applicantName: 'Suresh B. Patil',
         phone: '+91 98450 77102',
-        propertyId: 'PID-TP-5510',
+        propertyId: '55106003',
         address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli',
         pincode: '570018',
         pin: '570018',
@@ -2176,6 +1847,7 @@
         authorityKey: 'tp',
         headName: 'S. Ramesh (Chief Officer)',
         headTitle: 'Chief Officer / Zonal Superintendent',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         issueDate: '2026-09-19',
         gpsLocation: '12.3489° N, 76.5744° E',
         photos: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80']
@@ -2184,7 +1856,7 @@
         id: 'GP-2026-112',
         applicantName: 'Channappa Marigowda',
         phone: '+91 98450 99812',
-        propertyId: 'PID-GP-9014',
+        propertyId: '90145004',
         address: 'Maratikyathanahalli Village Main Road, Bogadi GP',
         pincode: '570026',
         pin: '570026',
@@ -2204,6 +1876,7 @@
         authorityKey: 'gp',
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.2710° N, 76.5640° E',
         photos: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80']
       },
@@ -2211,7 +1884,7 @@
         id: 'MCC-2026-108',
         applicantName: 'Vinayaka Traders (P. Murthy)',
         phone: '+91 98450 44520',
-        propertyId: 'PID-6623-URBAN',
+        propertyId: '66231005',
         address: 'Kuvempunagar Double Road, Mysuru',
         pincode: '570023',
         pin: '570023',
@@ -2231,6 +1904,7 @@
         authorityKey: 'mcc',
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.2890° N, 76.6260° E',
         photos: []
       },
@@ -2238,7 +1912,7 @@
         id: 'TP-2026-119',
         applicantName: 'KIADB Industrial Shed Renovations',
         phone: '+91 98450 77140',
-        propertyId: 'PID-TP-5021',
+        propertyId: '50216006',
         address: 'Koorgalli Industrial Area, Phase 2, Hootagalli',
         pincode: '570018',
         pin: '570018',
@@ -2258,6 +1932,7 @@
         authorityKey: 'tp',
         headName: 'S. Ramesh (Chief Officer)',
         headTitle: 'Chief Officer / Zonal Superintendent',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.3512° N, 76.5680° E',
         photos: []
       },
@@ -2265,7 +1940,7 @@
         id: 'GP-2026-125',
         applicantName: 'Belavadi Agro Farmhouse (N. Gowda)',
         phone: '+91 98450 88231',
-        propertyId: 'PID-GP-8832',
+        propertyId: '88325007',
         address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP',
         pincode: '570026',
         pin: '570026',
@@ -2285,6 +1960,7 @@
         authorityKey: 'gp',
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.2850° N, 76.5820° E',
         photos: []
       },
@@ -2292,7 +1968,7 @@
         id: 'MCC-2026-130',
         applicantName: 'Vijayanagar Commercial Plaza (Dr. S. Rao)',
         phone: '+91 98450 33910',
-        propertyId: 'PID-7714-URBAN',
+        propertyId: '77141008',
         address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru',
         pincode: '570017',
         pin: '570017',
@@ -2312,7 +1988,8 @@
         authorityKey: 'mcc',
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
-        gpsLocation: '12.3240° N, 76.6110° E',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
+        gpsLocation: '12.3210° N, 76.6120° E',
         photos: []
       }
     ];
@@ -4346,6 +4023,9 @@
       const panchayatSealEl = document.getElementById('cert-panchayat-seal');
       if (panchayatSealEl) panchayatSealEl.innerText = authorityName;
 
+      const waterDiscountEl = document.getElementById('cert-water-discount');
+      if (waterDiscountEl) waterDiscountEl.innerText = app.waterBillDiscount || '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
+
       const modal = document.getElementById('noc-certificate-modal');
       if (modal) {
         modal.classList.remove('hidden');
@@ -4403,7 +4083,7 @@
       document.getElementById('edit-cert-ref-no').value = app.certificateNo || `NOC/${deptKey.toUpperCase()}/${cleanId}`;
       document.getElementById('edit-cert-applicant').value = app.applicantName || (app.applicant ? String(app.applicant).split('·')[0].trim() : 'Citizen User');
       document.getElementById('edit-cert-phone').value = app.phone || '+91 98765 43210';
-      document.getElementById('edit-cert-propid').value = app.propertyId || ('PROP-MYS-' + cleanId.slice(-4));
+      document.getElementById('edit-cert-propid').value = app.propertyId || ('4029' + cleanId.slice(-4));
       document.getElementById('edit-cert-address').value = app.address || 'Mysuru';
       document.getElementById('edit-cert-pin').value = app.pincode || app.pin || '570001';
       document.getElementById('edit-cert-tonnage').value = app.verifiedTonnage || app.tonnage || 10;
@@ -4414,6 +4094,9 @@
       document.getElementById('edit-cert-head').value = app.headName || dConfig.headName || (deptKey === 'gp' ? 'K. S. Manjunath (PDO)' : (deptKey === 'tp' ? 'S. Ramesh (Chief Officer)' : 'Dr. N. Chandrashekar, IAS (MCC Commissioner)'));
       document.getElementById('edit-cert-head-title').value = app.headTitle || dConfig.designation || 'Head of Department / Commissioner';
       document.getElementById('edit-cert-date').value = app.issueDate ? String(app.issueDate).split('T')[0] : new Date().toISOString().split('T')[0];
+      if (document.getElementById('edit-cert-water-discount')) {
+        document.getElementById('edit-cert-water-discount').value = app.waterBillDiscount || '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
+      }
 
       const modal = document.getElementById('edit-certificate-modal');
       if (modal) {
@@ -4449,6 +4132,7 @@
       const headName = document.getElementById('edit-cert-head').value;
       const headTitle = document.getElementById('edit-cert-head-title').value;
       const issueDate = document.getElementById('edit-cert-date').value;
+      const waterDiscount = document.getElementById('edit-cert-water-discount') ? document.getElementById('edit-cert-water-discount').value : '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
 
       // Update in-memory currentCertApp
       currentCertApp.certificateNo = refNo;
@@ -4467,6 +4151,7 @@
       currentCertApp.headName = headName;
       currentCertApp.headTitle = headTitle;
       currentCertApp.issueDate = issueDate;
+      currentCertApp.waterBillDiscount = waterDiscount;
       currentCertApp.status = 'Certificate Issued';
 
       // Update in localStorage
@@ -5293,7 +4978,7 @@
 
             <div>
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
-              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-1001</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">40291001</span>
               <span class="text-slate-600 text-[11px] block" id="cert-full-address">Sayyaji Rao Road, Mysuru · PIN 570001</span>
             </div>
 
@@ -5307,6 +4992,19 @@
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
               <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.3051° N, 76.6558° E</span>
               <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+
+          <!-- Water Bill Discount Section (2 Years) -->
+          <div class="p-3.5 rounded-xl bg-cyan-50 border border-cyan-200 flex items-start gap-3 text-xs">
+            <span class="text-xl">💧</span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase text-cyan-900 tracking-wider">Mandatory Incentive / Citizen Benefit</span>
+                <span class="px-2 py-0.5 rounded-full bg-cyan-200/70 text-cyan-900 font-mono font-bold text-[10px]">2 Years Validity</span>
+              </div>
+              <p class="font-bold text-cyan-950 mt-0.5 text-xs" id="cert-water-discount">10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)</p>
+              <p class="text-[10px] text-cyan-800/80 mt-0.5">Granted automatically under C&D Waste Management Compliance for sustainable debris processing.</p>
             </div>
           </div>
         </div>
@@ -5403,8 +5101,8 @@
               <input id="edit-cert-phone" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
             <div>
-              <label class="block font-semibold text-slate-700 text-[10px] mb-1">Property PID</label>
-              <input id="edit-cert-propid" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <label class="block font-semibold text-slate-700 text-[10px] mb-1">Property PID (8-Digit Code)</label>
+              <input id="edit-cert-propid" type="text" maxlength="8" pattern="[0-9]{8}" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="40291001"/>
             </div>
             <div>
               <label class="block font-semibold text-slate-700 text-[10px] mb-1">Postal PIN Code</label>
@@ -5428,6 +5126,15 @@
               <label class="block font-semibold text-slate-700 text-[10px] mb-1">Material Description</label>
               <input id="edit-cert-material" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"/>
             </div>
+          </div>
+        </div>
+
+        <!-- Water Bill Rebate Field -->
+        <div class="p-3.5 rounded-2xl bg-cyan-50/50 border border-cyan-200 space-y-2">
+          <span class="text-[10px] font-bold text-cyan-900 uppercase tracking-wider block">💧 Citizen Incentive (Water Bill Discount)</span>
+          <div>
+            <label class="block font-semibold text-slate-700 text-[10px] mb-1">Water Bill Rebate Clause</label>
+            <input id="edit-cert-water-discount" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-cyan-300 font-bold text-cyan-950 focus:ring-2 focus:ring-cyan-500 focus:outline-none" value="10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)"/>
           </div>
         </div>
 

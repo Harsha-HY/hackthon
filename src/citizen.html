@@ -468,12 +468,12 @@
                 </div>
 
                 <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">Property ID <span class="text-rose-500">*</span></label>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Property ID (Strictly 8 Digits) <span class="text-rose-500">*</span></label>
                   <div class="relative max-w-md">
                     <span class="absolute left-3.5 top-3 text-slate-400 text-sm">🏢</span>
-                    <input id="form-cust-property-id" type="text" required placeholder="e.g. PROP-MYS-8821" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+                    <input id="form-cust-property-id" type="text" maxlength="8" pattern="[0-9]{8}" required placeholder="e.g. 40291001" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
                   </div>
-                  <span class="text-[10px] text-slate-400 block mt-1">PID / Assessment / Khatta number from your property tax receipt</span>
+                  <span class="text-[10px] text-slate-400 block mt-1">Strictly 8-digit numeric Property ID (no letters). Example: 40291001</span>
                 </div>
               </div>
 
@@ -2135,7 +2135,7 @@
       if (applicantPhone) applicantPhone.innerText = `Mobile: ${app.phone || '+91 98765 43210'}`;
 
       const propId = document.getElementById('cert-prop-id');
-      if (propId) propId.innerText = app.propertyId || 'PROP-MYS-' + cleanId.slice(-4);
+      if (propId) propId.innerText = app.propertyId || ('4029' + cleanId.slice(-4));
 
       const fullAddr = document.getElementById('cert-full-address');
       if (fullAddr) fullAddr.innerText = `${app.address || 'Mysuru'} · PIN ${app.pincode || app.pin || '570026'}`;
@@ -2150,6 +2150,9 @@
       const lng = app.lng || 76.6394;
       const gpsCoords = document.getElementById('cert-gps-coords');
       if (gpsCoords) gpsCoords.innerText = app.gpsLocation || `${lat}° N, ${lng}° E`;
+
+      const waterDiscountEl = document.getElementById('cert-water-discount');
+      if (waterDiscountEl) waterDiscountEl.innerText = app.waterBillDiscount || '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
 
       // Inspector Signatures
       const insName = document.getElementById('cert-inspector-name');
@@ -2365,7 +2368,7 @@
 
             <div>
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
-              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-8821</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">40291001</span>
               <span class="text-slate-600 text-[11px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
             </div>
 
@@ -2379,6 +2382,19 @@
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
               <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
               <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+
+          <!-- Water Bill Discount Section (2 Years) -->
+          <div class="p-3.5 rounded-xl bg-cyan-50 border border-cyan-200 flex items-start gap-3 text-xs">
+            <span class="text-xl">💧</span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase text-cyan-900 tracking-wider">Mandatory Incentive / Citizen Benefit</span>
+                <span class="px-2 py-0.5 rounded-full bg-cyan-200/70 text-cyan-900 font-mono font-bold text-[10px]">2 Years Validity</span>
+              </div>
+              <p class="font-bold text-cyan-950 mt-0.5 text-xs" id="cert-water-discount">10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)</p>
+              <p class="text-[10px] text-cyan-800/80 mt-0.5">Granted automatically under C&D Waste Management Compliance for sustainable debris processing.</p>
             </div>
           </div>
         </div>
@@ -2401,14 +2417,14 @@
           <div class="flex items-center gap-6 text-right">
             <div class="space-y-0.5">
               <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Verified By Inspector</span>
-              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">seervi</span>
-              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">Rajesh Kumar</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">inspector.mcc@gmail.com</span>
             </div>
             <div class="space-y-0.5 border-l border-slate-200 pl-4">
               <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Approved By Head / Officer</span>
-              <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">K. S. Manjunath (PDO)</span>
-              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">Panchayat Development Officer</span>
-              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Gram Panchayat (Bogadi Rural)</span>
+              <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">Dr. N. Chandrashekar, IAS</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">MCC Commissioner</span>
+              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Mysuru City Corporation</span>
             </div>
           </div>
         </div>

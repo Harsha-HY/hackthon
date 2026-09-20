@@ -571,33 +571,33 @@
       mcc: {
         key: 'mcc',
         name: 'Mysuru City Corporation (MCC)',
-        tag: 'MCC Officer Console',
-        title: 'MCC Authority — Mysuru City Corporation',
-        sub: 'Urban core jurisdiction across 65 wards (Zone 1 to Zone 9)',
+        tag: 'MCC Urban Administrative Desk',
+        title: 'Mysuru City Corporation (MCC) — Urban Core',
+        sub: 'Central administrative and regulatory body governing Mysuru Urban Corporation limits',
         organization: 'Mysuru City Corporation (MCC)',
-        headName: 'MCC Executive Officer',
-        designation: 'Executive Engineer / C&D Waste Incharge',
-        empId: 'MCC-ADM-101',
-        phone: '+91 98450 00002',
+        headName: 'Dr. N. Chandrashekar, IAS',
+        designation: 'Municipal Commissioner (IAS)',
+        empId: 'MCCU1000',
+        phone: '+91 98450 00001',
         email: 'mcc@gmail.com',
-        password: 'mcc123',
-        address: 'MCC Central Office, Sayyaji Rao Road, Mysuru - 570001',
-        jurisdiction: 'Mysuru City (Urban Core)',
-        pinCodes: '570001, 570002, 570004, 570008, 570020, 570024',
-        role: 'MCC Admin',
+        password: '123',
+        address: 'MCC Main Head Office, New Sayyaji Rao Road, Mysuru - 570024',
+        jurisdiction: '65 Urban Wards (Mysuru City Central)',
+        pinCodes: '570001, 570002, 570004, 570008, 570020, 570023, 570024',
+        role: 'MCC Super Admin',
         status: 'Active',
         icon: '🏛️'
       },
       gp: {
         key: 'gp',
-        name: 'Gram Panchayat (Mysuru Rural)',
-        tag: 'Gram Panchayat Field Hub',
+        name: 'Bogadi Gram Panchayat (Rural)',
+        tag: 'Gram Panchayat Rural Command Desk',
         title: 'Gram Panchayat Authority — Mysuru Rural',
         sub: 'Rural and peripheral village jurisdictions under Mysuru Taluk Panchayat',
         organization: 'Gram Panchayat (Bogadi Rural)',
         headName: 'Gram Panchayat PDO',
         designation: 'Panchayat Development Officer (PDO)',
-        empId: 'GP-PDO-201',
+        empId: 'BOGP1000',
         phone: '+91 98450 00003',
         email: 'gp@gmail.com',
         password: 'gp123',
@@ -617,7 +617,7 @@
         organization: 'Town Panchayat (Hootagalli Town)',
         headName: 'Town Panchayat Chief Officer',
         designation: 'Chief Officer (Group-B Gazetted)',
-        empId: 'TP-CO-301',
+        empId: 'HTMC1000',
         phone: '+91 98450 00004',
         email: 'tp@gmail.com',
         password: 'tp123',
@@ -632,22 +632,22 @@
 
     const BASELINE_INSPECTORS = [
       // MCC Urban Inspectors
-      { id: 'INS-MCC-01', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11001', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-MCC-02', name: 'P. Ramesh', email: 'ramesh.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 44520', department: 'mcc', assignedPin: '570023', assignedArea: 'Ward 32 (Kuvempunagar & Central)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-MCC-03', name: 'S. Swamy', email: 'swamy.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 66104', department: 'mcc', assignedPin: '570002', assignedArea: 'Ward 08 (Gokulam & V.V. Mohalla)', designation: 'Senior Zonal Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-MCC-04', name: 'Divya Shankar', email: 'divya.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 88210', department: 'mcc', assignedPin: '570004', assignedArea: 'Ward 24 (Saraswathipuram & Tonachikoppal)', designation: 'Ward Sanitary Inspector', status: 'Active (On Duty)' },
+      { id: 'MCCU1001', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11001', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+      { id: 'MCCU1002', name: 'P. Ramesh', email: 'ramesh.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 44520', department: 'mcc', assignedPin: '570023', assignedArea: 'Ward 32 (Kuvempunagar & Central)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+      { id: 'MCCU1003', name: 'S. Swamy', email: 'swamy.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 66104', department: 'mcc', assignedPin: '570002', assignedArea: 'Ward 08 (Gokulam & V.V. Mohalla)', designation: 'Senior Zonal Inspector', status: 'Active (On Duty)' },
+      { id: 'MCCU1004', name: 'Divya Shankar', email: 'divya.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 88210', department: 'mcc', assignedPin: '570004', assignedArea: 'Ward 24 (Saraswathipuram & Tonachikoppal)', designation: 'Ward Sanitary Inspector', status: 'Active (On Duty)' },
 
       // Bogadi Gram Panchayat Inspectors
-      { id: 'INS-GP-01', name: 'Seervi', email: 'q@gmail.com', password: '123', passwords: ['123', '123456', 'q123'], phone: '+91 98450 11002', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural & Ring Road)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-GP-02', name: 'Dimple', email: 'dim@gmail.com', password: '123', passwords: ['123', '123456', 'dim123'], phone: '+91 98450 22003', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 02 (Maratikyathanahalli Village)', designation: 'Village Sanitary Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-GP-03', name: 'S. Nanjappa', email: 'nanjappa.gp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 33419', department: 'gp', assignedPin: '571311', assignedArea: 'GP Ward 03 (Kadakola & Peripheral Farms)', designation: 'Panchayat Field Assistant', status: 'Active (On Duty)' },
-      { id: 'INS-GP-04', name: 'Basavarajappa M.', email: 'basava.gp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 99401', department: 'gp', assignedPin: '571130', assignedArea: 'GP Ward 04 (Gaddige Road & Bilikere Extn)', designation: 'Junior Health Inspector', status: 'Active (On Duty)' },
+      { id: 'BOGP1001', name: 'Seervi', email: 'q@gmail.com', password: '123', passwords: ['123', '123456', 'q123'], phone: '+91 98450 11002', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural & Ring Road)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
+      { id: 'BOGP1002', name: 'Dimple', email: 'dim@gmail.com', password: '123', passwords: ['123', '123456', 'dim123'], phone: '+91 98450 22003', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 02 (Maratikyathanahalli Village)', designation: 'Village Sanitary Inspector', status: 'Active (On Duty)' },
+      { id: 'BOGP1003', name: 'S. Nanjappa', email: 'nanjappa.gp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 33419', department: 'gp', assignedPin: '571311', assignedArea: 'GP Ward 03 (Kadakola & Peripheral Farms)', designation: 'Panchayat Field Assistant', status: 'Active (On Duty)' },
+      { id: 'BOGP1004', name: 'Basavarajappa M.', email: 'basava.gp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 99401', department: 'gp', assignedPin: '571130', assignedArea: 'GP Ward 04 (Gaddige Road & Bilikere Extn)', designation: 'Junior Health Inspector', status: 'Active (On Duty)' },
 
       // Hootagalli Town Panchayat Inspectors
-      { id: 'INS-TP-01', name: 'M. Anand', email: 'anand.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11003', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town & Industrial)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-TP-02', name: 'K. Suresh', email: 'suresh.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 77102', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 02 (Koorgalli Heavy Industrial)', designation: 'Zonal Sanitary Supervisor', status: 'Active (On Duty)' },
-      { id: 'INS-TP-03', name: 'Manjunatha Rao', email: 'manju.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 55812', department: 'tp', assignedPin: '570017', assignedArea: 'TP Ward 03 (Belawadi Extension & KRS Road)', designation: 'Town Health Inspector', status: 'Active (On Duty)' },
-      { id: 'INS-TP-04', name: 'Prashanth G.', email: 'prashanth.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 66329', department: 'tp', assignedPin: '570027', assignedArea: 'TP Ward 04 (Bogadi Town Periphery)', designation: 'Field Inspection Officer', status: 'Active (On Duty)' }
+      { id: 'HTMC1001', name: 'M. Anand', email: 'anand.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11003', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town & Industrial)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' },
+      { id: 'HTMC1002', name: 'K. Suresh', email: 'suresh.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 77102', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 02 (Koorgalli Heavy Industrial)', designation: 'Zonal Sanitary Supervisor', status: 'Active (On Duty)' },
+      { id: 'HTMC1003', name: 'Manjunatha Rao', email: 'manju.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 55812', department: 'tp', assignedPin: '570017', assignedArea: 'TP Ward 03 (Belawadi Extension & KRS Road)', designation: 'Town Health Inspector', status: 'Active (On Duty)' },
+      { id: 'HTMC1004', name: 'Prashanth G.', email: 'prashanth.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 66329', department: 'tp', assignedPin: '570027', assignedArea: 'TP Ward 04 (Bogadi Town Periphery)', designation: 'Field Inspection Officer', status: 'Active (On Duty)' }
     ];
 
     const BASELINE_SUBMITTED_APPLICATIONS = [
@@ -655,7 +655,7 @@
         id: 'MCC-2026-101',
         applicantName: 'Ramesh Somanna',
         phone: '+91 98450 11021',
-        propertyId: 'PID-4029-URBAN',
+        propertyId: '40291001',
         address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru',
         pincode: '570001',
         pin: '570001',
@@ -676,6 +676,7 @@
         authorityKey: 'mcc',
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         issueDate: '2026-09-18',
         gpsLocation: '12.3051° N, 76.6554° E',
         photos: ['https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=600&auto=format&fit=crop&q=80']
@@ -684,7 +685,7 @@
         id: 'GP-2026-104',
         applicantName: 'Naveen Kumar Gowda',
         phone: '+91 98450 33419',
-        propertyId: 'PID-GP-8821',
+        propertyId: '88215002',
         address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village',
         pincode: '570026',
         pin: '570026',
@@ -705,6 +706,7 @@
         authorityKey: 'gp',
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         issueDate: '2026-09-18',
         gpsLocation: '12.3021° N, 76.5912° E',
         photos: ['https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80']
@@ -713,7 +715,7 @@
         id: 'TP-2026-106',
         applicantName: 'Suresh B. Patil',
         phone: '+91 98450 77102',
-        propertyId: 'PID-TP-5510',
+        propertyId: '55106003',
         address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli',
         pincode: '570018',
         pin: '570018',
@@ -734,6 +736,7 @@
         authorityKey: 'tp',
         headName: 'S. Ramesh (Chief Officer)',
         headTitle: 'Chief Officer / Zonal Superintendent',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         issueDate: '2026-09-19',
         gpsLocation: '12.3489° N, 76.5744° E',
         photos: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80']
@@ -742,7 +745,7 @@
         id: 'GP-2026-112',
         applicantName: 'Channappa Marigowda',
         phone: '+91 98450 99812',
-        propertyId: 'PID-GP-9014',
+        propertyId: '90145004',
         address: 'Maratikyathanahalli Village Main Road, Bogadi GP',
         pincode: '570026',
         pin: '570026',
@@ -762,6 +765,7 @@
         authorityKey: 'gp',
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.2710° N, 76.5640° E',
         photos: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80']
       },
@@ -769,7 +773,7 @@
         id: 'MCC-2026-108',
         applicantName: 'Vinayaka Traders (P. Murthy)',
         phone: '+91 98450 44520',
-        propertyId: 'PID-6623-URBAN',
+        propertyId: '66231005',
         address: 'Kuvempunagar Double Road, Mysuru',
         pincode: '570023',
         pin: '570023',
@@ -789,6 +793,7 @@
         authorityKey: 'mcc',
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.2890° N, 76.6260° E',
         photos: []
       },
@@ -796,7 +801,7 @@
         id: 'TP-2026-119',
         applicantName: 'KIADB Industrial Shed Renovations',
         phone: '+91 98450 77140',
-        propertyId: 'PID-TP-5021',
+        propertyId: '50216006',
         address: 'Koorgalli Industrial Area, Phase 2, Hootagalli',
         pincode: '570018',
         pin: '570018',
@@ -816,6 +821,7 @@
         authorityKey: 'tp',
         headName: 'S. Ramesh (Chief Officer)',
         headTitle: 'Chief Officer / Zonal Superintendent',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.3512° N, 76.5680° E',
         photos: []
       },
@@ -823,7 +829,7 @@
         id: 'GP-2026-125',
         applicantName: 'Belavadi Agro Farmhouse (N. Gowda)',
         phone: '+91 98450 88231',
-        propertyId: 'PID-GP-8832',
+        propertyId: '88325007',
         address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP',
         pincode: '570026',
         pin: '570026',
@@ -843,6 +849,7 @@
         authorityKey: 'gp',
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
         gpsLocation: '12.2850° N, 76.5820° E',
         photos: []
       },
@@ -850,7 +857,7 @@
         id: 'MCC-2026-130',
         applicantName: 'Vijayanagar Commercial Plaza (Dr. S. Rao)',
         phone: '+91 98450 33910',
-        propertyId: 'PID-7714-URBAN',
+        propertyId: '77141008',
         address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru',
         pincode: '570017',
         pin: '570017',
@@ -870,35 +877,36 @@
         authorityKey: 'mcc',
         headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
         headTitle: 'Municipal Commissioner',
-        gpsLocation: '12.3240° N, 76.6110° E',
+        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
+        gpsLocation: '12.3210° N, 76.6120° E',
         photos: []
       }
     ];
 
     const BASELINE_PROPERTIES = {
       mcc: [
-        { propertyId: 'PID-MYS-4029', address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru', propertyType: 'Commercial Complex / Heritage Structure', verifiedTonnage: 45.0, applicantName: 'Ramesh Somanna', status: 'Active Site' },
-        { propertyId: 'PID-MYS-7714', address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru', propertyType: 'Commercial Complex Renovation', verifiedTonnage: 16.5, applicantName: 'Dr. Sunita Rao', status: 'Under Review' },
-        { propertyId: 'PID-MYS-1082', address: 'Gokulam 3rd Stage, 8th Main, Mysuru', propertyType: 'Residential Villa (G+2)', verifiedTonnage: 12.0, applicantName: 'Priya Natarajan', status: 'NOC Granted' },
-        { propertyId: 'PID-MYS-5520', address: 'KRS Road, Industrial Suburb, Mysuru', propertyType: 'Industrial Warehouse Structure', verifiedTonnage: 28.0, applicantName: 'M. Venkatesh (Heritage Builders)', status: 'Active Site' },
-        { propertyId: 'PID-MYS-6623', address: 'Kuvempunagar Double Road, Mysuru', propertyType: 'Residential Multi-Storey Building', verifiedTonnage: 18.0, applicantName: 'Anand Patil', status: 'NOC Granted' },
-        { propertyId: 'PID-MYS-3312', address: 'Saraswathipuram 5th Cross, Mysuru', propertyType: 'Residential Independent House', verifiedTonnage: 10.0, applicantName: 'Deepa Hegde', status: 'Under Review' }
+        { propertyId: '40291001', address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru', propertyType: 'Commercial Complex / Heritage Structure', verifiedTonnage: 45.0, applicantName: 'Ramesh Somanna', status: 'Active Site' },
+        { propertyId: '77141008', address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru', propertyType: 'Commercial Complex Renovation', verifiedTonnage: 16.5, applicantName: 'Dr. Sunita Rao', status: 'Under Review' },
+        { propertyId: '10821002', address: 'Gokulam 3rd Stage, 8th Main, Mysuru', propertyType: 'Residential Villa (G+2)', verifiedTonnage: 12.0, applicantName: 'Priya Natarajan', status: 'NOC Granted' },
+        { propertyId: '55201003', address: 'KRS Road, Industrial Suburb, Mysuru', propertyType: 'Industrial Warehouse Structure', verifiedTonnage: 28.0, applicantName: 'M. Venkatesh (Heritage Builders)', status: 'Active Site' },
+        { propertyId: '66231005', address: 'Kuvempunagar Double Road, Mysuru', propertyType: 'Residential Multi-Storey Building', verifiedTonnage: 18.0, applicantName: 'Anand Patil', status: 'NOC Granted' },
+        { propertyId: '33121006', address: 'Saraswathipuram 5th Cross, Mysuru', propertyType: 'Residential Independent House', verifiedTonnage: 10.0, applicantName: 'Deepa Hegde', status: 'Under Review' }
       ],
       gp: [
-        { propertyId: 'PID-GP-8821', address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village', propertyType: 'Rural Commercial Shed & Compound Wall', verifiedTonnage: 22.0, applicantName: 'Naveen Kumar Gowda', status: 'Active Site' },
-        { propertyId: 'PID-GP-8832', address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP', propertyType: 'Rural Residential Premise & Old Compound', verifiedTonnage: 9.5, applicantName: 'Belavadi Agro Farmhouse (N. Gowda)', status: 'Under Review' },
-        { propertyId: 'PID-GP-9102', address: 'Main Road, Maratikyathanahalli Village, Bogadi Rural', propertyType: 'Gramatana Residential Property', verifiedTonnage: 8.0, applicantName: 'Channappa Marigowda', status: 'NOC Granted' },
-        { propertyId: 'PID-GP-3041', address: 'Survey No. 12/B, Kadakola Village, Nanjangud Border', propertyType: 'Agri-Warehouse & Concrete Base', verifiedTonnage: 15.0, applicantName: 'Ningegowda Patil', status: 'Active Site' },
-        { propertyId: 'PID-GP-4412', address: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural', propertyType: 'Independent Farmhouse Renovation', verifiedTonnage: 14.0, applicantName: 'Mahadevamma K.', status: 'NOC Granted' },
-        { propertyId: 'PID-GP-6029', address: 'Maratikyathanahalli Cross, Gaddige Road, Bogadi GP', propertyType: 'Rural Workshop / Shed', verifiedTonnage: 11.5, applicantName: 'Basavaraju Kempanna', status: 'Under Review' }
+        { propertyId: '88215002', address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village', propertyType: 'Rural Commercial Shed & Compound Wall', verifiedTonnage: 22.0, applicantName: 'Naveen Kumar Gowda', status: 'Active Site' },
+        { propertyId: '88325007', address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP', propertyType: 'Rural Residential Premise & Old Compound', verifiedTonnage: 9.5, applicantName: 'Belavadi Agro Farmhouse (N. Gowda)', status: 'Under Review' },
+        { propertyId: '90145004', address: 'Main Road, Maratikyathanahalli Village, Bogadi Rural', propertyType: 'Gramatana Residential Property', verifiedTonnage: 8.0, applicantName: 'Channappa Marigowda', status: 'NOC Granted' },
+        { propertyId: '30415005', address: 'Survey No. 12/B, Kadakola Village, Nanjangud Border', propertyType: 'Agri-Warehouse & Concrete Base', verifiedTonnage: 15.0, applicantName: 'Ningegowda Patil', status: 'Active Site' },
+        { propertyId: '44125006', address: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural', propertyType: 'Independent Farmhouse Renovation', verifiedTonnage: 14.0, applicantName: 'Mahadevamma K.', status: 'NOC Granted' },
+        { propertyId: '60295008', address: 'Maratikyathanahalli Cross, Gaddige Road, Bogadi GP', propertyType: 'Rural Workshop / Shed', verifiedTonnage: 11.5, applicantName: 'Basavaraju Kempanna', status: 'Under Review' }
       ],
       tp: [
-        { propertyId: 'PID-TP-5510', address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli', propertyType: 'Heavy Industrial Unit Demolition', verifiedTonnage: 32.0, applicantName: 'Suresh B. Patil', status: 'Active Site' },
-        { propertyId: 'PID-TP-9920', address: 'Plot 42, Hootagalli Industrial Layout Phase 1', propertyType: 'Industrial Manufacturing Shed', verifiedTonnage: 18.0, applicantName: 'Hootagalli Heavy Machining Works', status: 'Under Review' },
-        { propertyId: 'PID-TP-6721', address: 'Koorgalli Industrial Estate Phase 2, Hootagalli', propertyType: 'Foundry Shed & Storage Yard', verifiedTonnage: 24.5, applicantName: 'Anand R. Varma', status: 'NOC Granted' },
-        { propertyId: 'PID-TP-8890', address: 'Belawadi Urban Industrial Extn, Mysuru', propertyType: 'Commercial Warehouse Facility', verifiedTonnage: 19.0, applicantName: 'Belawadi Precision Foundry', status: 'Active Site' },
-        { propertyId: 'PID-TP-1104', address: 'Hootagalli Town Centre, BM Road Periphery', propertyType: 'Town Commercial Shophouse (G+1)', verifiedTonnage: 13.0, applicantName: 'G. K. Raju', status: 'NOC Granted' },
-        { propertyId: 'PID-TP-4091', address: 'Koorgalli 3rd Stage, KRS Road, Hootagalli TP', propertyType: 'Residential Layout Villa Premise', verifiedTonnage: 10.5, applicantName: 'Roopa Shivaram', status: 'Under Review' }
+        { propertyId: '55106003', address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli', propertyType: 'Heavy Industrial Unit Demolition', verifiedTonnage: 32.0, applicantName: 'Suresh B. Patil', status: 'Active Site' },
+        { propertyId: '50216006', address: 'Koorgalli Industrial Area, Phase 2, Hootagalli', propertyType: 'Industrial Manufacturing Shed', verifiedTonnage: 24.0, applicantName: 'KIADB Industrial Shed Renovations', status: 'Pending Inspection' },
+        { propertyId: '67216002', address: 'Koorgalli Industrial Estate Phase 2, Hootagalli', propertyType: 'Foundry Shed & Storage Yard', verifiedTonnage: 24.5, applicantName: 'Anand R. Varma', status: 'NOC Granted' },
+        { propertyId: '88906004', address: 'Belawadi Urban Industrial Extn, Mysuru', propertyType: 'Commercial Warehouse Facility', verifiedTonnage: 19.0, applicantName: 'Belawadi Precision Foundry', status: 'Active Site' },
+        { propertyId: '11046005', address: 'Hootagalli Town Centre, BM Road Periphery', propertyType: 'Town Commercial Shophouse (G+1)', verifiedTonnage: 13.0, applicantName: 'G. K. Raju', status: 'NOC Granted' },
+        { propertyId: '40916007', address: 'Koorgalli 3rd Stage, KRS Road, Hootagalli TP', propertyType: 'Residential Layout Villa Premise', verifiedTonnage: 10.5, applicantName: 'Roopa Shivaram', status: 'Under Review' }
       ]
     };
 
@@ -1297,28 +1305,28 @@
       // Authority-specific authentic baseline citizens
       const BASELINE_CITIZENS = {
         mcc: [
-          { id: 'CITZ-MCC-101', name: 'Ramesh Somanna', email: 'ramesh.somanna@gmail.com', phone: '+91 98450 11021', propId: 'PID-4029-URBAN', address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru', pin: '570001', permits: 2, status: 'Verified Active', registeredDate: '2026-08-14' },
-          { id: 'CITZ-MCC-102', name: 'Dr. Sunita Rao (Vijayanagar Plaza)', email: 'vijayanagar.rao@gmail.com', phone: '+91 98450 33910', propId: 'PID-7714-URBAN', address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru', pin: '570017', permits: 1, status: 'Verified Active', registeredDate: '2026-08-22' },
-          { id: 'CITZ-MCC-103', name: 'Priya Natarajan', email: 'priya.natarajan@gmail.com', phone: '+91 98450 88201', propId: 'PID-1082-URBAN', address: 'Gokulam 3rd Stage, 8th Main, Mysuru', pin: '570002', permits: 1, status: 'Verified Active', registeredDate: '2026-09-02' },
-          { id: 'CITZ-MCC-104', name: 'M. Venkatesh (Heritage Builders)', email: 'm.venkatesh@gmail.com', phone: '+91 98450 66412', propId: 'PID-5520-URBAN', address: 'KRS Road, Industrial Suburb, Mysuru', pin: '570020', permits: 2, status: 'Verified Active', registeredDate: '2026-09-10' },
-          { id: 'CITZ-MCC-105', name: 'Anand Patil', email: 'anand.patil.mcc@gmail.com', phone: '+91 98450 44520', propId: 'PID-6623-URBAN', address: 'Kuvempunagar Double Road, Mysuru', pin: '570023', permits: 1, status: 'Verified Active', registeredDate: '2026-09-14' },
-          { id: 'CITZ-MCC-106', name: 'Deepa Hegde', email: 'deepa.hegde@gmail.com', phone: '+91 98450 77134', propId: 'PID-3312-URBAN', address: 'Saraswathipuram 5th Cross, Mysuru', pin: '570004', permits: 1, status: 'Verified Active', registeredDate: '2026-09-16' }
+          { id: 'CITZ-MCC-101', name: 'Ramesh Somanna', email: 'ramesh.somanna@gmail.com', phone: '+91 98450 11021', propId: '40291001', address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru', pin: '570001', permits: 2, status: 'Verified Active', registeredDate: '2026-08-14' },
+          { id: 'CITZ-MCC-102', name: 'Dr. Sunita Rao (Vijayanagar Plaza)', email: 'vijayanagar.rao@gmail.com', phone: '+91 98450 33910', propId: '77141008', address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru', pin: '570017', permits: 1, status: 'Verified Active', registeredDate: '2026-08-22' },
+          { id: 'CITZ-MCC-103', name: 'Priya Natarajan', email: 'priya.natarajan@gmail.com', phone: '+91 98450 88201', propId: '10821002', address: 'Gokulam 3rd Stage, 8th Main, Mysuru', pin: '570002', permits: 1, status: 'Verified Active', registeredDate: '2026-09-02' },
+          { id: 'CITZ-MCC-104', name: 'M. Venkatesh (Heritage Builders)', email: 'm.venkatesh@gmail.com', phone: '+91 98450 66412', propId: '55201003', address: 'KRS Road, Industrial Suburb, Mysuru', pin: '570020', permits: 2, status: 'Verified Active', registeredDate: '2026-09-10' },
+          { id: 'CITZ-MCC-105', name: 'Anand Patil', email: 'anand.patil.mcc@gmail.com', phone: '+91 98450 44520', propId: '66231005', address: 'Kuvempunagar Double Road, Mysuru', pin: '570023', permits: 1, status: 'Verified Active', registeredDate: '2026-09-14' },
+          { id: 'CITZ-MCC-106', name: 'Deepa Hegde', email: 'deepa.hegde@gmail.com', phone: '+91 98450 77134', propId: '33121006', address: 'Saraswathipuram 5th Cross, Mysuru', pin: '570004', permits: 1, status: 'Verified Active', registeredDate: '2026-09-16' }
         ],
         gp: [
-          { id: 'CITZ-GP-201', name: 'Naveen Kumar Gowda', email: 'naveen.gowda@gmail.com', phone: '+91 98450 33419', propId: 'PID-GP-8821', address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village', pin: '570026', permits: 2, status: 'Verified Active', registeredDate: '2026-08-10' },
-          { id: 'CITZ-GP-202', name: 'Channappa Marigowda', email: 'channappa.m@gmail.com', phone: '+91 98450 55190', propId: 'PID-GP-9102', address: 'Main Road, Maratikyathanahalli Village, Bogadi Rural', pin: '570026', permits: 1, status: 'Verified Active', registeredDate: '2026-08-28' },
-          { id: 'CITZ-GP-203', name: 'Ningegowda Patil', email: 'ningegowda.p@gmail.com', phone: '+91 98450 77801', propId: 'PID-GP-3041', address: 'Survey No. 12/B, Kadakola Village, Nanjangud Border', pin: '571311', permits: 1, status: 'Verified Active', registeredDate: '2026-09-05' },
-          { id: 'CITZ-GP-204', name: 'Mahadevamma K.', email: 'mahadevamma.k@gmail.com', phone: '+91 98450 99120', propId: 'PID-GP-4412', address: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural', pin: '570026', permits: 2, status: 'Verified Active', registeredDate: '2026-09-12' },
-          { id: 'CITZ-GP-205', name: 'Basavaraju Kempanna', email: 'basavaraju.k@gmail.com', phone: '+91 98450 11843', propId: 'PID-GP-6029', address: 'Maratikyathanahalli Cross, Gaddige Road, Bogadi GP', pin: '570026', permits: 1, status: 'Verified Active', registeredDate: '2026-09-15' },
-          { id: 'CITZ-GP-206', name: 'Savithramma G.', email: 'savithramma.g@gmail.com', phone: '+91 98450 66291', propId: 'PID-GP-7182', address: 'Bilikere Link Road, Bogadi Periphery', pin: '571130', permits: 1, status: 'Verified Active', registeredDate: '2026-09-17' }
+          { id: 'CITZ-GP-201', name: 'Naveen Kumar Gowda', email: 'naveen.gowda@gmail.com', phone: '+91 98450 33419', propId: '88215002', address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village', pin: '570026', permits: 2, status: 'Verified Active', registeredDate: '2026-08-10' },
+          { id: 'CITZ-GP-202', name: 'Channappa Marigowda', email: 'channappa.m@gmail.com', phone: '+91 98450 55190', propId: '90145004', address: 'Main Road, Maratikyathanahalli Village, Bogadi Rural', pin: '570026', permits: 1, status: 'Verified Active', registeredDate: '2026-08-28' },
+          { id: 'CITZ-GP-203', name: 'Ningegowda Patil', email: 'ningegowda.p@gmail.com', phone: '+91 98450 77801', propId: '30415005', address: 'Survey No. 12/B, Kadakola Village, Nanjangud Border', pin: '571311', permits: 1, status: 'Verified Active', registeredDate: '2026-09-05' },
+          { id: 'CITZ-GP-204', name: 'Mahadevamma K.', email: 'mahadevamma.k@gmail.com', phone: '+91 98450 99120', propId: '44125006', address: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural', pin: '570026', permits: 2, status: 'Verified Active', registeredDate: '2026-09-12' },
+          { id: 'CITZ-GP-205', name: 'Basavaraju Kempanna', email: 'basavaraju.k@gmail.com', phone: '+91 98450 11843', propId: '60295008', address: 'Maratikyathanahalli Cross, Gaddige Road, Bogadi GP', pin: '570026', permits: 1, status: 'Verified Active', registeredDate: '2026-09-15' },
+          { id: 'CITZ-GP-206', name: 'Savithramma G.', email: 'savithramma.g@gmail.com', phone: '+91 98450 66291', propId: '71825009', address: 'Bilikere Link Road, Bogadi Periphery', pin: '571130', permits: 1, status: 'Verified Active', registeredDate: '2026-09-17' }
         ],
         tp: [
-          { id: 'CITZ-TP-301', name: 'Suresh B. Patil', email: 'suresh.patil@gmail.com', phone: '+91 98450 77102', propId: 'PID-TP-5510', address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli', pin: '570018', permits: 2, status: 'Verified Active', registeredDate: '2026-08-18' },
-          { id: 'CITZ-TP-302', name: 'Anand R. Varma', email: 'anand.varma@gmail.com', phone: '+91 98450 11982', propId: 'PID-TP-6721', address: 'Koorgalli Industrial Estate Phase 2, Hootagalli', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-08-25' },
-          { id: 'CITZ-TP-303', name: 'Belawadi Precision Foundry', email: 'belawadi.foundry@gmail.com', phone: '+91 98450 44320', propId: 'PID-TP-8890', address: 'Belawadi Urban Industrial Extn, Mysuru', pin: '570017', permits: 2, status: 'Verified Active', registeredDate: '2026-09-08' },
-          { id: 'CITZ-TP-304', name: 'G. K. Raju', email: 'gk.raju@gmail.com', phone: '+91 98450 22319', propId: 'PID-TP-1104', address: 'Hootagalli Town Centre, BM Road Periphery', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-09-15' },
-          { id: 'CITZ-TP-305', name: 'Roopa Shivaram', email: 'roopa.shivaram@gmail.com', phone: '+91 98450 88312', propId: 'PID-TP-4091', address: 'Koorgalli 3rd Stage, KRS Road, Hootagalli TP', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-09-16' },
-          { id: 'CITZ-TP-306', name: 'Venkatesh Prasad', email: 'v.prasad.tp@gmail.com', phone: '+91 98450 99450', propId: 'PID-TP-2281', address: 'Belawadi Grama Road, Hootagalli Zone', pin: '570017', permits: 2, status: 'Verified Active', registeredDate: '2026-09-18' }
+          { id: 'CITZ-TP-301', name: 'Suresh B. Patil', email: 'suresh.patil@gmail.com', phone: '+91 98450 77102', propId: '55106003', address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli', pin: '570018', permits: 2, status: 'Verified Active', registeredDate: '2026-08-18' },
+          { id: 'CITZ-TP-302', name: 'Anand R. Varma', email: 'anand.varma@gmail.com', phone: '+91 98450 11982', propId: '67216002', address: 'Koorgalli Industrial Estate Phase 2, Hootagalli', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-08-25' },
+          { id: 'CITZ-TP-303', name: 'Belawadi Precision Foundry', email: 'belawadi.foundry@gmail.com', phone: '+91 98450 44320', propId: '88906004', address: 'Belawadi Urban Industrial Extn, Mysuru', pin: '570017', permits: 2, status: 'Verified Active', registeredDate: '2026-09-08' },
+          { id: 'CITZ-TP-304', name: 'G. K. Raju', email: 'gk.raju@gmail.com', phone: '+91 98450 22319', propId: '11046005', address: 'Hootagalli Town Centre, BM Road Periphery', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-09-15' },
+          { id: 'CITZ-TP-305', name: 'Roopa Shivaram', email: 'roopa.shivaram@gmail.com', phone: '+91 98450 88312', propId: '40916007', address: 'Koorgalli 3rd Stage, KRS Road, Hootagalli TP', pin: '570018', permits: 1, status: 'Verified Active', registeredDate: '2026-09-16' },
+          { id: 'CITZ-TP-306', name: 'Venkatesh Prasad', email: 'v.prasad.tp@gmail.com', phone: '+91 98450 99450', propId: '22816008', address: 'Belawadi Grama Road, Hootagalli Zone', pin: '570017', permits: 2, status: 'Verified Active', registeredDate: '2026-09-18' }
         ]
       };
 
@@ -1813,8 +1821,9 @@
       const designation = document.getElementById('new-ins-desig').value.trim();
 
       const dept = DEFAULT_DEPARTMENTS[currentAuthorityKey];
+      const prefix = currentAuthorityKey === 'gp' ? 'BOGP' : (currentAuthorityKey === 'tp' ? 'HTMC' : 'MCCU');
       const newInspector = {
-        id: 'INS-' + (currentAuthorityKey.toUpperCase()) + '-' + Math.floor(100 + Math.random() * 900),
+        id: prefix + Math.floor(1000 + Math.random() * 9000),
         name,
         email,
         phone,
@@ -3267,6 +3276,9 @@
       const panchayatSeal = document.getElementById('cert-panchayat-seal');
       if (panchayatSeal) panchayatSeal.innerText = authorityName;
 
+      const waterDiscountEl = document.getElementById('cert-water-discount');
+      if (waterDiscountEl) waterDiscountEl.innerText = app.waterBillDiscount || '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
+
       const modal = document.getElementById('noc-certificate-modal');
       if (modal) modal.classList.remove('hidden');
     }
@@ -3329,7 +3341,7 @@
       document.getElementById('edit-cert-ref-no').value = app.certificateNo || `NOC/${deptKey.toUpperCase()}/${cleanId}`;
       document.getElementById('edit-cert-applicant').value = app.applicantName || 'Citizen User';
       document.getElementById('edit-cert-phone').value = app.phone || '+91 98765 43210';
-      document.getElementById('edit-cert-propid').value = app.propertyId || ('PROP-MYS-' + cleanId.slice(-4));
+      document.getElementById('edit-cert-propid').value = app.propertyId || ('4029' + cleanId.slice(-4));
       document.getElementById('edit-cert-address').value = app.address || 'Mysuru';
       document.getElementById('edit-cert-pin').value = app.pincode || app.pin || '570001';
       document.getElementById('edit-cert-tonnage').value = app.verifiedTonnage || app.tonnage || 10;
@@ -3340,6 +3352,9 @@
       document.getElementById('edit-cert-head').value = app.headName || (deptKey === 'gp' ? 'K. S. Manjunath (PDO)' : (deptKey === 'tp' ? 'S. Ramesh (Chief Officer)' : 'Dr. N. Chandrashekar, IAS'));
       document.getElementById('edit-cert-head-title').value = app.headTitle || (deptKey === 'gp' ? 'Panchayat Development Officer' : (deptKey === 'tp' ? 'Chief Officer' : 'MCC Commissioner'));
       document.getElementById('edit-cert-date').value = app.issueDate ? String(app.issueDate).split('T')[0] : new Date().toISOString().split('T')[0];
+      if (document.getElementById('edit-cert-water-discount')) {
+        document.getElementById('edit-cert-water-discount').value = app.waterBillDiscount || '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
+      }
 
       const modal = document.getElementById('edit-certificate-modal');
       if (modal) {
@@ -3375,6 +3390,7 @@
       const headName = document.getElementById('edit-cert-head').value;
       const headTitle = document.getElementById('edit-cert-head-title').value;
       const issueDate = document.getElementById('edit-cert-date').value;
+      const waterDiscount = document.getElementById('edit-cert-water-discount') ? document.getElementById('edit-cert-water-discount').value : '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
 
       currentCertApp.certificateNo = refNo;
       currentCertApp.applicantName = applicantName;
@@ -3392,6 +3408,7 @@
       currentCertApp.headName = headName;
       currentCertApp.headTitle = headTitle;
       currentCertApp.issueDate = issueDate;
+      currentCertApp.waterBillDiscount = waterDiscount;
       currentCertApp.status = 'Certificate Issued';
 
       // Update in applicationsList and localStorage
@@ -3539,7 +3556,7 @@
 
             <div>
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
-              <span class="font-bold text-slate-900 block" id="cert-prop-id">PROP-MYS-8821</span>
+              <span class="font-bold text-slate-900 block" id="cert-prop-id">40291001</span>
               <span class="text-slate-600 text-[11px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
             </div>
 
@@ -3553,6 +3570,19 @@
               <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
               <span class="font-bold font-mono text-slate-800 block text-[11px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
               <span class="text-emerald-700 text-[10px] font-semibold block">Geo-Fenced Physical Audit Done</span>
+            </div>
+          </div>
+
+          <!-- Water Bill Discount Section (2 Years) -->
+          <div class="p-3.5 rounded-xl bg-cyan-50 border border-cyan-200 flex items-start gap-3 text-xs">
+            <span class="text-xl">💧</span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase text-cyan-900 tracking-wider">Mandatory Incentive / Citizen Benefit</span>
+                <span class="px-2 py-0.5 rounded-full bg-cyan-200/70 text-cyan-900 font-mono font-bold text-[10px]">2 Years Validity</span>
+              </div>
+              <p class="font-bold text-cyan-950 mt-0.5 text-xs" id="cert-water-discount">10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)</p>
+              <p class="text-[10px] text-cyan-800/80 mt-0.5">Granted automatically under C&D Waste Management Compliance for sustainable debris processing.</p>
             </div>
           </div>
         </div>
@@ -3575,14 +3605,14 @@
           <div class="flex items-center gap-6 text-right">
             <div class="space-y-0.5">
               <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Verified By Inspector</span>
-              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">seervi</span>
-              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">Rajesh Kumar</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">inspector.mcc@gmail.com</span>
             </div>
             <div class="space-y-0.5 border-l border-slate-200 pl-4">
               <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Approved By Head / Officer</span>
-              <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">K. S. Manjunath (PDO)</span>
-              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">Panchayat Development Officer</span>
-              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Gram Panchayat (Bogadi Rural)</span>
+              <span class="font-bold text-emerald-900 text-xs block" id="cert-head-name">Dr. N. Chandrashekar, IAS</span>
+              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-title">MCC Commissioner</span>
+              <span class="text-[9px] font-bold text-slate-700 block" id="cert-panchayat-seal">Mysuru City Corporation</span>
             </div>
           </div>
         </div>
@@ -3649,8 +3679,8 @@
               <input id="edit-cert-phone" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
             <div>
-              <label class="block font-semibold text-slate-700 text-[10px] mb-1">Property PID</label>
-              <input id="edit-cert-propid" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <label class="block font-semibold text-slate-700 text-[10px] mb-1">Property PID (8-Digit Code)</label>
+              <input id="edit-cert-propid" type="text" maxlength="8" pattern="[0-9]{8}" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="40291001"/>
             </div>
             <div>
               <label class="block font-semibold text-slate-700 text-[10px] mb-1">Postal PIN Code</label>
@@ -3674,6 +3704,15 @@
               <label class="block font-semibold text-slate-700 text-[10px] mb-1">Material Description</label>
               <input id="edit-cert-material" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"/>
             </div>
+          </div>
+        </div>
+
+        <!-- Water Bill Rebate Field -->
+        <div class="p-3.5 rounded-2xl bg-cyan-50/50 border border-cyan-200 space-y-2">
+          <span class="text-[10px] font-bold text-cyan-900 uppercase tracking-wider block">💧 Citizen Incentive (Water Bill Discount)</span>
+          <div>
+            <label class="block font-semibold text-slate-700 text-[10px] mb-1">Water Bill Rebate Clause</label>
+            <input id="edit-cert-water-discount" type="text" required class="w-full px-3 py-2 rounded-xl bg-white border border-cyan-300 font-bold text-cyan-950 focus:ring-2 focus:ring-cyan-500 focus:outline-none" value="10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)"/>
           </div>
         </div>
 
