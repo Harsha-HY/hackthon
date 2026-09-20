@@ -1795,20 +1795,21 @@
         return;
       }
 
-      const certNo = 'MCC-' + Math.floor(100000 + Math.random() * 900000);
-      const certType = 'C&D Waste Clearance NOC';
-      const issueDate = new Date().toISOString().split('T')[0];
-      const status = 'Pending Inspection';
-
       const matched = resolveAuthorityAndInspector(pin);
 
-      const authorityKey = matched.authorityKey;
+      const authorityKey = matched.authorityKey || 'mcc';
       const authority = matched.authority;
       const assignedInspectorName = matched.assignedInspectorName;
       const assignedInspectorEmail = matched.assignedInspectorEmail;
       const assignedOfficerEmail = matched.assignedOfficerEmail;
 
-      const appId = '#MCC' + new Date().getFullYear() + String(Math.floor(100000 + Math.random() * 900000));
+      const authPrefix = authorityKey.toUpperCase();
+      const certNo = `${authPrefix}-${Math.floor(100000 + Math.random() * 900000)}`;
+      const certType = 'C&D Waste Clearance NOC';
+      const issueDate = new Date().toISOString().split('T')[0];
+      const status = 'Pending Inspection';
+
+      const appId = `#${authPrefix}${new Date().getFullYear()}${String(Math.floor(100000 + Math.random() * 900000))}`;
       const newApplication = {
         id: appId,
         applicantName: custName,
@@ -1883,7 +1884,7 @@
       // 3. Broadcast to all open tabs immediately
       if (civicSyncChannel) {
         try {
-          civicSyncChannel.postMessage({ type: 'APPLICATION_CREATED', id: appId, authorityKey });
+          civicSyncChannel.postMessage({ type: 'APPLICATION_CREATED', id: appId, authorityKey, application: newApplication });
         } catch(e) {}
       }
 
