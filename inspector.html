@@ -1028,28 +1028,61 @@
 
     function initInspectorSession() {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryEmail = (urlParams.get('email') || urlParams.get('user') || '').toLowerCase().trim();
+        const queryPin = (urlParams.get('pin') || '').trim();
+
         let saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
-        if (!saved) {
-          currentUser = {
-            id: 'BOGP1001',
-            name: 'Seervi',
-            email: 'q@gmail.com',
-            role: 'inspector',
-            department: 'gp',
-            departmentName: 'Bogadi Gram Panchayat',
-            authority: 'Gram Panchayat (Bogadi Rural)',
-            assignedPin: '570026',
-            pin: '570026',
-            assignedArea: 'Bogadi Gram Panchayat Ward 01',
-            designation: 'Panchayat Health & C&D Inspector',
-            phone: '+91 98450 11005',
-            createdBy: 'K. S. Manjunath (PDO)',
-            creatingOfficerEmail: 'gp@gmail.com'
-          };
-          localStorage.setItem('current_user', JSON.stringify(currentUser));
-        } else {
-          currentUser = JSON.parse(saved);
+        let userObj = saved ? JSON.parse(saved) : null;
+
+        if (queryEmail || !userObj) {
+          const targetEmail = queryEmail || (userObj ? (userObj.email || '').toLowerCase().trim() : 'q@gmail.com');
+          const regUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+          const matchedReg = regUsers.find(u => (u.email || '').toLowerCase().trim() === targetEmail);
+
+          if (matchedReg) {
+            userObj = { ...matchedReg };
+          } else {
+            const BASELINE_INSPECTORS = [
+              { id: 'MCCU1001', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', phone: '+91 98450 11001', role: 'inspector', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector' },
+              { id: 'MCCU1002', name: 'P. Ramesh', email: 'ramesh.mcc@gmail.com', phone: '+91 98450 44520', role: 'inspector', department: 'mcc', assignedPin: '570023', assignedArea: 'Ward 32 (Kuvempunagar & Central)', designation: 'Ward Health Inspector' },
+              { id: 'BOGP1001', name: 'Seervi', email: 'q@gmail.com', phone: '+91 98450 11002', role: 'inspector', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural & Ring Road)', designation: 'Panchayat Health Inspector' },
+              { id: 'BOGP1002', name: 'Dimple', email: 'dim@gmail.com', phone: '+91 98450 22003', role: 'inspector', department: 'gp', assignedPin: '570028', assignedArea: 'GP Ward 02 (Maratikyathanahalli Village)', designation: 'Village Sanitary Inspector' },
+              { id: 'HTMC1001', name: 'M. Anand', email: 'anand.tp@gmail.com', phone: '+91 98450 11003', role: 'inspector', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town & Industrial)', designation: 'Town Municipal Inspector' },
+              { id: 'HTMC1002', name: 'K. Suresh', email: 'suresh.tp@gmail.com', phone: '+91 98450 77102', role: 'inspector', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 02 (Koorgalli Heavy Industrial)', designation: 'Zonal Sanitary Supervisor' }
+            ];
+            const baseIns = BASELINE_INSPECTORS.find(b => (b.email || '').toLowerCase().trim() === targetEmail);
+            if (baseIns) {
+              userObj = { ...baseIns };
+            } else if (!userObj) {
+              userObj = {
+                id: 'BOGP1001',
+                name: 'Seervi',
+                email: 'q@gmail.com',
+                role: 'inspector',
+                department: 'gp',
+                departmentName: 'Bogadi Gram Panchayat',
+                authority: 'Gram Panchayat (Bogadi Rural)',
+                assignedPin: '570026',
+                pin: '570026',
+                assignedArea: 'Bogadi Gram Panchayat Ward 01',
+                designation: 'Panchayat Health & C&D Inspector',
+                phone: '+91 98450 11005',
+                createdBy: 'K. S. Manjunath (PDO)',
+                creatingOfficerEmail: 'gp@gmail.com'
+              };
+            }
+          }
+          if (queryPin) {
+            userObj.assignedPin = queryPin;
+            userObj.pin = queryPin;
+          }
+          if (queryEmail) {
+            localStorage.setItem('current_user', JSON.stringify(userObj));
+          }
         }
+
+        currentUser = userObj;
 
         const dept = (currentUser.department || '').toLowerCase();
         const deptName = (currentUser.departmentName || currentUser.department_name || '').toLowerCase();
@@ -1156,7 +1189,7 @@
             localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
             
             if (currentUser && currentUser.email) {
-              const matched = allUsers.find(u => (u.email || '').toLowerCase() === currentUser.email.toLowerCase());
+              const matched = allUsers.find(u => (u.email || '').toLowerCase() === (currentUser.email || '').toLowerCase().trim());
               if (matched) {
                 currentUser = { ...currentUser, ...matched };
                 localStorage.setItem('current_user', JSON.stringify(currentUser));
@@ -1168,20 +1201,28 @@
       } catch(e) {}
 
       let fetched = [];
-      if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
-        try {
-          fetched = await window.civicDb.fetchApplications();
-        } catch(e) {}
-      } else {
-        try {
-          const res = await fetch('/api/applications');
-          if (res.ok) fetched = await res.json();
-        } catch(e) {}
-      }
+      try {
+        if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+          const sApps = await window.civicDb.fetchApplications();
+          if (Array.isArray(sApps) && sApps.length > 0) fetched = [...sApps];
+        }
+      } catch(e) {}
+
+      try {
+        const res = await fetch('/api/applications');
+        if (res.ok) {
+          const apiApps = await res.json();
+          if (Array.isArray(apiApps) && apiApps.length > 0) {
+            fetched = [...fetched, ...apiApps];
+          }
+        }
+      } catch(e) {}
 
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
       const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const combined = [...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+      const liveData = [...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+      
+      const combined = liveData.length > 0 ? liveData : [...BASELINE_SUBMITTED_APPLICATIONS];
       const uniqueMap = new Map();
       combined.forEach(a => {
         if (!a) return;
@@ -1208,30 +1249,33 @@
 
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
-      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570024'];
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570023', '570024'];
 
       return applicationsList.filter(app => {
         if (!app) return false;
         const appPin = String(app.pincode || app.pin || '').trim();
-        const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
-        const appInspectorEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
-        const appInspectorName = (app.assignedInspectorName || '').toLowerCase().trim();
-        const auditedBy = (app.auditedBy || '').toLowerCase().trim();
+        const appAuthKey = (app.authorityKey || app.dept || '').toLowerCase().trim();
+        const appInspectorEmail = (app.assignedInspectorEmail || app.assigned_inspector_email || '').toLowerCase().trim();
+        const appInspectorName = (app.assignedInspectorName || app.assigned_inspector_name || '').toLowerCase().trim();
+        const auditedBy = (app.auditedBy || app.audited_by || '').toLowerCase().trim();
         const authStr = (app.authority || '').toLowerCase().trim();
 
-        // 1. Direct inspector email assignment match (Primary)
+        // 1. Direct inspector email assignment match (Highest Priority)
         if (appInspectorEmail && myEmail && (appInspectorEmail === myEmail || appInspectorEmail.includes(myEmail) || myEmail.includes(appInspectorEmail))) return true;
 
-        // 2. Direct inspector audited match
+        // 2. Direct inspector name assignment match
+        if (appInspectorName && myName && (appInspectorName === myName || appInspectorName.includes(myName) || myName.includes(appInspectorName))) return true;
+
+        // 3. Direct inspector audited match
         if (auditedBy && (auditedBy === myEmail || auditedBy === myName)) return true;
 
-        // 3. Assigned PIN code exact or prefix match (Primary assigned PIN routing)
+        // 4. Assigned PIN code exact or prefix match
         if (myPin && appPin) {
           const pinList = myPin.split(/[\s,]+/).map(p => p.trim());
           if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
         }
 
-        // 4. Authority Fallback Match
+        // 5. Authority Fallback Match when inspector is not conflicting
         let appTargetAuth = appAuthKey;
         if (!appTargetAuth) {
           if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) appTargetAuth = 'gp';
