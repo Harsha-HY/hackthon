@@ -993,21 +993,6 @@
       }, 400);
     }
 
-    // High-speed Cross-Tab Synchronization Channel
-    const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
-    if (civicSyncChannel) {
-      civicSyncChannel.onmessage = (event) => {
-        if (event && event.data) {
-          syncLiveCustomerApplications();
-        }
-      };
-    }
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'civic_applications' || e.key === 'civic_registered_users') {
-        syncLiveCustomerApplications();
-      }
-    });
-
     // High-Accuracy Reverse Geocoding & Local Mysuru Boundary Mapping
     async function reverseGeocodeCoords(lat, lng) {
       // 1. Attempt OpenStreetMap Nominatim reverse API with quick timeout

@@ -1851,23 +1851,6 @@
       }, 400);
     }
 
-    // Real-Time High Speed Cross-Tab Synchronization
-    const civicSyncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('civic_sync_channel') : null;
-    if (civicSyncChannel) {
-      civicSyncChannel.onmessage = (event) => {
-        if (event && event.data) {
-          initInspectorSession();
-          loadInspectorData();
-        }
-      };
-    }
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'civic_applications' || e.key === 'civic_registered_users' || e.key === 'civic_inspectors') {
-        initInspectorSession();
-        loadInspectorData();
-      }
-    });
-
     initInspectorSession();
     loadInspectorData();
 
