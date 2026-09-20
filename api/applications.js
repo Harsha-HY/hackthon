@@ -1,16 +1,5 @@
-const { createClient } = require('@supabase/supabase-js');
-
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://evnjukozsucobknwvzfp.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bmp1a296c3Vjb2Jrbnd2emZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTc3MjA1MywiZXhwIjoyMTA1MzQ4MDUzfQ.OzV3s8TKPGefQPdAKfMEUwKFYJwa4cYH6vsl7E9uGKk';
-
-let supabase = null;
-try {
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-} catch(e) {
-  console.warn('Supabase init warning:', e.message);
-}
 
 function mapAppToDb(app) {
   const userEmail = (app.email || '').trim().toLowerCase();
@@ -116,15 +105,21 @@ module.exports = async (req, res) => {
 
     if (method === 'GET') {
       let apps = [];
-      if (supabase) {
-        try {
-          const { data: suApps, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
-          if (!error && Array.isArray(suApps)) {
-            apps = suApps.map(mapDbToApp);
+      try {
+        const suRes = await fetch(SUPABASE_URL + '/rest/v1/applications?select=*&order=created_at.desc', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
           }
-        } catch(e) {
-          console.warn('Supabase fetchApplications err:', e);
+        });
+        if (suRes.ok) {
+          const rawRows = await suRes.json();
+          if (Array.isArray(rawRows)) {
+            apps = rawRows.map(mapDbToApp);
+          }
         }
+      } catch(e) {
+        console.warn('Supabase fetchApplications err:', e);
       }
 
       const query = req.query || {};
@@ -259,13 +254,20 @@ module.exports = async (req, res) => {
         item.assignedInspectorEmail = resolvedInspEmail;
         item.assignedOfficerEmail = resolvedOfficerEmail;
 
-        if (supabase) {
-          try {
-            const mapped = mapAppToDb(item);
-            await supabase.from('applications').upsert(mapped);
-          } catch(e) {
-            console.warn('Supabase upsert error in api/applications.js:', e);
-          }
+        try {
+          const mapped = mapAppToDb(item);
+          await fetch(SUPABASE_URL + '/rest/v1/applications', {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_KEY,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify(mapped)
+          });
+        } catch(e) {
+          console.warn('Supabase upsert fetch error:', e);
         }
 
         const inspId = 'INSP-' + (item.id.replace(/[^0-9]/g, '').slice(-4) || Math.floor(100 + Math.random() * 900));
