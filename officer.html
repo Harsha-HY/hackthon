@@ -859,25 +859,33 @@
       }
     ];
 
+    const BASELINE_PROPERTIES = {
+      mcc: [
+        { propertyId: 'PID-MYS-4029', address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru', propertyType: 'Commercial Complex / Heritage Structure', verifiedTonnage: 45.0, applicantName: 'Ramesh Somanna', status: 'Active Site' },
+        { propertyId: 'PID-MYS-7714', address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru', propertyType: 'Commercial Complex Renovation', verifiedTonnage: 16.5, applicantName: 'Dr. Sunita Rao', status: 'Under Review' },
+        { propertyId: 'PID-MYS-1082', address: 'Gokulam 3rd Stage, 8th Main, Mysuru', propertyType: 'Residential Villa (G+2)', verifiedTonnage: 12.0, applicantName: 'Priya Natarajan', status: 'NOC Granted' },
+        { propertyId: 'PID-MYS-5520', address: 'KRS Road, Industrial Suburb, Mysuru', propertyType: 'Industrial Warehouse Structure', verifiedTonnage: 28.0, applicantName: 'M. Venkatesh (Heritage Builders)', status: 'Active Site' },
+        { propertyId: 'PID-MYS-6623', address: 'Kuvempunagar Double Road, Mysuru', propertyType: 'Residential Multi-Storey Building', verifiedTonnage: 18.0, applicantName: 'Anand Patil', status: 'NOC Granted' },
+        { propertyId: 'PID-MYS-3312', address: 'Saraswathipuram 5th Cross, Mysuru', propertyType: 'Residential Independent House', verifiedTonnage: 10.0, applicantName: 'Deepa Hegde', status: 'Under Review' }
+      ],
+      gp: [
+        { propertyId: 'PID-GP-8821', address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village', propertyType: 'Rural Commercial Shed & Compound Wall', verifiedTonnage: 22.0, applicantName: 'Naveen Kumar Gowda', status: 'Active Site' },
+        { propertyId: 'PID-GP-8832', address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP', propertyType: 'Rural Residential Premise & Old Compound', verifiedTonnage: 9.5, applicantName: 'Belavadi Agro Farmhouse (N. Gowda)', status: 'Under Review' },
+        { propertyId: 'PID-GP-9102', address: 'Main Road, Maratikyathanahalli Village, Bogadi Rural', propertyType: 'Gramatana Residential Property', verifiedTonnage: 8.0, applicantName: 'Channappa Marigowda', status: 'NOC Granted' },
+        { propertyId: 'PID-GP-3041', address: 'Survey No. 12/B, Kadakola Village, Nanjangud Border', propertyType: 'Agri-Warehouse & Concrete Base', verifiedTonnage: 15.0, applicantName: 'Ningegowda Patil', status: 'Active Site' },
+        { propertyId: 'PID-GP-4412', address: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural', propertyType: 'Independent Farmhouse Renovation', verifiedTonnage: 14.0, applicantName: 'Mahadevamma K.', status: 'NOC Granted' },
+        { propertyId: 'PID-GP-6029', address: 'Maratikyathanahalli Cross, Gaddige Road, Bogadi GP', propertyType: 'Rural Workshop / Shed', verifiedTonnage: 11.5, applicantName: 'Basavaraju Kempanna', status: 'Under Review' }
+      ],
+      tp: [
+        { propertyId: 'PID-TP-5510', address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli', propertyType: 'Heavy Industrial Unit Demolition', verifiedTonnage: 32.0, applicantName: 'Suresh B. Patil', status: 'Active Site' },
+        { propertyId: 'PID-TP-9920', address: 'Plot 42, Hootagalli Industrial Layout Phase 1', propertyType: 'Industrial Manufacturing Shed', verifiedTonnage: 18.0, applicantName: 'Hootagalli Heavy Machining Works', status: 'Under Review' },
+        { propertyId: 'PID-TP-6721', address: 'Koorgalli Industrial Estate Phase 2, Hootagalli', propertyType: 'Foundry Shed & Storage Yard', verifiedTonnage: 24.5, applicantName: 'Anand R. Varma', status: 'NOC Granted' },
+        { propertyId: 'PID-TP-8890', address: 'Belawadi Urban Industrial Extn, Mysuru', propertyType: 'Commercial Warehouse Facility', verifiedTonnage: 19.0, applicantName: 'Belawadi Precision Foundry', status: 'Active Site' },
+        { propertyId: 'PID-TP-1104', address: 'Hootagalli Town Centre, BM Road Periphery', propertyType: 'Town Commercial Shophouse (G+1)', verifiedTonnage: 13.0, applicantName: 'G. K. Raju', status: 'NOC Granted' },
+        { propertyId: 'PID-TP-4091', address: 'Koorgalli 3rd Stage, KRS Road, Hootagalli TP', propertyType: 'Residential Layout Villa Premise', verifiedTonnage: 10.5, applicantName: 'Roopa Shivaram', status: 'Under Review' }
+      ]
+    };
 
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
     let searchQueryOfficerWards = '';
     let searchQueryOfficerAreas = '';
     let searchQueryOfficerPinCodes = '';
@@ -900,9 +908,21 @@
 
     function initOfficerSession() {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const authParam = (urlParams.get('auth') || urlParams.get('dept') || urlParams.get('authority') || '').toLowerCase().trim();
+
         const saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
         if (saved) {
           currentUser = JSON.parse(saved);
+        }
+
+        if (authParam === 'gp' || authParam.includes('panchayat') || authParam.includes('bogadi')) {
+          currentAuthorityKey = 'gp';
+        } else if (authParam === 'tp' || authParam.includes('town') || authParam.includes('hootagalli')) {
+          currentAuthorityKey = 'tp';
+        } else if (authParam === 'mcc' || authParam.includes('city') || authParam.includes('corporation')) {
+          currentAuthorityKey = 'mcc';
+        } else if (currentUser) {
           const email = (currentUser.email || '').toLowerCase();
           const auth = (currentUser.authority || '').toLowerCase();
           const role = (currentUser.role || '').toLowerCase();
@@ -920,10 +940,18 @@
           } else {
             currentAuthorityKey = 'mcc';
           }
+        }
 
-          document.getElementById('officer-name-display').innerText = currentUser.name || 'Officer';
-          document.getElementById('officer-email-display').innerText = currentUser.email || 'officer@mysuru.gov.in';
-          const initials = (currentUser.name || 'OF').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        const deptObj = DEFAULT_DEPARTMENTS[currentAuthorityKey];
+        if (document.getElementById('officer-name-display')) {
+          document.getElementById('officer-name-display').innerText = (currentUser && currentUser.name) ? currentUser.name : deptObj.headName;
+        }
+        if (document.getElementById('officer-email-display')) {
+          document.getElementById('officer-email-display').innerText = (currentUser && currentUser.email) ? currentUser.email : deptObj.email;
+        }
+        const displayName = (currentUser && currentUser.name) ? currentUser.name : deptObj.headName;
+        const initials = displayName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        if (document.getElementById('officer-avatar')) {
           document.getElementById('officer-avatar').innerText = initials || 'OF';
         }
       } catch(e) {}
@@ -1640,18 +1668,37 @@
 
     function renderPropertiesTable() {
       const tbody = document.getElementById('table-properties');
+      if (!tbody) return;
       const apps = getAuthorityApplications();
+      const baseProps = BASELINE_PROPERTIES[currentAuthorityKey] || BASELINE_PROPERTIES.mcc;
 
-      let displayed = apps;
+      const propMap = new Map();
+      baseProps.forEach(p => {
+        propMap.set(p.propertyId, { ...p });
+      });
+
+      apps.forEach((a, i) => {
+        const pid = a.propertyId || ('PID-' + (currentAuthorityKey.toUpperCase()) + '-' + String(i + 101));
+        propMap.set(pid, {
+          propertyId: pid,
+          address: a.address || 'Mysuru Site Premise',
+          propertyType: a.propertyType || a.propertyDetails || 'Residential / Commercial Structure',
+          verifiedTonnage: a.verifiedTonnage || a.tonnage || a.wasteVolume || 15,
+          applicantName: a.applicantName || 'Applicant',
+          status: (a.status === 'Approved' || a.certificateStatus === 'Issued') ? 'NOC Granted' : (a.status || 'Under Review')
+        });
+      });
+
+      let displayed = Array.from(propMap.values());
       if (searchQueryOfficerProperties) {
         const q = searchQueryOfficerProperties;
-        displayed = displayed.filter((a, i) =>
-          (a.propertyId || ('PID-MYS-' + String(i+101))).toLowerCase().includes(q) ||
-          (a.address || '').toLowerCase().includes(q) ||
-          (a.propertyType || '').toLowerCase().includes(q) ||
-          (a.verifiedTonnage || a.tonnage || a.wasteVolume || '').toString().includes(q) ||
-          (a.applicantName || '').toLowerCase().includes(q) ||
-          (a.status || '').toLowerCase().includes(q)
+        displayed = displayed.filter(p =>
+          (p.propertyId || '').toLowerCase().includes(q) ||
+          (p.address || '').toLowerCase().includes(q) ||
+          (p.propertyType || '').toLowerCase().includes(q) ||
+          (p.verifiedTonnage || '').toString().includes(q) ||
+          (p.applicantName || '').toLowerCase().includes(q) ||
+          (p.status || '').toLowerCase().includes(q)
         );
       }
 
@@ -1666,16 +1713,16 @@
         return;
       }
 
-      tbody.innerHTML = displayed.map((a, i) => `
+      tbody.innerHTML = displayed.map(p => `
         <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.propertyId || ('PID-MYS-' + String(i+101))}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900">${a.address || 'Mysuru Site Premise'}</td>
-          <td class="px-4 py-3 text-slate-600">${a.propertyType || 'Residential Structure'}</td>
-          <td class="px-4 py-3 font-mono font-bold text-slate-900">${a.verifiedTonnage || a.tonnage || a.wasteVolume || '15'} MT Estimated</td>
-          <td class="px-4 py-3 font-bold text-slate-800">${a.applicantName || 'Applicant'}</td>
+          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${p.propertyId}</td>
+          <td class="px-4 py-3 font-semibold text-slate-900">${p.address || 'Mysuru Site Premise'}</td>
+          <td class="px-4 py-3 text-slate-600">${p.propertyType || 'Residential Structure'}</td>
+          <td class="px-4 py-3 font-mono font-bold text-slate-900">${p.verifiedTonnage} MT Estimated</td>
+          <td class="px-4 py-3 font-bold text-slate-800">${p.applicantName || 'Applicant'}</td>
           <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${a.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
-              ${a.status || 'Under Review'}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${(p.status || '').includes('NOC') || (p.status || '').includes('Approved') ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+              ${p.status || 'Under Review'}
             </span>
           </td>
         </tr>
