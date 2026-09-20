@@ -892,7 +892,7 @@
               <h3 class="text-base font-bold text-slate-900">📄 My Clearance Applications & Permits</h3>
               <p class="text-xs text-slate-500">Track all your submitted C&D waste clearance requests, live status, and assigned inspectors.</p>
             </div>
-            <button onclick="switchTab('panel')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer">
+            <button onclick="startNewApplicationForm(); switchTab('panel')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer">
               + New Application
             </button>
           </div>
@@ -1576,7 +1576,8 @@
 
     // Reset Form
     function resetCustomerForm() {
-      document.getElementById('customer-permit-form').reset();
+      const form = document.getElementById('customer-main-form') || document.getElementById('customer-permit-form');
+      if (form) form.reset();
       uploadedPhotos = [];
       renderPhotoPreviewSlots();
       initDefaultValues();
@@ -1594,7 +1595,7 @@
     function isFinalizedStatus(st) {
       if (!st) return false;
       const s = String(st).trim().toLowerCase();
-      return s === 'approved' || s === 'issued' || s === 'certificate issued' || s === 'cancelled' || s === 'rejected';
+      return s === 'approved' || s === 'issued' || s === 'clearance approved' || s === 'certificate issued' || s === 'cancelled' || s === 'rejected';
     }
 
     // Identify the currently logged-in customer user
@@ -1649,26 +1650,44 @@
       return userApps.find(app => !isFinalizedStatus(app.status));
     }
 
+    let userWantsNewApplication = false;
+
+    function startNewApplicationForm() {
+      const activeApp = getActiveCustomerApplication();
+      if (activeApp && !isFinalizedStatus(activeApp.status)) {
+        showToast(`⚠️ You have an active complaint (${activeApp.id}) in progress. You must wait until it is approved or rejected before submitting another one.`, 'error');
+        userWantsNewApplication = false;
+        checkActiveApplicationLock();
+        return;
+      }
+      userWantsNewApplication = true;
+      checkActiveApplicationLock();
+      showToast('You can now enter details for a new application.', 'info');
+      const form = document.getElementById('customer-main-form') || document.getElementById('customer-permit-form');
+      if (form) form.scrollIntoView({ behavior: 'smooth' });
+    }
+
     // Check lock status and toggle form disabled state
     function checkActiveApplicationLock() {
-      const activeApp = getActiveCustomerApplication();
-      const form = document.getElementById('customer-permit-form');
-      const banner = document.getElementById('active-application-banner');
-      const submitBtn = document.getElementById('btn-submit-app');
+      const allApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+      const userApps = getLoggedInUserApplications(allApps);
+      const activeApp = userApps.find(app => !isFinalizedStatus(app.status));
+      const latestApp = activeApp || (userApps.length > 0 ? userApps[0] : null);
 
+      const form = document.getElementById('customer-main-form') || document.getElementById('customer-permit-form');
+      const banner = document.getElementById('active-lock-banner-container') || document.getElementById('active-application-banner');
+      const submitBtn = document.getElementById('btn-submit-application') || document.getElementById('btn-submit-app');
+
+      // 1. If there is an active in-progress application -> MUST lock form and show LIVE STATUS
       if (activeApp) {
-        const isApproved = activeApp.status === 'Approved' || activeApp.certificateStatus === 'Issued';
+        userWantsNewApplication = false;
         const st = activeApp.status || 'Pending Inspection';
         
-        let statusBadgeClass = 'bg-amber-400 text-slate-950';
-        let statusTitle = '⏳ Your application is actively under on-site inspection.';
-        let statusDesc = `Municipal rules allow 1 active application per site until finalized by assigned Inspector ${activeApp.assignedInspectorName || 'Ward Officer'}. You can track live progress below.`;
+        let statusBadgeClass = 'bg-amber-400 text-slate-950 font-bold';
+        let statusTitle = '⏳ Application Lodged & Queued for Site Inspection';
+        let statusDesc = `Your application has been received and routed to ${activeApp.authority || 'Local Authority'}. Assigned Inspector ${activeApp.assignedInspectorName || 'Ward Officer'} will review GPS & site photos.`;
 
-        if (isApproved) {
-          statusBadgeClass = 'bg-emerald-500 text-slate-950 font-bold';
-          statusTitle = '🎉 NOC Clearance Certificate Issued!';
-          statusDesc = 'Your C&D Waste NOC has been officially approved. You can view or download the valid NOC certificate below.';
-        } else if (st === 'Visit Scheduled') {
+        if (st === 'Visit Scheduled') {
           statusBadgeClass = 'bg-blue-400 text-slate-950 font-bold';
           statusTitle = '📅 Site Visit Scheduled (Date & Time Fixed)';
           statusDesc = `Field inspection has been scheduled. Inspector ${activeApp.assignedInspectorName || 'Ward Inspector'} will arrive for physical GPS verification and debris assessment.`;
@@ -1698,7 +1717,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-900/60 pb-3">
               <div class="flex items-center gap-2">
                 <span class="flex size-3 rounded-full bg-emerald-400 animate-ping"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Permit Status Tracking</span>
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Live Status Tracking</span>
                 <span class="px-2.5 py-0.5 rounded-lg bg-black text-white font-mono font-bold text-xs">${activeApp.id || '#MCC2026'}</span>
               </div>
               <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${statusBadgeClass}">
@@ -1746,16 +1765,9 @@
               <button type="button" onclick="switchTab('applications')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
                 <span>📜</span> <span>View Application History</span>
               </button>
-              <div class="flex items-center gap-2">
-                ${isApproved ? `
-                  <button type="button" onclick="openCertificateModal('${activeApp.id}')" class="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
-                    <span>📜</span> <span>View Official Certificate (NOC)</span>
-                  </button>
-                ` : ''}
-                <button type="button" onclick="openTrackingModal('${activeApp.id}')" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/30 transition cursor-pointer flex items-center gap-1.5">
-                  <span>🔍</span> <span>Track Full Order &rarr;</span>
-                </button>
-              </div>
+              <button type="button" onclick="openTrackingModal('${activeApp.id}')" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/30 transition cursor-pointer flex items-center gap-1.5">
+                <span>🔍</span> <span>Track Full Order &rarr;</span>
+              </button>
             </div>
           `;
           banner.classList.remove('hidden');
@@ -1763,9 +1775,88 @@
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.className = 'px-6 py-2.5 rounded-xl bg-slate-300 text-slate-500 font-bold text-xs shadow-none flex items-center gap-2 cursor-not-allowed';
-          submitBtn.innerHTML = `<span>🔒 Active Complaint In Progress</span>`;
+          submitBtn.innerHTML = `<span>🔒 Application Under Live Inspection</span>`;
         }
-      } else {
+      } 
+      // 2. If latest application is Finalized (Approved or Cancelled/Rejected) and user hasn't toggled new form
+      else if (latestApp && isFinalizedStatus(latestApp.status) && !userWantsNewApplication) {
+        const isApproved = latestApp.status === 'Approved' || latestApp.certificateStatus === 'Issued' || latestApp.status === 'Clearance Approved';
+        const isCancelled = latestApp.status === 'Cancelled' || latestApp.status === 'Rejected';
+
+        if (form) form.classList.add('hidden');
+        if (banner) {
+          banner.className = `block mb-6 p-5 rounded-3xl ${isApproved ? 'bg-[#081d19] border-2 border-emerald-500' : 'bg-[#2b0c10] border-2 border-rose-500'} shadow-xl space-y-4`;
+          banner.innerHTML = `
+            <!-- Top Alert Badge -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b ${isApproved ? 'border-emerald-900/60' : 'border-rose-900/60'} pb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black uppercase tracking-wider ${isApproved ? 'text-emerald-400' : 'text-rose-400'}">Application Decision</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-black text-white font-mono font-bold text-xs">${latestApp.id || '#MCC2026'}</span>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${isApproved ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'}">
+                ${latestApp.status}
+              </span>
+            </div>
+
+            <!-- Descriptive Guidance -->
+            <div class="space-y-1">
+              <h4 class="text-sm font-extrabold text-white">
+                ${isApproved ? '🎉 Official NOC Clearance Certificate Issued!' : '❌ Application Cancelled / Rejected'}
+              </h4>
+              <p class="text-xs ${isApproved ? 'text-emerald-200' : 'text-rose-200'} leading-relaxed">
+                ${isApproved 
+                  ? 'Your C&D Waste clearance permit has been officially verified and approved. You can view/download your official NOC certificate below or submit a new permit application.' 
+                  : `This request was closed/rejected by Inspector: "${latestApp.inspectorNotes || 'Site requirements not met or unauthorized disposal.'}". You can submit a fresh application below.`}
+              </p>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-black/30 border ${isApproved ? 'border-emerald-900/40' : 'border-rose-900/40'} text-xs">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Applicant & Contact</span>
+                <span class="font-bold text-white text-sm block">${latestApp.applicantName || 'Citizen User'}</span>
+                <span class="text-slate-400 font-mono text-[11px] block">📱 ${latestApp.phone || 'Verified Phone'}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Property Site & PIN</span>
+                <span class="font-bold text-white block">${latestApp.propertyId || 'Property Site'}</span>
+                <span class="text-slate-300 text-[11px] block">${latestApp.address || 'Mysuru'} · PIN ${latestApp.pincode || latestApp.pin}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Verified Rubble / Inspector</span>
+                <span class="font-bold ${isApproved ? 'text-emerald-300' : 'text-slate-200'} block">${latestApp.verifiedTonnage || latestApp.tonnage || 10} MT · ${latestApp.assignedInspectorName || 'Inspector'}</span>
+                <span class="text-slate-400 text-[11px] block">${latestApp.authority || 'Mysuru Municipal Corporation'}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">GPS Location</span>
+                <a href="${latestApp.mapUrl || 'https://www.google.com/maps?q=' + (latestApp.lat||12.2958) + ',' + (latestApp.lng||76.6394)}" target="_blank" class="inline-flex items-center gap-1 font-mono text-[11px] font-bold ${isApproved ? 'text-emerald-400' : 'text-rose-300'} hover:underline mt-0.5">
+                  <span>📍 ${latestApp.gpsLocation || 'Live GPS'}</span> <span>↗</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Action Buttons Strip -->
+            <div class="pt-2 flex flex-wrap items-center justify-between gap-3">
+              <button type="button" onclick="switchTab('applications')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>📜</span> <span>View History</span>
+              </button>
+              <div class="flex items-center gap-2">
+                ${isApproved ? `
+                  <button type="button" onclick="openCertificateModal('${latestApp.id}')" class="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
+                    <span>📜</span> <span>View Certificate (NOC)</span>
+                  </button>
+                ` : ''}
+                <button type="button" onclick="startNewApplicationForm()" class="px-5 py-2.5 rounded-xl ${isApproved ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30' : 'bg-white hover:bg-slate-100 text-slate-900 shadow-white/10'} font-extrabold text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
+                  <span>➕</span> <span>${isApproved ? 'Submit Another Permit' : 'Submit New Application'} &rarr;</span>
+                </button>
+              </div>
+            </div>
+          `;
+          banner.classList.remove('hidden');
+        }
+      } 
+      // 3. Clean form mode
+      else {
         if (form) form.classList.remove('hidden');
         if (banner) {
           banner.className = 'hidden mb-6';
@@ -1853,6 +1944,9 @@
         submittedAt: new Date().toISOString()
       };
 
+      // Reset new app requested toggle
+      userWantsNewApplication = false;
+
       // 1. Save directly to Backend REST API AND Supabase Cloud Database
       try {
         const postRes = await fetch('/api/applications', {
@@ -1915,7 +2009,7 @@
         } catch(e) {}
       }
 
-      // 4. Update UI Tracker Card and Lock State
+      // 4. Update UI Tracker Card and Lock State immediately
       updateLiveTrackerUI(newApplication);
       checkActiveApplicationLock();
 
