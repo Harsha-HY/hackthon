@@ -4,6 +4,12 @@
 .env.*.local
 *.env
 
+# Serverless API endpoints & secrets
+api/
+src/api/
+api
+src/api
+
 # Local database files & mock stores
 database.json
 *.db
