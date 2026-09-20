@@ -1015,6 +1015,17 @@
     let currentAuthorityKey = 'mcc';
     let applicationsList = [];
 
+    // Real-Time High Speed Synchronization across Citizen & Officer Consoles
+    const civicSyncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('civic_sync_channel') : null;
+    if (civicSyncChannel) {
+      civicSyncChannel.onmessage = (event) => {
+        loadInspectorData();
+      };
+    }
+    window.addEventListener('storage', () => {
+      loadInspectorData();
+    });
+
     function initInspectorSession() {
       try {
         let saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');

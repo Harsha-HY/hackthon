@@ -929,6 +929,17 @@
     let currentCameraStream = null;
     let customerLiveCoords = { lat: 12.2958, lng: 76.6394, gpsText: '12.2958° N, 76.6394° E' };
 
+    // Real-Time High Speed Synchronization across Inspector & Officer Consoles
+    const civicSyncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('civic_sync_channel') : null;
+    if (civicSyncChannel) {
+      civicSyncChannel.onmessage = (event) => {
+        syncLiveCustomerApplications();
+      };
+    }
+    window.addEventListener('storage', () => {
+      syncLiveCustomerApplications();
+    });
+
     // Toast Alert Helper
     function showToast(msg, type = 'success') {
       const container = document.getElementById('toast-container');
@@ -2095,15 +2106,16 @@
       });
     }
 
-    function syncLiveCustomerApplications() {
+    async function syncLiveCustomerApplications() {
       // 1. Immediately read from LocalStorage for instant 0ms cross-tab reactivity
       try {
         const localApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-        if (Array.isArray(localApps) && localApps.length > 0) {
+        if (Array.isArray(localApps)) {
           const myRequests = getLoggedInUserApplications(localApps);
           localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
           if (myRequests.length > 0) {
-            updateLiveTrackerUI(myRequests[0]);
+            const active = myRequests.find(a => !isFinalizedStatus(a.status)) || myRequests[0];
+            updateLiveTrackerUI(active);
           } else {
             resetLiveTrackerUI();
           }
@@ -2112,22 +2124,32 @@
         }
       } catch (err) {}
 
-      // 2. Fetch latest server state in background
-      fetch('/api/applications')
-        .then(res => res.ok ? res.json() : null)
-        .then(serverApps => {
-          if (Array.isArray(serverApps) && serverApps.length > 0) {
-            localStorage.setItem('civic_applications', JSON.stringify(serverApps));
-            const myRequests = getLoggedInUserApplications(serverApps);
+      // 2. Fetch latest from Supabase Cloud DB
+      try {
+        if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
+          const cloudApps = await window.civicDb.fetchApplications();
+          if (Array.isArray(cloudApps) && cloudApps.length > 0) {
+            const localApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+            const map = new Map();
+            cloudApps.forEach(a => { if (a && a.id) map.set(a.id, a); });
+            localApps.forEach(a => {
+              if (a && a.id && !map.has(a.id)) map.set(a.id, a);
+            });
+            const merged = Array.from(map.values());
+            localStorage.setItem('civic_applications', JSON.stringify(merged));
+            const myRequests = getLoggedInUserApplications(merged);
             localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
             if (myRequests.length > 0) {
-              updateLiveTrackerUI(myRequests[0]);
+              const active = myRequests.find(a => !isFinalizedStatus(a.status)) || myRequests[0];
+              updateLiveTrackerUI(active);
+            } else {
+              resetLiveTrackerUI();
             }
             renderApplicationsHistory();
             checkActiveApplicationLock();
           }
-        })
-        .catch(() => {});
+        }
+      } catch(e) {}
     }
 
     // ==========================================
@@ -2656,7 +2678,7 @@
       }).join('');
     }
 
-    async function syncLiveCustomerApplications() {
+    async function syncCivicUsers() {
       try {
         if (window.civicDb && typeof window.civicDb.fetchUsers === 'function') {
           const users = await window.civicDb.fetchUsers();
@@ -2666,14 +2688,6 @@
             if (inspectors.length > 0) {
               localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
             }
-          }
-        }
-        if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
-          const apps = await window.civicDb.fetchApplications();
-          if (Array.isArray(apps) && apps.length > 0) {
-            localStorage.setItem('civic_applications', JSON.stringify(apps));
-            renderApplicationsHistory();
-            checkActiveApplicationLock();
           }
         }
       } catch(e) {}

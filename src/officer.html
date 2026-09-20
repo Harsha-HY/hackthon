@@ -3448,7 +3448,20 @@
         app.verifiedTonnage = app.verifiedTonnage || app.tonnage || 10;
         app.auditedBy = dept.headName || 'Authority Officer';
         app.auditedAt = new Date().toISOString();
+        if (!app.certificateNo) {
+          const cleanId = (app.id || 'REQ101').replace(/[^a-zA-Z0-9]/g, '');
+          const authPrefix = (app.authorityKey || currentAuthorityKey || 'mcc').toUpperCase();
+          app.certificateNo = `NOC/${authPrefix}/2026/${cleanId.slice(-6)}`;
+        }
+        if (!app.issueDate) {
+          app.issueDate = new Date().toISOString().split('T')[0];
+        }
         
+        if (window.civicDb && typeof window.civicDb.saveApplication === 'function') {
+          try {
+            await window.civicDb.saveApplication(app);
+          } catch(err) {}
+        }
         try {
           await fetch('/api/applications', {
             method: 'POST',
@@ -3465,6 +3478,11 @@
           myRequests[custIdx] = { ...myRequests[custIdx], ...app };
           localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
         }
+
+        if (civicSyncChannel) {
+          civicSyncChannel.postMessage({ type: 'STATUS_UPDATED', id: appId, status: 'Approved', application: app });
+        }
+        window.dispatchEvent(new Event('storage'));
 
         renderAllTables();
         showToast('Application #' + appId + ' approved! Official NOC Clearance Certificate generated.', 'success');
@@ -3480,6 +3498,11 @@
         app.status = 'Cancelled';
         app.inspectorNotes = (app.inspectorNotes ? app.inspectorNotes + ' | ' : '') + 'Cancelled by Officer: ' + (reason || 'No specific reason');
         
+        if (window.civicDb && typeof window.civicDb.saveApplication === 'function') {
+          try {
+            await window.civicDb.saveApplication(app);
+          } catch(err) {}
+        }
         try {
           await fetch('/api/applications', {
             method: 'POST',
@@ -3496,6 +3519,11 @@
           myRequests[custIdx] = { ...myRequests[custIdx], ...app };
           localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
         }
+
+        if (civicSyncChannel) {
+          civicSyncChannel.postMessage({ type: 'STATUS_UPDATED', id: appId, status: 'Cancelled', application: app });
+        }
+        window.dispatchEvent(new Event('storage'));
 
         renderAllTables();
         showToast('Application #' + appId + ' cancelled. Citizen may now submit a new complaint if needed.', 'error');
