@@ -344,20 +344,20 @@
       <!-- ===================================================================== -->
       <section id="panel-inspection" class="panel-view active space-y-4 sm:space-y-6">
         
-        <!-- Summary Stats Banner (Mobile 3-column compact) -->
+        <!-- Summary Stats Banner (Interactive Click-to-Filter Cards) -->
         <div class="grid grid-cols-3 gap-2 sm:gap-4">
-          <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left">
-            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Assigned</span>
+          <div onclick="setInspectionFilter('all')" class="bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left cursor-pointer transition hover:border-emerald-400 group">
+            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block group-hover:text-emerald-700">Assigned</span>
             <span id="stat-assigned-count" class="text-xl sm:text-3xl font-extrabold text-emerald-600 mt-1 sm:mt-2 block">0</span>
             <span class="text-[9px] sm:text-[11px] text-slate-400 font-medium mt-0.5 hidden sm:block">Filtered by your assigned PIN</span>
           </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left">
-            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Pending</span>
+          <div onclick="setInspectionFilter('pending')" class="bg-white hover:bg-amber-50/50 rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left cursor-pointer transition hover:border-amber-400 group">
+            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block group-hover:text-amber-700">Pending</span>
             <span id="stat-pending-audit" class="text-xl sm:text-3xl font-extrabold text-amber-600 mt-1 sm:mt-2 block">0</span>
             <span class="text-[9px] sm:text-[11px] text-amber-600 font-medium mt-0.5 hidden sm:block">Awaiting on-site field audit</span>
           </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left">
-            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Passed (NOC)</span>
+          <div onclick="setInspectionFilter('completed')" class="bg-white hover:bg-blue-50/50 rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left cursor-pointer transition hover:border-blue-400 group">
+            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block group-hover:text-blue-700">Passed (NOC)</span>
             <span id="stat-cleared-count" class="text-xl sm:text-3xl font-extrabold text-blue-600 mt-1 sm:mt-2 block">0</span>
             <span class="text-[9px] sm:text-[11px] text-blue-600 font-medium mt-0.5 hidden sm:block">NOC Certificate Issued</span>
           </div>
@@ -377,6 +377,27 @@
               <span id="active-pin-filter-tag" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">
                 PIN: 570026
               </span>
+            </div>
+          </div>
+
+          <!-- Pending vs Completed vs All Segmented Filter Tabs -->
+          <div class="flex items-center justify-between gap-2 flex-wrap bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200">
+            <div class="flex items-center gap-1.5 flex-1 sm:flex-none">
+              <button onclick="setInspectionFilter('pending')" id="filter-btn-pending" class="px-3.5 py-2 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>⏳ Pending Audits</span>
+                <span id="badge-pending-count" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-mono font-extrabold">0</span>
+              </button>
+              <button onclick="setInspectionFilter('completed')" id="filter-btn-completed" class="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>✅ Completed / Passed</span>
+                <span id="badge-completed-count" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-mono font-extrabold">0</span>
+              </button>
+              <button onclick="setInspectionFilter('all')" id="filter-btn-all" class="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>📋 All Assigned</span>
+                <span id="badge-all-count" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[10px] font-mono font-extrabold">0</span>
+              </button>
+            </div>
+            <div class="text-[11px] font-mono text-slate-600 px-2 py-1 font-semibold">
+              <span id="filter-status-desc">Showing Pending Inspection Queue</span>
             </div>
           </div>
 
@@ -993,6 +1014,31 @@
       });
     }
 
+    let currentInspectionFilter = 'pending';
+
+    function setInspectionFilter(filter) {
+      currentInspectionFilter = filter;
+      ['pending', 'completed', 'all'].forEach(k => {
+        const btn = document.getElementById('filter-btn-' + k);
+        if (btn) {
+          if (k === filter) {
+            btn.className = 'px-3.5 py-2 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5';
+          } else {
+            btn.className = 'px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5';
+          }
+        }
+      });
+
+      const desc = document.getElementById('filter-status-desc');
+      if (desc) {
+        if (filter === 'pending') desc.innerText = 'Showing Pending Inspections (Awaiting On-Site Audit)';
+        else if (filter === 'completed') desc.innerText = 'Showing Completed / Passed (Official NOC Issued)';
+        else desc.innerText = 'Showing All Assigned Applications';
+      }
+
+      renderAllPanels();
+    }
+
     function renderAllPanels() {
       const myApps = getMyAssignedApplications();
       const myPin = currentUser ? (currentUser.assignedPin || '570001') : '570001';
@@ -1006,14 +1052,25 @@
       document.getElementById('stat-pending-audit').innerText = pendingCount;
       document.getElementById('stat-cleared-count').innerText = approvedCount;
 
+      if (document.getElementById('badge-all-count')) document.getElementById('badge-all-count').innerText = assignedCount;
+      if (document.getElementById('badge-pending-count')) document.getElementById('badge-pending-count').innerText = pendingCount;
+      if (document.getElementById('badge-completed-count')) document.getElementById('badge-completed-count').innerText = approvedCount;
+
       if (document.getElementById('sidebar-assigned-badge')) {
-        document.getElementById('sidebar-assigned-badge').innerText = assignedCount;
+        document.getElementById('sidebar-assigned-badge').innerText = pendingCount > 0 ? `${pendingCount} Pending` : `${assignedCount} Total`;
       }
       if (document.getElementById('mob-stat-badge')) {
-        document.getElementById('mob-stat-badge').innerText = assignedCount;
+        document.getElementById('mob-stat-badge').innerText = pendingCount > 0 ? `${pendingCount} Pending` : `${assignedCount}`;
       }
 
-      renderInspectionView(myApps, myPin);
+      let filteredApps = myApps;
+      if (currentInspectionFilter === 'pending') {
+        filteredApps = myApps.filter(a => a.status !== 'Approved' && a.certificateStatus !== 'Issued');
+      } else if (currentInspectionFilter === 'completed') {
+        filteredApps = myApps.filter(a => a.status === 'Approved' || a.certificateStatus === 'Issued');
+      }
+
+      renderInspectionView(filteredApps, myPin);
     }
 
     // UNIFIED MOBILE-FIRST & DESKTOP RESPONSIVE INSPECTION DESK (With in-line Geotag Photos & Evidence Data)
@@ -1022,11 +1079,23 @@
       if (!container) return;
 
       if (myApps.length === 0) {
+        const isPendingView = currentInspectionFilter === 'pending';
+        const isCompletedView = currentInspectionFilter === 'completed';
+        
         container.innerHTML = `
-          <div class="py-12 px-4 text-center rounded-2xl bg-slate-50 border border-slate-200">
-            <span class="text-3xl block mb-2">📭</span>
-            <p class="font-bold text-slate-800 text-sm">No applications assigned to PIN ${myPin} currently.</p>
-            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Citizen requests matching PIN ${myPin} will automatically appear on this inspection desk in real-time.</p>
+          <div class="py-12 px-4 text-center rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <span class="text-3xl block">${isCompletedView ? '🎉' : (isPendingView ? '✨' : '📭')}</span>
+            <p class="font-bold text-slate-800 text-sm">
+              ${isCompletedView ? 'No completed inspections in this list yet.' : (isPendingView ? 'All caught up! No pending inspections for PIN ' + myPin + '.' : 'No applications assigned to PIN ' + myPin + ' currently.')}
+            </p>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">
+              ${isPendingView ? 'When new customer requests arrive for PIN ' + myPin + ', they will appear here.' : (isCompletedView ? 'Once you audit and approve pending permits, they will appear in this completed archive.' : 'Live updates will stream in real-time.')}
+            </p>
+            ${isPendingView && myApps.length === 0 ? `
+              <button onclick="setInspectionFilter('all')" class="mt-2 px-3.5 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs transition cursor-pointer">
+                View All Assigned Cases &rarr;
+              </button>
+            ` : ''}
           </div>
         `;
         return;

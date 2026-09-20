@@ -642,6 +642,27 @@
             <input type="text" id="search-demolition-requests" oninput="handleDemolitionSearch(this.value)" placeholder="Search demolition requests by Request ID, Applicant Name, Phone, Property PID, Location, PIN, Material, Scheduled Date, or Status..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
           </div>
 
+          <!-- Pending vs Completed vs All Filter Buttons -->
+          <div class="flex items-center justify-between gap-2 flex-wrap bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200">
+            <div class="flex items-center gap-1.5 flex-1 sm:flex-none">
+              <button onclick="setAdminAppStatusFilter('pending')" id="btn-admin-app-pending" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>⏳ Pending Review / Audit</span>
+                <span id="badge-admin-app-pending" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-mono font-bold">0</span>
+              </button>
+              <button onclick="setAdminAppStatusFilter('completed')" id="btn-admin-app-completed" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>✅ Completed / Approved</span>
+                <span id="badge-admin-app-completed" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-mono font-bold">0</span>
+              </button>
+              <button onclick="setAdminAppStatusFilter('all')" id="btn-admin-app-all" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>📋 All Requests</span>
+                <span id="badge-admin-app-all" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[10px] font-mono font-bold">0</span>
+              </button>
+            </div>
+            <div class="text-[11px] font-mono text-slate-500 px-2 py-1">
+              <span id="admin-app-filter-desc">Showing Pending Requests</span>
+            </div>
+          </div>
+
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
             <table class="w-full text-left text-xs min-w-[950px]">
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
@@ -1962,6 +1983,28 @@
     // DEMOLITION REQUESTS INTAKE & INSPECTOR CLEARANCE SYNC LOGIC
     // =========================================================================
     let currentDemDeptFilter = 'all';
+    let currentAdminAppStatusFilter = 'pending';
+
+    function setAdminAppStatusFilter(status) {
+      currentAdminAppStatusFilter = status;
+      ['pending', 'completed', 'all'].forEach(k => {
+        const btn = document.getElementById('btn-admin-app-' + k);
+        if (btn) {
+          if (k === status) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5';
+          }
+        }
+      });
+      const desc = document.getElementById('admin-app-filter-desc');
+      if (desc) {
+        if (status === 'pending') desc.innerText = 'Showing Pending Clearance Requests';
+        else if (status === 'completed') desc.innerText = 'Showing Completed / Approved Requests (NOC Issued)';
+        else desc.innerText = 'Showing All Demolition Requests';
+      }
+      renderDemolitionRequestsTable();
+    }
 
     function filterDemolitionRequestsByDept(dept) {
       currentDemDeptFilter = dept;
@@ -2332,17 +2375,36 @@
 
       const allApps = getOriginalDemolitionApplications();
 
-      let displayed = allApps;
+      let baseDeptApps = allApps;
       if (filter === 'gp') {
-        displayed = allApps.filter(d => d.dept === 'gp');
+        baseDeptApps = allApps.filter(d => d.dept === 'gp');
       } else if (filter === 'tp') {
-        displayed = allApps.filter(d => d.dept === 'tp');
+        baseDeptApps = allApps.filter(d => d.dept === 'tp');
       } else if (filter === 'mcc') {
-        displayed = allApps.filter(d => d.dept === 'mcc');
+        baseDeptApps = allApps.filter(d => d.dept === 'mcc');
+      }
+
+      // Calculate real-time pending vs completed counts for badges
+      const pendingCount = baseDeptApps.filter(d => !d.isApproved && !d.status.toLowerCase().includes('cancel') && !d.status.toLowerCase().includes('reject') && !d.status.toLowerCase().includes('approved') && !d.status.toLowerCase().includes('issued') && !d.status.toLowerCase().includes('clearance') && !d.status.toLowerCase().includes('completed')).length;
+      const completedCount = baseDeptApps.filter(d => d.isApproved || d.status.toLowerCase().includes('approved') || d.status.toLowerCase().includes('issued') || d.status.toLowerCase().includes('clearance') || d.status.toLowerCase().includes('completed')).length;
+      const allCount = baseDeptApps.length;
+
+      const bPending = document.getElementById('badge-admin-app-pending');
+      const bCompleted = document.getElementById('badge-admin-app-completed');
+      const bAll = document.getElementById('badge-admin-app-all');
+      if (bPending) bPending.innerText = pendingCount;
+      if (bCompleted) bCompleted.innerText = completedCount;
+      if (bAll) bAll.innerText = allCount;
+
+      let displayed = baseDeptApps;
+      if (currentAdminAppStatusFilter === 'pending') {
+        displayed = baseDeptApps.filter(d => !d.isApproved && !d.status.toLowerCase().includes('cancel') && !d.status.toLowerCase().includes('reject') && !d.status.toLowerCase().includes('approved') && !d.status.toLowerCase().includes('issued') && !d.status.toLowerCase().includes('clearance') && !d.status.toLowerCase().includes('completed'));
+      } else if (currentAdminAppStatusFilter === 'completed') {
+        displayed = baseDeptApps.filter(d => d.isApproved || d.status.toLowerCase().includes('approved') || d.status.toLowerCase().includes('issued') || d.status.toLowerCase().includes('clearance') || d.status.toLowerCase().includes('completed'));
       }
 
       if (searchQueryDemolition) {
-        const q = searchQueryDemolition;
+        const q = searchQueryDemolition.toLowerCase();
         displayed = displayed.filter(d =>
           (d.id || '').toLowerCase().includes(q) ||
           (d.property || '').toLowerCase().includes(q) ||
@@ -2360,7 +2422,7 @@
         tableDem.innerHTML = `
           <tr>
             <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No building demolition clearance requests found matching "${searchQueryDemolition || 'jurisdiction filter'}".
+              No building demolition clearance requests found matching "${searchQueryDemolition || currentAdminAppStatusFilter + ' status filter'}".
             </td>
           </tr>
         `;

@@ -409,6 +409,27 @@
             <input type="text" id="search-officer-applications" oninput="handleOfficerApplicationsSearch(this.value)" placeholder="Search applications by App ID, Applicant Name, Phone, Address, PIN, or Status..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
           </div>
 
+          <!-- Pending vs Completed vs All Filter Buttons -->
+          <div class="flex items-center justify-between gap-2 flex-wrap bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200">
+            <div class="flex items-center gap-1.5 flex-1 sm:flex-none">
+              <button onclick="setOfficerAppFilter('pending')" id="btn-officer-app-pending" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>⏳ Pending Review / Audit</span>
+                <span id="badge-officer-app-pending" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-mono font-bold">0</span>
+              </button>
+              <button onclick="setOfficerAppFilter('completed')" id="btn-officer-app-completed" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>✅ Completed / Approved</span>
+                <span id="badge-officer-app-completed" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-mono font-bold">0</span>
+              </button>
+              <button onclick="setOfficerAppFilter('all')" id="btn-officer-app-all" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5">
+                <span>📁 All Applications</span>
+                <span id="badge-officer-app-all" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[10px] font-mono font-bold">0</span>
+              </button>
+            </div>
+            <div class="text-[11px] font-mono text-slate-500 px-2 py-1">
+              <span id="officer-app-filter-desc">Showing Pending Applications</span>
+            </div>
+          </div>
+
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
             <table class="w-full text-left text-xs min-w-[920px]">
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
@@ -1564,11 +1585,48 @@
       backdrop.classList.remove('hidden');
     }
 
+    let currentOfficerAppFilter = 'pending';
+
+    function setOfficerAppFilter(f) {
+      currentOfficerAppFilter = f;
+      ['pending', 'completed', 'all'].forEach(k => {
+        const btn = document.getElementById('btn-officer-app-' + k);
+        if (btn) {
+          if (k === f) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5';
+          }
+        }
+      });
+      const desc = document.getElementById('officer-app-filter-desc');
+      if (desc) {
+        if (f === 'pending') desc.innerText = 'Showing Pending Applications / Inspections';
+        else if (f === 'completed') desc.innerText = 'Showing Completed / Approved Applications (NOC Issued)';
+        else desc.innerText = 'Showing All Applications Queue';
+      }
+      renderApplicationsTable();
+    }
+
     function renderApplicationsTable() {
       const tbody = document.getElementById('table-applications');
       const apps = getAuthorityApplications();
 
+      const pendingCount = apps.filter(a => a.status !== 'Approved' && a.certificateStatus !== 'Issued' && a.status !== 'Cancelled').length;
+      const completedCount = apps.filter(a => a.status === 'Approved' || a.certificateStatus === 'Issued').length;
+      const allCount = apps.length;
+
+      if (document.getElementById('badge-officer-app-pending')) document.getElementById('badge-officer-app-pending').innerText = pendingCount;
+      if (document.getElementById('badge-officer-app-completed')) document.getElementById('badge-officer-app-completed').innerText = completedCount;
+      if (document.getElementById('badge-officer-app-all')) document.getElementById('badge-officer-app-all').innerText = allCount;
+
       let displayed = apps;
+      if (currentOfficerAppFilter === 'pending') {
+        displayed = displayed.filter(a => a.status !== 'Approved' && a.certificateStatus !== 'Issued' && a.status !== 'Cancelled');
+      } else if (currentOfficerAppFilter === 'completed') {
+        displayed = displayed.filter(a => a.status === 'Approved' || a.certificateStatus === 'Issued');
+      }
+
       if (searchQueryOfficerApplications) {
         const q = searchQueryOfficerApplications;
         displayed = displayed.filter(a =>
@@ -1585,10 +1643,13 @@
       }
 
       if (displayed.length === 0) {
+        const isPendingView = currentOfficerAppFilter === 'pending';
+        const isCompletedView = currentOfficerAppFilter === 'completed';
+
         tbody.innerHTML = `
           <tr>
             <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No clearance applications matching "${searchQueryOfficerApplications || 'current jurisdiction'}".
+              ${isCompletedView ? 'No completed / approved applications in this list yet.' : (isPendingView ? 'No pending applications for this jurisdiction currently.' : 'No clearance applications matching query.')}
             </td>
           </tr>
         `;
