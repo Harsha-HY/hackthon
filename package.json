@@ -4,8 +4,7 @@
   "description": "Smart Civic Construction & Demolition (C&D) Waste Routing & Governance Platform — Mysuru",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo 'Build complete'"
+    "start": "node server.js"
   },
   "keywords": [
     "civic",
