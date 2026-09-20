@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
   <title>Field Inspector Console — Smart Civic Waste Mysuru</title>
   
   <!-- Tailwind CSS CDN -->
@@ -128,7 +128,7 @@
       align-items: center;
       gap: 10px;
       width: 100%;
-      padding: 10px 14px;
+      padding: 11px 15px;
       border-radius: 14px;
       font-size: 13px;
       font-weight: 600;
@@ -147,6 +147,25 @@
       border-left: 3.5px solid #10b981;
       font-weight: 700;
     }
+    .mobile-tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .mobile-tab-btn.active {
+      background-color: #064e3b;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(6, 78, 59, 0.25);
+    }
     .panel-view {
       display: none;
       animation: fadeIn 0.2s ease-out;
@@ -160,24 +179,70 @@
     }
     .toast-container {
       position: fixed;
-      top: 24px;
-      right: 24px;
+      top: 16px;
+      right: 16px;
+      left: 16px;
       z-index: 999999;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      pointer-events: none;
+    }
+    @media (min-width: 640px) {
+      .toast-container {
+        left: auto;
+        width: 380px;
+      }
+    }
+    .toast {
+      pointer-events: auto;
     }
   </style>
 </head>
-<body class="min-h-screen flex text-slate-900 antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-white">
+<body class="min-h-screen flex flex-col md:flex-row text-slate-900 antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-white">
 
   <!-- Toast Notification Stack -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- ========================================================================= -->
-  <!-- 1. LEFT SIDEBAR NAVIGATION PANEL                                          -->
+  <!-- 1. MOBILE TOP NAVIGATION & TAB SWITCHER (For Phone Screen View)            -->
   <!-- ========================================================================= -->
-  <aside class="w-80 bg-[#0c1527] text-white flex flex-col justify-between shrink-0 h-screen sticky top-0 border-r border-slate-800 z-50">
+  <header class="md:hidden bg-[#0c1527] text-white border-b border-slate-800 sticky top-0 z-50">
+    <div class="px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5 overflow-hidden">
+        <div id="mobile-icon" class="size-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-slate-950 flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+          👷
+        </div>
+        <div class="leading-tight overflow-hidden">
+          <span id="mobile-title" class="block font-bold text-xs text-white truncate">Field Inspector Console</span>
+          <span id="mobile-pin-text" class="text-[10px] font-mono text-emerald-400 font-bold">PIN: 570026</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="loadInspectorData()" title="Refresh" class="size-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition cursor-pointer">
+          🔄
+        </button>
+        <button onclick="handleSignOut()" title="Sign Out" class="size-8 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center text-xs transition cursor-pointer">
+          🚪
+        </button>
+      </div>
+    </div>
+    <!-- Mobile Segmented Navigation Tabs -->
+    <div class="px-3 pb-2.5 flex items-center gap-2 bg-slate-950/40">
+      <button onclick="switchInspectorTab('inspection')" id="mob-tab-inspection" class="mobile-tab-btn active">
+        <span>📋</span> <span>Inspection Desk</span>
+        <span id="mob-stat-badge" class="px-1.5 py-0.2 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-extrabold ml-1 font-mono">0</span>
+      </button>
+      <button onclick="switchInspectorTab('details')" id="mob-tab-details" class="mobile-tab-btn">
+        <span>👷</span> <span>Profile Info</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. DESKTOP LEFT SIDEBAR NAVIGATION PANEL                                  -->
+  <!-- ========================================================================= -->
+  <aside class="hidden md:flex w-72 lg:w-80 bg-[#0c1527] text-white flex-col justify-between shrink-0 h-screen sticky top-0 border-r border-slate-800 z-50">
     
     <!-- Top Brand & Panchayat Header -->
     <div class="p-5 border-b border-white/10">
@@ -205,19 +270,18 @@
       </div>
     </div>
 
-    <!-- Navigation List (Inspector Panels) -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-1.5">
-      <button onclick="switchInspectorTab('details')" id="btn-tab-details" class="nav-btn active">
-        <span class="text-base">👷</span>
-        <span>1. Inspector Details</span>
-      </button>
-      <button onclick="switchInspectorTab('inspection')" id="btn-tab-inspection" class="nav-btn">
+    <!-- Navigation List (Inspector Panels: Inspections Desk & Details) -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-2">
+      <button onclick="switchInspectorTab('inspection')" id="btn-tab-inspection" class="nav-btn active">
         <span class="text-base">📋</span>
-        <span>2. Inspection</span>
+        <div class="flex-1 flex items-center justify-between">
+          <span>1. Inspections Desk</span>
+          <span id="sidebar-assigned-badge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold">0</span>
+        </div>
       </button>
-      <button onclick="switchInspectorTab('evidence')" id="btn-tab-evidence" class="nav-btn">
-        <span class="text-base">📸</span>
-        <span>3. Evidence</span>
+      <button onclick="switchInspectorTab('details')" id="btn-tab-details" class="nav-btn">
+        <span class="text-base">👷</span>
+        <span>2. Inspector Profile</span>
       </button>
     </div>
 
@@ -239,18 +303,18 @@
   </aside>
 
   <!-- ========================================================================= -->
-  <!-- 2. MAIN VIEWPORT                                                          -->
+  <!-- 3. MAIN VIEWPORT (Phone & Desktop Responsive)                             -->
   <!-- ========================================================================= -->
   <main class="flex-1 flex flex-col min-w-0 bg-slate-50 min-h-screen">
     
-    <!-- Top Header -->
-    <header class="bg-white border-b border-slate-200 px-8 py-4 sticky top-0 z-40 flex items-center justify-between gap-4 shadow-xs">
+    <!-- Top Header (Desktop View) -->
+    <header class="hidden md:flex bg-white border-b border-slate-200 px-6 lg:px-8 py-3.5 sticky top-0 z-40 items-center justify-between gap-4 shadow-xs">
       <div class="flex items-center gap-3.5">
         <div id="header-icon" class="size-10 rounded-2xl bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-xl border border-emerald-100 shrink-0">
           📍
         </div>
         <div>
-          <h1 id="header-jurisdiction-title" class="text-lg font-extrabold text-slate-900 leading-tight">
+          <h1 id="header-jurisdiction-title" class="text-base lg:text-lg font-extrabold text-slate-900 leading-tight">
             Assigned Area: PIN 570001 (Mysuru)
           </h1>
           <p id="header-jurisdiction-sub" class="text-xs text-slate-500 font-medium">
@@ -270,182 +334,146 @@
     </header>
 
     <!-- Main Workspace Container -->
-    <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+    <div class="p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-4 sm:space-y-6">
 
       <!-- ===================================================================== -->
-      <!-- PANEL 1: 👷 INSPECTOR DETAILS                                         -->
+      <!-- PANEL: 📋 INSPECTIONS & PHYSICAL CLEARANCE DESK (Primary Mobile Desk) -->
       <!-- ===================================================================== -->
-      <section id="panel-details" class="panel-view active space-y-6">
+      <section id="panel-inspection" class="panel-view active space-y-4 sm:space-y-6">
+        
+        <!-- Summary Stats Banner (Mobile 3-column compact) -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Assigned</span>
+            <span id="stat-assigned-count" class="text-xl sm:text-3xl font-extrabold text-emerald-600 mt-1 sm:mt-2 block">0</span>
+            <span class="text-[9px] sm:text-[11px] text-slate-400 font-medium mt-0.5 hidden sm:block">Filtered by your assigned PIN</span>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Pending</span>
+            <span id="stat-pending-audit" class="text-xl sm:text-3xl font-extrabold text-amber-600 mt-1 sm:mt-2 block">0</span>
+            <span class="text-[9px] sm:text-[11px] text-amber-600 font-medium mt-0.5 hidden sm:block">Awaiting on-site field audit</span>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Passed (NOC)</span>
+            <span id="stat-cleared-count" class="text-xl sm:text-3xl font-extrabold text-blue-600 mt-1 sm:mt-2 block">0</span>
+            <span class="text-[9px] sm:text-[11px] text-blue-600 font-medium mt-0.5 hidden sm:block">NOC Certificate Issued</span>
+          </div>
+        </div>
+
+        <!-- Header Title Strip with Fast PIN Filter Indicator -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 sm:pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📋</span>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900">Physical Site Inspection Queue</h2>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Examine live geotag site photos, Khatta/deed status, blueprints, GPS coordinates, and issue NOC approvals on-site.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="active-pin-filter-tag" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">
+                PIN: 570026
+              </span>
+            </div>
+          </div>
+
+          <!-- Phone-Optimized Cards & Responsive Table Container -->
+          <div id="inspections-container" class="space-y-3">
+            <!-- Dynamically populated responsive cards / table rows -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- PANEL: 👷 INSPECTOR DETAILS & CREDENTIALS                             -->
+      <!-- ===================================================================== -->
+      <section id="panel-details" class="panel-view space-y-4 sm:space-y-6">
         
         <!-- Welcome Banner with Creating Officer Info -->
-        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-[#0c1527] text-white rounded-3xl p-6 shadow-sm border border-slate-700/60 relative overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-[#0c1527] text-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-700/60 relative overflow-hidden">
           <div class="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div class="space-y-1.5">
-              <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-500/30">
+            <div class="space-y-1">
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold text-[10px] sm:text-[11px] border border-emerald-500/30">
                 ✓ Official Field Credential Active
               </span>
-              <h2 id="welcome-inspector-name" class="text-2xl font-extrabold tracking-tight">Inspector Profile</h2>
-              <p id="welcome-creating-officer" class="text-xs text-slate-300 max-w-xl">
+              <h2 id="welcome-inspector-name" class="text-xl sm:text-2xl font-extrabold tracking-tight">Inspector Profile</h2>
+              <p id="welcome-creating-officer" class="text-xs text-slate-300 max-w-xl leading-relaxed">
                 Designated by Authority Officer for on-site physical audits, structural verification, and C&D debris tracking.
               </p>
             </div>
-            <div class="text-right">
+            <div class="text-left sm:text-right">
               <span class="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-bold">Jurisdiction Scope</span>
-              <span id="hero-assigned-pin" class="text-2xl font-extrabold text-emerald-400 font-mono block">PIN 570001</span>
+              <span id="hero-assigned-pin" class="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono block">PIN 570001</span>
             </div>
           </div>
         </div>
 
         <!-- 4 Core Inspector Cards: Name & Inspector ID, Department & Designation, Phone Number, Ward / Area -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="inspector-core-details-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="inspector-core-details-grid">
           
           <!-- 1. Name & Inspector ID -->
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Name & Inspector ID</span>
+              <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Name & Inspector ID</span>
               <span class="size-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs">🪪</span>
             </div>
-            <span id="detail-ins-name" class="text-base font-bold text-slate-900 block truncate">Ramesh Kumar</span>
+            <span id="detail-ins-name" class="text-sm sm:text-base font-bold text-slate-900 block truncate">Ramesh Kumar</span>
             <span id="detail-ins-id" class="text-xs font-mono font-bold text-emerald-700 block">ID: INS-MCC-101</span>
           </div>
 
           <!-- 2. Department & Designation -->
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department & Designation</span>
+              <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department & Designation</span>
               <span class="size-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs">🏛️</span>
             </div>
-            <span id="detail-ins-dept" class="text-base font-bold text-slate-900 block truncate">Mysuru City Corporation</span>
+            <span id="detail-ins-dept" class="text-sm sm:text-base font-bold text-slate-900 block truncate">Mysuru City Corporation</span>
             <span id="detail-ins-desig" class="text-xs font-medium text-slate-600 block truncate">Ward Health Inspector</span>
           </div>
 
           <!-- 3. Phone Number & Email -->
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phone Number</span>
+              <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phone Number</span>
               <span class="size-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs">📞</span>
             </div>
-            <span id="detail-ins-phone" class="text-base font-mono font-bold text-slate-900 block">+91 98450 11001</span>
+            <span id="detail-ins-phone" class="text-sm sm:text-base font-mono font-bold text-slate-900 block">+91 98450 11001</span>
             <span id="detail-ins-email" class="text-xs font-mono text-emerald-800 font-semibold block truncate">inspector@gmail.com</span>
           </div>
 
           <!-- 4. Ward / Area & PIN -->
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ward / Area</span>
+              <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ward / Area</span>
               <span class="size-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs">📍</span>
             </div>
-            <span id="detail-ins-area" class="text-base font-bold text-slate-900 block truncate">Ward 14 (Palace Area)</span>
+            <span id="detail-ins-area" class="text-sm sm:text-base font-bold text-slate-900 block truncate">Ward 14 (Palace Area)</span>
             <span id="detail-ins-pin" class="text-xs font-mono font-extrabold text-amber-800 block">Mapped PIN: 570001</span>
           </div>
 
         </div>
 
         <!-- Creating Authority & Officer Reference Card -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-3">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <span>🏛️</span> Parent Panchayat / Authority Delegation
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Assigned Panchayat / Department</span>
-              <span id="parent-dept-name" class="font-bold text-slate-900 block text-sm">Mysuru City Corporation</span>
+              <span id="parent-dept-name" class="font-bold text-slate-900 block text-xs sm:text-sm">Mysuru City Corporation</span>
             </div>
             <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Creating Officer In-Charge</span>
-              <span id="parent-officer-name" class="font-bold text-slate-900 block text-sm">MCC Executive Officer</span>
+              <span id="parent-officer-name" class="font-bold text-slate-900 block text-xs sm:text-sm">MCC Executive Officer</span>
               <span id="parent-officer-email" class="font-mono text-[11px] text-emerald-700 block mt-0.5">mcc@gmail.com</span>
             </div>
             <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
               <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block mb-1">Inspection Status</span>
-              <span class="font-bold text-emerald-950 block text-sm">✓ Active On-Site Duty</span>
-              <span class="text-[11px] text-emerald-700 block mt-0.5">Automated PIN Routing Enabled</span>
+              <span class="font-bold text-emerald-950 block text-xs sm:text-sm">✓ Active On-Site Duty</span>
+              <span class="text-[11px] text-emerald-700 block mt-0.5">Automated PIN Routing Active</span>
             </div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- PANEL 2: 📋 INSPECTION                                                -->
-      <!-- ===================================================================== -->
-      <section id="panel-inspection" class="panel-view space-y-6">
-        
-        <!-- Summary Stats Banner -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Assigned Applications</span>
-            <span id="stat-assigned-count" class="text-3xl font-extrabold text-emerald-600 mt-2 block">0</span>
-            <span class="text-[11px] text-slate-500 font-medium mt-0.5 block">Filtered strictly by your assigned PIN</span>
-          </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pending Field Inspection</span>
-            <span id="stat-pending-audit" class="text-3xl font-extrabold text-amber-600 mt-2 block">0</span>
-            <span class="text-[11px] text-amber-700 font-medium mt-0.5 block">Awaiting GPS verification & physical audit</span>
-          </div>
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Passed & Approved</span>
-            <span id="stat-cleared-count" class="text-3xl font-extrabold text-blue-600 mt-2 block">0</span>
-            <span class="text-[11px] text-blue-700 font-medium mt-0.5 block">Cleared for debris transport & recycling</span>
-          </div>
-        </div>
-
-        <!-- Inspection Table: Application / Case ID, Site Address & PIN, GPS Location, Inspection Date & Time -->
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Physical Site Inspection Registry</h2>
-              <p class="text-xs text-slate-500">Record GPS geotag coordinates, audit timestamps, and physical site measurements for customer requests.</p>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Application / Case ID</th>
-                  <th class="px-4 py-3">Applicant & Contact</th>
-                  <th class="px-4 py-3">Site Address & PIN</th>
-                  <th class="px-4 py-3">GPS Location</th>
-                  <th class="px-4 py-3">Inspection Date & Time</th>
-                  <th class="px-4 py-3">Status</th>
-                  <th class="px-4 py-3">Action</th>
-                </tr>
-              </thead>
-              <tbody id="table-inspections-list" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- PANEL 3: 📸 EVIDENCE                                                  -->
-      <!-- ===================================================================== -->
-      <section id="panel-evidence" class="panel-view space-y-6">
-        
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Live Photos, Documents & Remarks Registry</h2>
-              <p class="text-xs text-slate-500">Examine customer live photos, Khatta/property deeds, blueprints, and inspector field audit remarks.</p>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Application ID</th>
-                  <th class="px-4 py-3">📸 Live Photos</th>
-                  <th class="px-4 py-3">📑 Documents</th>
-                  <th class="px-4 py-3">Site Address & PIN</th>
-                  <th class="px-4 py-3">💬 Remarks</th>
-                  <th class="px-4 py-3">Audit Action</th>
-                </tr>
-              </thead>
-              <tbody id="table-evidence-list" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
           </div>
         </div>
 
@@ -455,16 +483,16 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- 3. PHYSICAL SITE INSPECTION MODAL                                         -->
+  <!-- 4. PHYSICAL SITE INSPECTION & APPROVAL MODAL (PHONE SIZE OPTIMIZED)        -->
   <!-- ========================================================================= -->
-  <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div id="modal-container" class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+  <div id="modal-backdrop" class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div id="modal-container" class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar my-auto animate-in fade-in zoom-in duration-150">
       <!-- Dynamically Injected Modal Content -->
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 4. JAVASCRIPT CONTROLLER                                                  -->
+  <!-- 5. JAVASCRIPT CONTROLLER                                                  -->
   <!-- ========================================================================= -->
   <script>
     const AUTHORITY_CONFIGS = {
@@ -516,7 +544,8 @@
         material: 'Reinforced Concrete & Brick Rubble',
         verifiedTonnage: 14.5,
         tonnage: 14.5,
-        status: 'Certificate Issued',
+        status: 'Approved',
+        certificateStatus: 'Issued',
         certificateNo: 'NOC/MCC/2026/101',
         scheduledDate: '2026-09-17',
         completionDate: '2026-09-18',
@@ -530,7 +559,8 @@
         headTitle: 'Municipal Commissioner',
         issueDate: '2026-09-18',
         gpsLocation: '12.3051° N, 76.6554° E',
-        photos: ['https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=600&auto=format&fit=crop&q=80']
+        photos: ['https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=600&auto=format&fit=crop&q=80'],
+        inspectorNotes: 'Structural site verified for 10-ton tipper vehicle access. Dust suppression sheets installed.'
       },
       {
         id: 'GP-2026-104',
@@ -547,7 +577,8 @@
         material: 'Stone Masonry, Brick Rubble & Soil',
         verifiedTonnage: 22.0,
         tonnage: 22.0,
-        status: 'Certificate Issued',
+        status: 'Approved',
+        certificateStatus: 'Issued',
         certificateNo: 'NOC/GP/2026/104',
         scheduledDate: '2026-09-16',
         completionDate: '2026-09-18',
@@ -561,7 +592,8 @@
         headTitle: 'Panchayat Development Officer',
         issueDate: '2026-09-18',
         gpsLocation: '12.3021° N, 76.5912° E',
-        photos: ['https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80']
+        photos: ['https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80'],
+        inspectorNotes: 'Rural site inspected. 22 MT rubble volume cleared and haulage path approved for recycling depot.'
       },
       {
         id: 'TP-2026-106',
@@ -578,7 +610,8 @@
         material: 'Heavy Concrete Slabs & Steel Rubble',
         verifiedTonnage: 35.0,
         tonnage: 35.0,
-        status: 'Certificate Issued',
+        status: 'Approved',
+        certificateStatus: 'Issued',
         certificateNo: 'NOC/TP/2026/106',
         scheduledDate: '2026-09-17',
         completionDate: '2026-09-19',
@@ -592,7 +625,8 @@
         headTitle: 'Chief Officer / Zonal Superintendent',
         issueDate: '2026-09-19',
         gpsLocation: '12.3489° N, 76.5744° E',
-        photos: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80']
+        photos: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80'],
+        inspectorNotes: 'Industrial zone heavy slab debris verified. Hazardous materials absent. Approved for NOC.'
       },
       {
         id: 'GP-2026-112',
@@ -621,7 +655,8 @@
         headName: 'K. S. Manjunath (PDO)',
         headTitle: 'Panchayat Development Officer',
         gpsLocation: '12.2710° N, 76.5640° E',
-        photos: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80']
+        photos: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80'],
+        inspectorNotes: 'Physical on-site audit scheduled for today. Safety barricading checklist ready.'
       },
       {
         id: 'MCC-2026-108',
@@ -792,7 +827,12 @@
         const designation = currentUser.designation || (currentAuthorityKey === 'gp' ? 'Panchayat Health Inspector' : (currentAuthorityKey === 'tp' ? 'Town Municipal Inspector' : 'Ward Health Inspector'));
         const insId = currentUser.id || ('INS-' + currentAuthorityKey.toUpperCase() + '-101');
 
-        // Header Branding
+        // Mobile Header Sync
+        if (document.getElementById('mobile-icon')) document.getElementById('mobile-icon').innerText = cfg.icon;
+        if (document.getElementById('mobile-title')) document.getElementById('mobile-title').innerText = name + ' (' + (cfg.tag.split(' ')[0]) + ')';
+        if (document.getElementById('mobile-pin-text')) document.getElementById('mobile-pin-text').innerText = 'Assigned PIN: ' + assignedPin;
+
+        // Desktop Sidebar Branding
         const sidebarIcon = document.getElementById('sidebar-icon');
         if (sidebarIcon) sidebarIcon.innerText = cfg.icon;
         const sidebarTitle = document.getElementById('sidebar-title');
@@ -813,6 +853,9 @@
         const headerPinBadge = document.getElementById('header-assigned-pin-badge');
         if (headerPinBadge) headerPinBadge.innerText = '📍 Assigned PIN: ' + assignedPin;
 
+        const activePinTag = document.getElementById('active-pin-filter-tag');
+        if (activePinTag) activePinTag.innerText = '📍 Mapped PIN: ' + assignedPin;
+
         // Sidebar Profile Footer
         const inspNameDisplay = document.getElementById('inspector-name-display');
         if (inspNameDisplay) inspNameDisplay.innerText = name;
@@ -822,7 +865,7 @@
         const inspAvatar = document.getElementById('inspector-avatar');
         if (inspAvatar) inspAvatar.innerText = initials || 'IN';
 
-        // Panel 1: Inspector Details Populating
+        // Panel Details Populating
         const welcomeName = document.getElementById('welcome-inspector-name');
         if (welcomeName) welcomeName.innerText = name + ' (' + insId + ')';
         const welcomeOfficer = document.getElementById('welcome-creating-officer');
@@ -952,151 +995,159 @@
       const myPin = currentUser ? (currentUser.assignedPin || '570001') : '570001';
 
       // Summary Stats
-      document.getElementById('stat-assigned-count').innerText = myApps.length;
-      document.getElementById('stat-pending-audit').innerText = myApps.filter(a => a.status !== 'Approved').length;
-      document.getElementById('stat-cleared-count').innerText = myApps.filter(a => a.status === 'Approved').length;
+      const assignedCount = myApps.length;
+      const pendingCount = myApps.filter(a => a.status !== 'Approved' && a.certificateStatus !== 'Issued').length;
+      const approvedCount = myApps.filter(a => a.status === 'Approved' || a.certificateStatus === 'Issued').length;
 
-      renderInspectionTable(myApps, myPin);
-      renderEvidenceTable(myApps, myPin);
+      document.getElementById('stat-assigned-count').innerText = assignedCount;
+      document.getElementById('stat-pending-audit').innerText = pendingCount;
+      document.getElementById('stat-cleared-count').innerText = approvedCount;
+
+      if (document.getElementById('sidebar-assigned-badge')) {
+        document.getElementById('sidebar-assigned-badge').innerText = assignedCount;
+      }
+      if (document.getElementById('mob-stat-badge')) {
+        document.getElementById('mob-stat-badge').innerText = assignedCount;
+      }
+
+      renderInspectionView(myApps, myPin);
     }
 
-    // PANEL 2: INSPECTION TABLE (Application/Case ID, Site Address & PIN, GPS Location, Inspection Date & Time)
-    function renderInspectionTable(myApps, myPin) {
-      const tbody = document.getElementById('table-inspections-list');
+    // UNIFIED MOBILE-FIRST & DESKTOP RESPONSIVE INSPECTION DESK (With in-line Geotag Photos & Evidence Data)
+    function renderInspectionView(myApps, myPin) {
+      const container = document.getElementById('inspections-container');
+      if (!container) return;
+
       if (myApps.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No applications assigned to your PIN (${myPin}) yet. Fresh customer requests matching PIN ${myPin} will appear here automatically.
-            </td>
-          </tr>
+        container.innerHTML = `
+          <div class="py-12 px-4 text-center rounded-2xl bg-slate-50 border border-slate-200">
+            <span class="text-3xl block mb-2">📭</span>
+            <p class="font-bold text-slate-800 text-sm">No applications assigned to PIN ${myPin} currently.</p>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Citizen requests matching PIN ${myPin} will automatically appear on this inspection desk in real-time.</p>
+          </div>
         `;
         return;
       }
 
-      tbody.innerHTML = myApps.map(a => {
+      container.innerHTML = myApps.map(a => {
+        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
         const gpsText = a.gpsLocation || (a.lat ? `Lat: ${a.lat}° N, Lng: ${a.lng}° E` : `Lat: 12.29581° N, Lng: 76.63942° E`);
         const mapUrl = a.mapUrl || (a.lat ? `https://www.google.com/maps?q=${a.lat},${a.lng}` : `https://www.google.com/maps?q=12.29581,76.63942`);
-        const inspectTime = a.inspectionTime || a.auditedAt ? new Date(a.auditedAt || a.inspectionTime).toLocaleString() : 'Pending On-Site Audit';
+        const inspectTime = a.inspectionTime || a.auditedAt ? new Date(a.auditedAt || a.inspectionTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Pending Site Visit';
         const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
+        const remarksText = a.inspectorNotes || (isApproved ? 'Structural site verified for 10-ton tipper access. Safety guidelines met.' : 'Site audit scheduled. Physical GPS and rubble measurement required.');
+        const tonnageVal = a.verifiedTonnage || a.tonnage || 10;
 
-        return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">
-              <span class="block">${a.id}</span>
-              <span class="text-[10px] text-slate-500 font-normal">CASE-${a.id.replace('CD-REQ-', '')}</span>
-            </td>
-            <td class="px-4 py-3">
-              <span class="font-bold text-slate-900 block">${a.applicantName || 'Citizen'}</span>
-              <span class="font-mono text-slate-500 text-[11px] block">${a.phone || ''}</span>
-            </td>
-            <td class="px-4 py-3">
-              <span class="text-slate-800 block font-semibold">${a.address || 'Mysuru Premise'}</span>
-              <span class="font-mono text-emerald-700 text-[11px] font-bold block">PIN: ${a.pincode || a.pin || myPin}</span>
-            </td>
-            <td class="px-4 py-3">
-              <a href="${mapUrl}" target="_blank" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-mono text-[11px] font-bold flex items-center gap-1.5 w-fit border border-emerald-200 transition" title="Open in Google Maps">
-                <span>📍</span> <span>${gpsText}</span> <span class="text-[9px] text-emerald-700">↗</span>
-              </a>
-            </td>
-            <td class="px-4 py-3 font-mono text-slate-700 text-[11px]">
-              ${inspectTime}
-            </td>
-            <td class="px-4 py-3">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
-                ${a.status || 'Pending Verification'}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-1.5">
-                ${isApproved ? `
-                  <button onclick="openCertificateModal('${a.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs shadow-2xs transition cursor-pointer flex items-center gap-1" title="View Official NOC Certificate">
-                    <span>📜</span> <span>NOC</span>
-                  </button>
-                ` : ''}
-                <button onclick="openInspectionModal('${a.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1">
-                  <span>📋 Audit Site</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // PANEL 3: EVIDENCE TABLE (Live Photos, Documents, Remarks)
-    function renderEvidenceTable(myApps, myPin) {
-      const tbody = document.getElementById('table-evidence-list');
-      if (myApps.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">
-              No photo evidence or documents logged for PIN (${myPin}) yet.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = myApps.map(a => {
-        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
-        let photoHtml = `<span class="text-[11px] text-slate-400 font-mono italic">No photo uploaded</span>`;
-
+        let photoThumbHtml = '';
         if (photos.length > 0) {
-          photoHtml = `
-            <div class="flex items-center gap-2 cursor-pointer" onclick="viewPhoto('${a.id}')" title="Click to view full GPS Geotagged site photo">
-              <div class="relative size-10 rounded-xl overflow-hidden ring-2 ring-emerald-500/40 bg-slate-950 shrink-0">
-                <img src="${photos[0]}" class="size-full object-cover hover:scale-110 transition"/>
+          photoThumbHtml = `
+            <div class="relative group cursor-pointer shrink-0 rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950 shadow-xs" onclick="viewPhoto('${a.id}')" title="Click to enlarge live geotagged photo">
+              <img src="${photos[0]}" alt="Live Site Photo" class="h-28 w-28 sm:h-32 sm:w-32 object-cover group-hover:scale-105 transition duration-200"/>
+              <div class="absolute bottom-1 left-1 right-1 bg-black/75 backdrop-blur-xs rounded-lg px-1.5 py-0.5 text-center">
+                <span class="text-[9px] font-mono font-extrabold text-emerald-300 block truncate">📍 LIVE GEOTAG</span>
               </div>
-              <div class="flex flex-col">
-                <span class="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md w-fit">
-                  📍 Real Geotag
-                </span>
-                <span class="text-[9px] text-slate-400 font-mono mt-0.5">Click to inspect</span>
-              </div>
+              ${photos.length > 1 ? `
+                <div class="absolute top-1 right-1 bg-emerald-700 text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-xs">
+                  +${photos.length - 1}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          photoThumbHtml = `
+            <div class="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl border border-dashed border-slate-300 bg-slate-100/70 flex flex-col items-center justify-center p-2 text-center shrink-0">
+              <span class="text-xl">📷</span>
+              <span class="text-[9px] font-mono text-slate-500 mt-1">No site photo</span>
             </div>
           `;
         }
 
-        const remarksText = a.inspectorNotes || (a.status === 'Approved' ? 'Structural site verified for 10-ton tipper vehicle access. Safety sheets installed.' : 'Site visit pending. Visual inspection of debris required.');
-        const isApproved = a.status === 'Approved' || a.certificateStatus === 'Issued';
-
         return `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${a.id}</td>
-            <td class="px-4 py-3">
-              ${photoHtml}
-            </td>
-            <td class="px-4 py-3">
-              <div class="space-y-1">
-                <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 font-mono text-[10px] font-bold block w-fit border border-emerald-200">
-                  ✓ Khatta & Deed Validated
+          <!-- Inspection Card (Optimized for Mobile Phone Screens & Wide Screens) -->
+          <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:shadow-md transition space-y-3.5">
+            
+            <!-- Top Header: Case ID, Date, Status Badge -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-lg bg-slate-900 text-white font-mono font-bold text-xs tracking-tight">
+                  ${a.id}
                 </span>
-                <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 font-mono text-[10px] font-bold block w-fit border border-blue-200">
-                  ✓ Blueprint Verified (${a.verifiedTonnage || a.tonnage || 10} MT)
+                <span class="text-[11px] font-mono text-slate-400">
+                  ${a.scheduledDate || 'Today'}
                 </span>
               </div>
-            </td>
-            <td class="px-4 py-3">
-              <span class="text-slate-800 block">${a.address || 'Mysuru'}</span>
-              <span class="font-mono text-emerald-700 text-[11px] font-bold block">PIN: ${a.pincode || a.pin || myPin}</span>
-            </td>
-            <td class="px-4 py-3 max-w-xs">
-              <p class="text-xs text-slate-700 italic line-clamp-2">"${remarksText}"</p>
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-1.5">
+              <span class="px-3 py-1 rounded-full text-[11px] font-bold font-mono ${isApproved ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+                ${isApproved ? '✓ Passed & Approved (NOC)' : (a.status || 'Pending Field Audit')}
+              </span>
+            </div>
+
+            <!-- Body: Photo Evidence Thumbnail + Site Details -->
+            <div class="flex flex-col sm:flex-row gap-3.5 items-start">
+              
+              <!-- In-Line Geotag Photo Evidence -->
+              ${photoThumbHtml}
+
+              <!-- Core Application & Verification Details -->
+              <div class="flex-1 min-w-0 space-y-2">
+                
+                <!-- Applicant Name & Click-to-Call Phone -->
+                <div class="flex flex-wrap items-center justify-between gap-1">
+                  <span class="font-extrabold text-sm sm:text-base text-slate-950 block">${a.applicantName || 'Citizen Applicant'}</span>
+                  ${a.phone ? `
+                    <a href="tel:${a.phone.replace(/[^0-9+]/g, '')}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200 transition" title="Call Citizen">
+                      <span>📞</span> <span>${a.phone}</span>
+                    </a>
+                  ` : ''}
+                </div>
+
+                <!-- Site Premise Address & PIN -->
+                <div class="text-xs text-slate-700">
+                  <p class="font-medium text-slate-900 leading-snug">${a.address || 'Mysuru Premise'}</p>
+                  <span class="font-mono text-emerald-700 font-bold text-[11px]">Mapped PIN: ${a.pincode || a.pin || myPin}</span>
+                </div>
+
+                <!-- GPS Location Link & Document Validation Badges -->
+                <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <a href="${mapUrl}" target="_blank" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-mono text-[10px] sm:text-[11px] font-bold flex items-center gap-1 border border-slate-300 transition" title="Open GPS Location in Google Maps">
+                    <span>📍</span> <span>${gpsText}</span> <span class="text-[9px] text-slate-500">↗</span>
+                  </a>
+                  <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 font-mono text-[10px] font-bold border border-emerald-200">
+                    ✓ Khatta Validated
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 font-mono text-[10px] font-bold border border-blue-200">
+                    ✓ Blueprint (${tonnageVal} MT)
+                  </span>
+                </div>
+
+                <!-- Inspector Remarks / Field Notes -->
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Field Inspection Notes</span>
+                  <p class="text-slate-800 italic text-[11px] leading-relaxed">"${remarksText}"</p>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Footer Action Buttons (Full-Width on Phone, Quick Tap) -->
+            <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+              <div class="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">
+                <span>🕒 Last Audit:</span>
+                <span class="font-bold text-slate-700">${inspectTime}</span>
+              </div>
+              <div class="flex items-center gap-2">
                 ${isApproved ? `
-                  <button onclick="openCertificateModal('${a.id}')" class="text-xs font-bold text-amber-700 hover:text-amber-800 cursor-pointer flex items-center gap-0.5">
-                    <span>📜 Certificate</span>
+                  <button onclick="openCertificateModal('${a.id}')" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs shadow-2xs transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <span>📜</span> <span>View Official NOC</span>
                   </button>
                 ` : ''}
-                <button onclick="openInspectionModal('${a.id}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">
-                  Edit Remarks &rarr;
+                <button onclick="openInspectionModal('${a.id}')" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer flex items-center justify-center gap-1.5">
+                  <span>📋</span> <span>${isApproved ? 'Re-Audit Site' : 'Audit & Approve'}</span>
                 </button>
               </div>
-            </td>
-          </tr>
+            </div>
+
+          </div>
         `;
       }).join('');
     }
@@ -1114,22 +1165,29 @@
       modalContainer.innerHTML = `
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
               <span>📸</span> Real Location Site Photo Evidence
             </h3>
-            <p class="text-xs text-slate-500 font-mono">App ID: ${app.id} · PIN: ${app.pincode || app.pin || ''} · ${app.applicantName || 'Citizen'}</p>
+            <p class="text-[11px] text-slate-500 font-mono">${app.id} · PIN: ${app.pincode || app.pin || ''} · ${app.applicantName || 'Citizen'}</p>
           </div>
-          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold cursor-pointer">&times;</button>
+          <button onclick="closeModal()" class="size-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-base flex items-center justify-center cursor-pointer">&times;</button>
         </div>
         <div class="space-y-3">
           <div class="space-y-2">
-            <div id="inspector-active-photo-box" class="rounded-2xl overflow-hidden border border-slate-200 max-h-96 flex items-center justify-center bg-slate-950 shadow-inner">
-              <img id="inspector-active-photo-img" src="${photos[0]}" alt="Geotagged Site Photo" class="max-h-96 w-auto object-contain"/>
+            <div id="inspector-active-photo-box" class="rounded-2xl overflow-hidden border border-slate-800 max-h-80 sm:max-h-96 flex items-center justify-center bg-slate-950 shadow-inner">
+              <img id="inspector-active-photo-img" src="${photos[0]}" alt="Geotagged Site Photo" class="max-h-80 sm:max-h-96 w-auto object-contain"/>
             </div>
+            ${photos.length > 1 ? `
+              <div class="flex items-center gap-2 overflow-x-auto py-1">
+                ${photos.map((p, idx) => `
+                  <img src="${p}" onclick="document.getElementById('inspector-active-photo-img').src = '${p}'" class="size-14 rounded-xl object-cover cursor-pointer border-2 border-emerald-500 hover:opacity-80 shrink-0"/>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
-          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1 text-slate-700">
-            <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 mb-1.5">
-              <span class="font-bold text-emerald-800 flex items-center gap-1"><span>📍</span> <span>GPS Coordinates:</span></span>
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+              <span class="font-bold text-emerald-800 flex items-center gap-1"><span>📍</span> <span>Live GPS Geotag:</span></span>
               <span class="font-mono font-bold text-slate-900">${app.gpsLocation || (app.lat ? `Lat: ${app.lat}° N, Lng: ${app.lng}° E` : 'Lat: 12.29581° N, Lng: 76.63942° E')}</span>
             </div>
             <p><span class="font-bold">Real Site Address:</span> ${app.address || 'Mysuru Site'} (PIN: ${app.pincode || app.pin || '570001'})</p>
@@ -1137,13 +1195,13 @@
           </div>
         </div>
         <div class="pt-2 flex justify-end">
-          <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Close Preview</button>
+          <button onclick="closeModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Close Preview</button>
         </div>
       `;
       backdrop.classList.remove('hidden');
     }
 
-    // On-Site Inspection & Field Audit Modal
+    // On-Site Inspection & Field Audit Modal (Phone Size Optimized)
     function openInspectionModal(appId) {
       const app = applicationsList.find(a => a.id === appId);
       if (!app) return;
@@ -1157,112 +1215,106 @@
       modalContainer.innerHTML = `
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-              <span>📋</span> Conduct Physical Site Inspection
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+              <span>📋</span> Field Site Audit & Approval
             </h3>
-            <p class="text-xs text-slate-500 font-mono">App ID: ${app.id} · PIN: ${app.pincode || app.pin || '570001'}</p>
+            <p class="text-[11px] text-slate-500 font-mono">${app.id} · PIN: ${app.pincode || app.pin || '570001'}</p>
           </div>
-          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold cursor-pointer">&times;</button>
+          <button onclick="closeModal()" class="size-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-base flex items-center justify-center cursor-pointer">&times;</button>
         </div>
 
-        <form onsubmit="handleSaveInspection(event, '${app.id}')" class="space-y-4 text-xs">
+        <form onsubmit="handleSaveInspection(event, '${app.id}')" class="space-y-3.5 text-xs">
           
           <!-- Site Location & PIN Summary -->
           <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Site Premise Address</span>
-            <p class="font-bold text-slate-900 text-sm">${app.address || 'Mysuru Premise'}</p>
-            <span class="text-xs font-mono font-bold text-emerald-800">PIN Code: ${app.pincode || app.pin || '570001'} · Applicant: ${app.applicantName || 'Citizen'} (${app.phone || ''})</span>
+            <p class="font-bold text-slate-900 text-xs sm:text-sm leading-snug">${app.address || 'Mysuru Premise'}</p>
+            <span class="text-xs font-mono font-bold text-emerald-800 block mt-0.5">PIN: ${app.pincode || app.pin || '570001'} · Citizen: ${app.applicantName || 'Citizen'} (${app.phone || ''})</span>
           </div>
 
-          <!-- GPS Location & Date/Time Pickers -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block font-bold text-slate-700 uppercase tracking-wider">📍 GPS Location (Lat & Lng)</label>
-                <button type="button" onclick="detectGPS()" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-bold underline cursor-pointer">Auto-Fetch GPS</button>
-              </div>
-              <input id="audit-gps" type="text" value="${defaultGps}" required placeholder="Lat: 12.29581° N, Lng: 76.63942° E" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
-            </div>
-
-            <div>
-              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">📅 Inspection Time</label>
-              <input id="audit-datetime" type="datetime-local" value="${nowFormatted}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
-            </div>
-          </div>
-
-          <!-- Scheduled Date & Completion Date Controls -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">📅 Scheduled Date</label>
-              <input id="audit-scheduled-date" type="date" value="${app.scheduledDate || (app.inspectionDate ? app.inspectionDate.split('T')[0] : new Date().toISOString().split('T')[0])}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
-            </div>
-
-            <div>
-              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">🏁 Target / Completion Date</label>
-              <input id="audit-completion-date" type="date" value="${app.completionDate && !app.completionDate.includes('Pending') && !app.completionDate.includes('Progress') ? app.completionDate : ''}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
-            </div>
-          </div>
-
-          <!-- Photo Evidence Preview & Verification -->
+          <!-- Photo Evidence Preview Strip (Inspect on Phone) -->
           ${photos.length > 0 ? `
             <div class="p-3 bg-slate-900 rounded-2xl text-white space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Customer Live Camera Photo Evidence (${photos.length})</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Site Geotag Photos (${photos.length})</span>
                 <button type="button" onclick="viewPhoto('${app.id}')" class="text-[10px] text-emerald-300 underline font-bold cursor-pointer">Enlarge &rarr;</button>
               </div>
               <div class="flex items-center gap-2 overflow-x-auto py-1">
                 ${photos.map((p, idx) => `
-                  <div class="h-28 w-28 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center shrink-0 border border-slate-700">
+                  <div class="h-20 w-20 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center shrink-0 border border-slate-700">
                     <img src="${p}" alt="Site Photo ${idx+1}" class="h-full w-full object-cover cursor-pointer hover:scale-105 transition" onclick="viewPhoto('${app.id}')"/>
                   </div>
                 `).join('')}
               </div>
             </div>
-          ` : `
-            <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 text-xs">
-              <span class="font-bold">Note:</span> Customer did not capture live photo during permit filing. Please record your physical on-site observations below.
-            </div>
-          `}
+          ` : ''}
 
-          <!-- Audit Decision & Verified Tonnage -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- GPS Location & Auto-Fetch -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block font-bold text-slate-700 uppercase tracking-wider text-[11px]">📍 Live GPS Coordinates</label>
+              <button type="button" onclick="detectGPS()" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-bold underline cursor-pointer">Auto-Fetch GPS</button>
+            </div>
+            <input id="audit-gps" type="text" value="${defaultGps}" required placeholder="Lat: 12.29581° N, Lng: 76.63942° E" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+          </div>
+
+          <!-- Scheduled Date & Inspection Time Pickers -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Verified Tonnage (MT)</label>
-              <input id="audit-tonnage" type="number" value="${app.verifiedTonnage || app.tonnage || '10'}" placeholder="e.g. 10" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[11px]">📅 Scheduled Date</label>
+              <input id="audit-scheduled-date" type="date" value="${app.scheduledDate || (app.inspectionDate ? app.inspectionDate.split('T')[0] : new Date().toISOString().split('T')[0])}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
 
             <div>
-              <label class="block font-bold text-emerald-800 uppercase tracking-wider mb-1">⚡ Update Inspection Stage</label>
-              <select id="audit-decision" class="w-full px-3.5 py-2.5 rounded-xl bg-emerald-50/60 border border-emerald-300 font-bold text-xs text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                <option value="Visit Scheduled" ${app.status === 'Visit Scheduled' ? 'selected' : ''}>📅 1. Visit Scheduled (Date & Time Fixed)</option>
-                <option value="On-Site Audit In Progress" ${app.status === 'On-Site Audit In Progress' ? 'selected' : ''}>🚶 2. On-Site Audit In Progress</option>
-                <option value="Inspection Passed & Verified" ${app.status === 'Inspection Passed & Verified' ? 'selected' : ''}>🟢 3. Inspection Passed & Verified (Ready for NOC)</option>
-                <option value="Approved" ${app.status === 'Approved' ? 'selected' : ''}>🏆 4. Agree & Approve (Issue Official NOC Certificate)</option>
-                <option value="Action Required" ${app.status === 'Action Required' ? 'selected' : ''}>⚠️ 5. Action Required / Resubmission</option>
-                <option value="Flagged Violation" ${app.status === 'Flagged Violation' ? 'selected' : ''}>❌ 6. Flagged Violation</option>
-                <option value="Cancelled" ${app.status === 'Cancelled' ? 'selected' : ''}>⛔ 7. Cancel / Reject Complaint</option>
-              </select>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[11px]">🕒 Inspection Time</label>
+              <input id="audit-datetime" type="datetime-local" value="${nowFormatted}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
           </div>
 
-          <!-- Water Bill Discount & Civic Incentive Clause (Editable by Inspector) -->
+          <!-- Audit Decision / Status Selection -->
           <div>
-            <label class="block font-bold text-emerald-800 uppercase tracking-wider mb-1">💧 Green Civic Water Bill Rebate / Incentive (Editable)</label>
-            <input id="audit-water-discount" type="text" value="${app.waterBillDiscount || '10% discount on Water Bill for 2 Years'}" placeholder="e.g. 10% discount on Water Bill for 2 Years" class="w-full px-3.5 py-2.5 rounded-xl bg-emerald-50/50 border border-emerald-300 font-bold text-xs text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
-            <span class="text-[10px] text-slate-500 block mt-0.5">Civil incentive awarded to citizen upon compliant C&D clearance.</span>
+            <label class="block font-bold text-emerald-900 uppercase tracking-wider mb-1 text-[11px]">⚡ Inspection Stage / Approval Decision</label>
+            <select id="audit-decision" class="w-full px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-300 font-bold text-xs text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <option value="Approved" ${app.status === 'Approved' || app.certificateStatus === 'Issued' ? 'selected' : ''}>🏆 Agree & Approve (Issue Official NOC Certificate)</option>
+              <option value="Inspection Passed & Verified" ${app.status === 'Inspection Passed & Verified' ? 'selected' : ''}>🟢 Inspection Passed & Verified</option>
+              <option value="On-Site Audit In Progress" ${app.status === 'On-Site Audit In Progress' ? 'selected' : ''}>🚶 On-Site Audit In Progress</option>
+              <option value="Visit Scheduled" ${app.status === 'Visit Scheduled' ? 'selected' : ''}>📅 Visit Scheduled (Date & Time Fixed)</option>
+              <option value="Action Required" ${app.status === 'Action Required' ? 'selected' : ''}>⚠️ Action Required / Resubmission</option>
+              <option value="Flagged Violation" ${app.status === 'Flagged Violation' ? 'selected' : ''}>❌ Flagged Violation</option>
+              <option value="Cancelled" ${app.status === 'Cancelled' ? 'selected' : ''}>⛔ Cancel / Reject Request</option>
+            </select>
+          </div>
+
+          <!-- Verified Tonnage & Target Completion Date -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[11px]">Verified Tonnage (MT)</label>
+              <input id="audit-tonnage" type="number" step="0.1" value="${app.verifiedTonnage || app.tonnage || '10'}" placeholder="e.g. 10" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[11px]">🏁 Completion Date</label>
+              <input id="audit-completion-date" type="date" value="${app.completionDate && !app.completionDate.includes('Pending') && !app.completionDate.includes('Progress') ? app.completionDate : ''}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+          </div>
+
+          <!-- Water Bill Discount Clause -->
+          <div>
+            <label class="block font-bold text-emerald-800 uppercase tracking-wider mb-1 text-[11px]">💧 Civic Water Bill Rebate / Incentive</label>
+            <input id="audit-water-discount" type="text" value="${app.waterBillDiscount || '10% discount on Water Bill for 2 Years'}" placeholder="e.g. 10% discount on Water Bill for 2 Years" class="w-full px-3.5 py-2 rounded-xl bg-emerald-50/50 border border-emerald-300 font-bold text-xs text-emerald-950 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
           </div>
 
           <!-- Inspector Field Remarks -->
           <div>
-            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">💬 Inspector Field Remarks</label>
-            <textarea id="audit-remarks" rows="2" placeholder="e.g. Site boundary verified. Road access suitable for 10-ton tipper truck. Safety barricades checked." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">${app.inspectorNotes || ''}</textarea>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[11px]">💬 Inspector Field Remarks</label>
+            <textarea id="audit-remarks" rows="2" placeholder="e.g. Site boundary verified. Road access suitable for 10-ton tipper truck. Safety barricades checked." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">${app.inspectorNotes || ''}</textarea>
           </div>
 
-          <!-- Buttons -->
-          <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
-            <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Cancel</button>
-            <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 cursor-pointer flex items-center gap-1.5">
-              <span>✓ Update Status & Generate NOC</span>
+          <!-- Mobile-Friendly Action Buttons -->
+          <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-slate-100">
+            <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer text-center">Cancel</button>
+            <button type="submit" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/25 cursor-pointer flex items-center justify-center gap-1.5 text-center">
+              <span>✓ Save Audit & Issue NOC Certificate</span>
             </button>
           </div>
 
@@ -1281,7 +1333,7 @@
             const val = `Lat: ${lat.toFixed(5)}° N, Lng: ${lng.toFixed(5)}° E`;
             const input = document.getElementById('audit-gps');
             if (input) input.value = val;
-            showToast('📍 GPS Coordinates captured: ' + val, 'success');
+            showToast('📍 Live GPS coordinates captured: ' + val, 'success');
           },
           err => {
             // Fallback realistic Mysuru GPS
@@ -1457,12 +1509,15 @@
     function switchInspectorTab(tabId) {
       document.querySelectorAll('.panel-view').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.mobile-tab-btn').forEach(el => el.classList.remove('active'));
 
       const targetPanel = document.getElementById('panel-' + tabId);
       const targetBtn = document.getElementById('btn-tab-' + tabId);
+      const mobBtn = document.getElementById('mob-tab-' + tabId);
 
       if (targetPanel) targetPanel.classList.add('active');
       if (targetBtn) targetBtn.classList.add('active');
+      if (mobBtn) mobBtn.classList.add('active');
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1513,21 +1568,21 @@
   <!-- ========================================================================= -->
   <!-- OFFICIAL MUNICIPAL & PANCHAYAT C&D CLEARANCE CERTIFICATE (NOC) MODAL       -->
   <!-- ========================================================================= -->
-  <div id="noc-certificate-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-emerald-600/30 overflow-hidden my-auto animate-in fade-in zoom-in duration-150">
+  <div id="noc-certificate-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[94vh] flex flex-col shadow-2xl border-2 border-emerald-600/30 overflow-hidden my-auto animate-in fade-in zoom-in duration-150">
       
       <!-- Certificate Action Header -->
-      <div class="p-4 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-800 shrink-0">
-        <div class="flex items-center gap-2.5">
-          <span class="text-lg">📜</span>
+      <div class="p-3.5 sm:p-4 bg-[#081d19] text-white flex items-center justify-between border-b border-emerald-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-base sm:text-lg">📜</span>
           <div>
             <h3 class="font-bold text-xs sm:text-sm text-white">Official Clearance Certificate (NOC)</h3>
-            <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="cert-modal-header-sub">Authorized by Ward Inspector & Panchayat</span>
+            <span class="text-[9px] sm:text-[10px] font-mono text-emerald-400 font-semibold" id="cert-modal-header-sub">Authorized by Ward Inspector & Panchayat</span>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
           <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1 shadow-xs">
-            <span>🖨️</span> <span>Print / Save PDF</span>
+            <span>🖨️</span> <span class="hidden sm:inline">Print / Save PDF</span><span class="sm:hidden">Print</span>
           </button>
           <button onclick="closeCertificateModal()" class="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white text-base font-bold flex items-center justify-center transition cursor-pointer">
             &times;
@@ -1536,106 +1591,106 @@
       </div>
 
       <!-- Printable Certificate Body (Properly Vertically Aligned, No Horizontal Scrolling) -->
-      <div class="p-5 sm:p-7 overflow-y-auto space-y-5 flex-1 bg-[#fcfdfd] text-slate-800 border-4 border-double border-emerald-800/20 m-2 sm:m-3 rounded-2xl" id="printable-certificate-content">
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1 bg-[#fcfdfd] text-slate-800 border-4 border-double border-emerald-800/20 m-2 rounded-2xl" id="printable-certificate-content">
         
         <!-- Govt Header & Seal -->
         <div class="text-center space-y-1 border-b-2 border-emerald-800/30 pb-3">
-          <div class="inline-flex items-center justify-center size-10 rounded-full bg-emerald-900 text-amber-300 font-bold text-xl shadow-md">
+          <div class="inline-flex items-center justify-center size-9 sm:size-10 rounded-full bg-emerald-900 text-amber-300 font-bold text-lg sm:text-xl shadow-md">
             🏛️
           </div>
-          <span class="block text-[10px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
-          <span class="block text-[9px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
-          <h2 class="text-sm sm:text-base font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
+          <span class="block text-[9px] sm:text-[10px] font-bold font-mono tracking-widest text-emerald-900 uppercase">Government of Karnataka</span>
+          <span class="block text-[8px] sm:text-[9px] font-semibold text-slate-500 uppercase tracking-wider">Department of Municipal Administration & Panchayat Raj</span>
+          <h2 class="text-xs sm:text-base font-black text-slate-950 uppercase tracking-tight" id="cert-authority-title">
             Bogadi Gram Panchayat (Rural)
           </h2>
-          <div class="inline-block px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold text-[11px] uppercase tracking-wider border border-emerald-300 mt-0.5">
+          <div class="inline-block px-2.5 sm:px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider border border-emerald-300 mt-0.5">
             Official C&D Waste Clearance No-Objection Certificate (NOC)
           </div>
         </div>
 
         <!-- Reference & Date Strip -->
-        <div class="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-2.5">
+        <div class="flex items-center justify-between text-[11px] sm:text-xs font-mono border-b border-slate-200 pb-2">
           <div>
             <span class="text-slate-400 font-semibold">NOC Ref No:</span>
             <span class="font-bold text-emerald-800 ml-1" id="cert-ref-no">NOC/GP/2026/934924</span>
           </div>
           <div>
-            <span class="text-slate-400 font-semibold">Date of Clearance:</span>
+            <span class="text-slate-400 font-semibold">Date:</span>
             <span class="font-bold text-slate-800 ml-1" id="cert-issue-date">19 Sep 2026</span>
           </div>
         </div>
 
         <!-- Clearance Statement & Details Grid -->
-        <div class="space-y-3.5 text-xs">
-          <p class="leading-relaxed text-slate-700 text-[11.5px]">
+        <div class="space-y-3 text-xs">
+          <p class="leading-relaxed text-slate-700 text-[11px] sm:text-[11.5px]">
             This is to certify that physical site inspection, GPS verification, and rubble volume measurement have been completed in accordance with the <strong>Construction & Demolition Waste Management Rules</strong>. The applicant is hereby authorized for lawful haulage and disposal at the designated municipal processing facility.
           </p>
 
-          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div class="p-3 sm:p-3.5 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
             <div>
-              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Authorized Citizen / Applicant</span>
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Authorized Citizen / Applicant</span>
               <span class="font-bold text-slate-900 text-xs block" id="cert-applicant-name">Citizen User</span>
               <span class="text-slate-600 font-mono text-[10px] block" id="cert-applicant-phone">Mobile: +91 98765 43210</span>
             </div>
 
             <div>
-              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Property ID & Location</span>
               <span class="font-bold text-slate-900 text-xs block" id="cert-prop-id">40291001</span>
               <span class="text-slate-600 text-[10px] block" id="cert-full-address">Bogadi 2nd Stage, Mysuru · PIN 570026</span>
             </div>
 
             <div>
-              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Verified Rubble Volume</span>
               <span class="font-bold text-emerald-800 font-mono text-xs block" id="cert-verified-tonnage">10 MT (Metric Tonnes)</span>
               <span class="text-slate-500 text-[9px] block">Waste Category: Construction & Demolition Debris</span>
             </div>
 
             <div>
-              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider block">GPS Site Coordinates</span>
               <span class="font-bold font-mono text-slate-800 block text-[10px]" id="cert-gps-coords">12.2958° N, 76.6394° E</span>
               <span class="text-emerald-700 text-[9px] font-semibold block">Geo-Fenced Physical Audit Done</span>
             </div>
           </div>
 
           <!-- Water Bill Rebate / Incentive Badge -->
-          <div class="p-3 rounded-xl bg-cyan-50 border border-cyan-200 flex items-start gap-2.5 text-xs">
-            <span class="text-lg">💧</span>
+          <div class="p-2.5 sm:p-3 rounded-xl bg-cyan-50 border border-cyan-200 flex items-start gap-2.5 text-xs">
+            <span class="text-base sm:text-lg">💧</span>
             <div class="flex-1">
               <div class="flex items-center justify-between">
-                <span class="font-bold text-cyan-950 block text-[11px]">Green Civic Water Bill Rebate / Incentive</span>
-                <span class="px-2 py-0.5 rounded-full bg-cyan-200/70 text-cyan-900 font-mono font-bold text-[9px]">2 Years Validity</span>
+                <span class="font-bold text-cyan-950 block text-[10.5px] sm:text-[11px]">Green Civic Water Bill Rebate / Incentive</span>
+                <span class="px-2 py-0.2 rounded-full bg-cyan-200/70 text-cyan-900 font-mono font-bold text-[8.5px]">2 Years Validity</span>
               </div>
-              <span class="font-bold text-cyan-950 text-[10.5px] block mt-0.5" id="cert-water-discount">10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)</span>
-              <p class="text-[9.5px] text-cyan-800/80 mt-0.5">Granted for Construction & Demolition (C&D) Waste Management Compliance for sustainable debris processing.</p>
+              <span class="font-bold text-cyan-950 text-[10px] sm:text-[10.5px] block mt-0.5" id="cert-water-discount">10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)</span>
+              <p class="text-[9px] sm:text-[9.5px] text-cyan-800/80 mt-0.5">Granted for Construction & Demolition (C&D) Waste Management Compliance for sustainable debris processing.</p>
             </div>
           </div>
         </div>
 
         <!-- Endorsement & Signatures -->
-        <div class="pt-3 border-t-2 border-emerald-800/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="pt-2.5 border-t-2 border-emerald-800/20 flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <!-- Digital QR Seal -->
-          <div class="flex items-center gap-2.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200">
-            <div class="size-10 rounded-lg bg-emerald-900 text-white flex flex-col items-center justify-center font-mono font-bold text-[8px] leading-tight text-center">
+          <div class="flex items-center gap-2 p-1.5 rounded-xl bg-emerald-50/70 border border-emerald-200 w-full sm:w-auto">
+            <div class="size-8 rounded-lg bg-emerald-900 text-white flex flex-col items-center justify-center font-mono font-bold text-[7px] leading-tight text-center shrink-0">
               <span>QR</span>
-              <span class="text-[6px] text-emerald-300">VALID</span>
+              <span class="text-[5px] text-emerald-300">VALID</span>
             </div>
-            <div class="text-[9px] leading-tight">
+            <div class="text-[8.5px] leading-tight">
               <span class="font-bold text-emerald-950 block">Digital Verification Seal</span>
               <span class="text-slate-500 font-mono block">Status: Official & Compliant</span>
             </div>
           </div>
 
           <!-- Inspector & Authority Signatures -->
-          <div class="flex items-center gap-4 text-right">
-            <div class="space-y-0.5">
-              <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Verified & Issued By Inspector</span>
-              <span class="font-bold text-slate-900 text-xs block" id="cert-inspector-name">Seervi</span>
-              <span class="text-[9px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
+          <div class="flex items-center justify-between sm:justify-end gap-3 text-right w-full sm:w-auto">
+            <div class="space-y-0.5 text-left sm:text-right">
+              <span class="text-[8px] sm:text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Field Inspector</span>
+              <span class="font-bold text-slate-900 text-[11px] sm:text-xs block" id="cert-inspector-name">Seervi</span>
+              <span class="text-[8.5px] font-mono text-slate-500 block" id="cert-inspector-email">q@gmail.com</span>
             </div>
-            <div class="space-y-0.5 border-l border-slate-200 pl-3">
-              <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Panchayat / Civic Authority</span>
-              <span class="font-bold text-emerald-900 text-xs block" id="cert-panchayat-seal">Bogadi Gram Panchayat</span>
-              <span class="text-[9px] font-mono text-slate-500 block" id="cert-head-name">K. S. Manjunath (PDO)</span>
+            <div class="space-y-0.5 border-l border-slate-200 pl-2.5">
+              <span class="text-[8px] sm:text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Civic Authority</span>
+              <span class="font-bold text-emerald-900 text-[11px] sm:text-xs block" id="cert-panchayat-seal">Bogadi Gram Panchayat</span>
+              <span class="text-[8.5px] font-mono text-slate-500 block" id="cert-head-name">K. S. Manjunath (PDO)</span>
             </div>
           </div>
         </div>
@@ -1644,7 +1699,7 @@
 
       <!-- Modal Footer -->
       <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2 shrink-0">
-        <button onclick="closeCertificateModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer">
+        <button onclick="closeCertificateModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer">
           Close Window
         </button>
       </div>
