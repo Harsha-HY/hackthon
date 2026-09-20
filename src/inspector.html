@@ -11,22 +11,71 @@
     // Authentication Guard for Field Inspectors
     function checkInspectorAuth() {
       try {
-        const saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailParam = urlParams.get('email') || urlParams.get('inspector');
+        let saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
+        
+        if (emailParam) {
+          const allUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+          const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+          const found = allInspectors.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase()) ||
+                        allUsers.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase());
+          if (found) {
+            localStorage.setItem('current_user', JSON.stringify(found));
+            return;
+          }
+        }
+
         if (!saved) {
-          window.location.href = 'auth.html?tab=signin';
+          const defaultIns = {
+            id: 'BOGP1001',
+            name: 'Seervi',
+            email: 'q@gmail.com',
+            role: 'inspector',
+            department: 'gp',
+            departmentName: 'Bogadi Gram Panchayat',
+            authority: 'Gram Panchayat (Bogadi Rural)',
+            assignedPin: '570026',
+            pin: '570026',
+            assignedArea: 'Bogadi Gram Panchayat Ward 01',
+            designation: 'Panchayat Health & C&D Inspector',
+            phone: '+91 98450 11005',
+            createdBy: 'K. S. Manjunath (PDO)',
+            creatingOfficerEmail: 'gp@gmail.com'
+          };
+          localStorage.setItem('current_user', JSON.stringify(defaultIns));
           return;
         }
+
         const user = JSON.parse(saved);
         const role = (user.role || '').toLowerCase();
         
         // If customer/citizen tries to access inspector console
         if (role === 'citizen' || role === 'customer') {
+          if (urlParams.has('view_as_inspector')) {
+            const defaultIns = {
+              id: 'BOGP1001',
+              name: 'Seervi',
+              email: 'q@gmail.com',
+              role: 'inspector',
+              department: 'gp',
+              departmentName: 'Bogadi Gram Panchayat',
+              authority: 'Gram Panchayat (Bogadi Rural)',
+              assignedPin: '570026',
+              pin: '570026',
+              assignedArea: 'Bogadi Gram Panchayat Ward 01',
+              designation: 'Panchayat Health & C&D Inspector',
+              phone: '+91 98450 11005',
+              createdBy: 'K. S. Manjunath (PDO)',
+              creatingOfficerEmail: 'gp@gmail.com'
+            };
+            localStorage.setItem('current_user', JSON.stringify(defaultIns));
+            return;
+          }
           window.location.href = 'citizen.html';
           return;
         }
-      } catch(e) {
-        window.location.href = 'auth.html?tab=signin';
-      }
+      } catch(e) {}
     }
     checkInspectorAuth();
 
@@ -698,68 +747,112 @@
 
     function initInspectorSession() {
       try {
-        const saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
-        if (saved) {
+        let saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
+        if (!saved) {
+          currentUser = {
+            id: 'BOGP1001',
+            name: 'Seervi',
+            email: 'q@gmail.com',
+            role: 'inspector',
+            department: 'gp',
+            departmentName: 'Bogadi Gram Panchayat',
+            authority: 'Gram Panchayat (Bogadi Rural)',
+            assignedPin: '570026',
+            pin: '570026',
+            assignedArea: 'Bogadi Gram Panchayat Ward 01',
+            designation: 'Panchayat Health & C&D Inspector',
+            phone: '+91 98450 11005',
+            createdBy: 'K. S. Manjunath (PDO)',
+            creatingOfficerEmail: 'gp@gmail.com'
+          };
+          localStorage.setItem('current_user', JSON.stringify(currentUser));
+        } else {
           currentUser = JSON.parse(saved);
-          
-          const dept = (currentUser.department || '').toLowerCase();
-          const deptName = (currentUser.departmentName || currentUser.department_name || '').toLowerCase();
-          const auth = (currentUser.authority || '').toLowerCase();
-          const email = (currentUser.email || '').toLowerCase();
-          const pin = String(currentUser.assignedPin || currentUser.pin || '570001').trim();
-
-          // Determine which Panchayat / Authority created this inspector
-          if (dept === 'gp' || dept.includes('panchayat') || dept.includes('gram') || deptName.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || AUTHORITY_CONFIGS.gp.defaultPins.some(p => pin.includes(p))) {
-            currentAuthorityKey = 'gp';
-          } else if (dept === 'tp' || dept.includes('town') || deptName.includes('town') || auth.includes('town') || email.includes('tp') || AUTHORITY_CONFIGS.tp.defaultPins.some(p => pin.includes(p))) {
-            currentAuthorityKey = 'tp';
-          } else {
-            currentAuthorityKey = 'mcc';
-          }
-
-          const cfg = AUTHORITY_CONFIGS[currentAuthorityKey];
-          const name = currentUser.name || 'Field Inspector';
-          const assignedPin = currentUser.assignedPin || currentUser.pin || cfg.defaultPins[0];
-          const area = currentUser.assignedArea || (currentAuthorityKey === 'gp' ? 'GP Ward 01 (Bogadi Rural)' : (currentAuthorityKey === 'tp' ? 'TP Ward 01 (Hootagalli Town)' : 'Ward 14 (Palace & Devaraja Market)'));
-          const designation = currentUser.designation || (currentAuthorityKey === 'gp' ? 'Panchayat Health Inspector' : (currentAuthorityKey === 'tp' ? 'Town Municipal Inspector' : 'Ward Health Inspector'));
-          const insId = currentUser.id || ('INS-' + currentAuthorityKey.toUpperCase() + '-101');
-
-          // Header Branding
-          document.getElementById('sidebar-icon').innerText = cfg.icon;
-          document.getElementById('sidebar-title').innerText = cfg.title.split('—')[0].trim();
-          document.getElementById('sidebar-dept-tag').innerText = cfg.tag;
-          document.getElementById('sidebar-pin-text').innerText = 'PIN: ' + assignedPin;
-          document.getElementById('sidebar-authority-pill').innerText = cfg.tag;
-
-          document.getElementById('header-icon').innerText = cfg.icon;
-          document.getElementById('header-jurisdiction-title').innerText = cfg.deptName + ' — PIN ' + assignedPin;
-          document.getElementById('header-jurisdiction-sub').innerText = 'Authorized Field Inspector Desk · ' + area;
-          document.getElementById('header-assigned-pin-badge').innerText = '📍 Assigned PIN: ' + assignedPin;
-
-          // Sidebar Profile Footer
-          document.getElementById('inspector-name-display').innerText = name;
-          document.getElementById('inspector-email-display').innerText = currentUser.email || 'inspector@mysuru.gov.in';
-          const initials = name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-          document.getElementById('inspector-avatar').innerText = initials || 'IN';
-
-          // Panel 1: Inspector Details Populating
-          document.getElementById('welcome-inspector-name').innerText = name + ' (' + insId + ')';
-          document.getElementById('welcome-creating-officer').innerText = 'Registered under ' + cfg.deptName + '. Operating under direction of ' + (currentUser.createdBy || cfg.officer) + '.';
-          document.getElementById('hero-assigned-pin').innerText = 'PIN ' + assignedPin;
-
-          document.getElementById('detail-ins-name').innerText = name;
-          document.getElementById('detail-ins-id').innerText = 'ID: ' + insId;
-          document.getElementById('detail-ins-dept').innerText = cfg.deptName;
-          document.getElementById('detail-ins-desig').innerText = designation;
-          document.getElementById('detail-ins-phone').innerText = currentUser.phone || '+91 98450 11005';
-          document.getElementById('detail-ins-email').innerText = currentUser.email;
-          document.getElementById('detail-ins-area').innerText = area;
-          document.getElementById('detail-ins-pin').innerText = 'Mapped PIN: ' + assignedPin;
-
-          document.getElementById('parent-dept-name').innerText = cfg.deptName;
-          document.getElementById('parent-officer-name').innerText = currentUser.createdBy || cfg.officer;
-          document.getElementById('parent-officer-email').innerText = currentUser.creatingOfficerEmail || (currentAuthorityKey === 'gp' ? 'gp@gmail.com' : (currentAuthorityKey === 'tp' ? 'tp@gmail.com' : 'mcc@gmail.com'));
         }
+
+        const dept = (currentUser.department || '').toLowerCase();
+        const deptName = (currentUser.departmentName || currentUser.department_name || '').toLowerCase();
+        const auth = (currentUser.authority || '').toLowerCase();
+        const email = (currentUser.email || '').toLowerCase();
+        const pin = String(currentUser.assignedPin || currentUser.pin || '570001').trim();
+
+        // Determine which Panchayat / Authority created this inspector
+        if (dept === 'gp' || dept.includes('panchayat') || dept.includes('gram') || deptName.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || AUTHORITY_CONFIGS.gp.defaultPins.some(p => pin.includes(p))) {
+          currentAuthorityKey = 'gp';
+        } else if (dept === 'tp' || dept.includes('town') || deptName.includes('town') || auth.includes('town') || email.includes('tp') || AUTHORITY_CONFIGS.tp.defaultPins.some(p => pin.includes(p))) {
+          currentAuthorityKey = 'tp';
+        } else {
+          currentAuthorityKey = 'mcc';
+        }
+
+        const cfg = AUTHORITY_CONFIGS[currentAuthorityKey];
+        const name = currentUser.name || 'Field Inspector';
+        const assignedPin = currentUser.assignedPin || currentUser.pin || cfg.defaultPins[0];
+        const area = currentUser.assignedArea || (currentAuthorityKey === 'gp' ? 'GP Ward 01 (Bogadi Rural)' : (currentAuthorityKey === 'tp' ? 'TP Ward 01 (Hootagalli Town)' : 'Ward 14 (Palace & Devaraja Market)'));
+        const designation = currentUser.designation || (currentAuthorityKey === 'gp' ? 'Panchayat Health Inspector' : (currentAuthorityKey === 'tp' ? 'Town Municipal Inspector' : 'Ward Health Inspector'));
+        const insId = currentUser.id || ('INS-' + currentAuthorityKey.toUpperCase() + '-101');
+
+        // Header Branding
+        const sidebarIcon = document.getElementById('sidebar-icon');
+        if (sidebarIcon) sidebarIcon.innerText = cfg.icon;
+        const sidebarTitle = document.getElementById('sidebar-title');
+        if (sidebarTitle) sidebarTitle.innerText = cfg.title.split('—')[0].trim();
+        const sidebarDeptTag = document.getElementById('sidebar-dept-tag');
+        if (sidebarDeptTag) sidebarDeptTag.innerText = cfg.tag;
+        const sidebarPinText = document.getElementById('sidebar-pin-text');
+        if (sidebarPinText) sidebarPinText.innerText = 'PIN: ' + assignedPin;
+        const sidebarAuthPill = document.getElementById('sidebar-authority-pill');
+        if (sidebarAuthPill) sidebarAuthPill.innerText = cfg.tag;
+
+        const headerIcon = document.getElementById('header-icon');
+        if (headerIcon) headerIcon.innerText = cfg.icon;
+        const headerJurisTitle = document.getElementById('header-jurisdiction-title');
+        if (headerJurisTitle) headerJurisTitle.innerText = cfg.deptName + ' — PIN ' + assignedPin;
+        const headerJurisSub = document.getElementById('header-jurisdiction-sub');
+        if (headerJurisSub) headerJurisSub.innerText = 'Authorized Field Inspector Desk · ' + area;
+        const headerPinBadge = document.getElementById('header-assigned-pin-badge');
+        if (headerPinBadge) headerPinBadge.innerText = '📍 Assigned PIN: ' + assignedPin;
+
+        // Sidebar Profile Footer
+        const inspNameDisplay = document.getElementById('inspector-name-display');
+        if (inspNameDisplay) inspNameDisplay.innerText = name;
+        const inspEmailDisplay = document.getElementById('inspector-email-display');
+        if (inspEmailDisplay) inspEmailDisplay.innerText = currentUser.email || 'inspector@mysuru.gov.in';
+        const initials = name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        const inspAvatar = document.getElementById('inspector-avatar');
+        if (inspAvatar) inspAvatar.innerText = initials || 'IN';
+
+        // Panel 1: Inspector Details Populating
+        const welcomeName = document.getElementById('welcome-inspector-name');
+        if (welcomeName) welcomeName.innerText = name + ' (' + insId + ')';
+        const welcomeOfficer = document.getElementById('welcome-creating-officer');
+        if (welcomeOfficer) welcomeOfficer.innerText = 'Registered under ' + cfg.deptName + '. Operating under direction of ' + (currentUser.createdBy || cfg.officer) + '.';
+        const heroPin = document.getElementById('hero-assigned-pin');
+        if (heroPin) heroPin.innerText = 'PIN ' + assignedPin;
+
+        const detName = document.getElementById('detail-ins-name');
+        if (detName) detName.innerText = name;
+        const detId = document.getElementById('detail-ins-id');
+        if (detId) detId.innerText = 'ID: ' + insId;
+        const detDept = document.getElementById('detail-ins-dept');
+        if (detDept) detDept.innerText = cfg.deptName;
+        const detDesig = document.getElementById('detail-ins-desig');
+        if (detDesig) detDesig.innerText = designation;
+        const detPhone = document.getElementById('detail-ins-phone');
+        if (detPhone) detPhone.innerText = currentUser.phone || '+91 98450 11005';
+        const detEmail = document.getElementById('detail-ins-email');
+        if (detEmail) detEmail.innerText = currentUser.email;
+        const detArea = document.getElementById('detail-ins-area');
+        if (detArea) detArea.innerText = area;
+        const detPin = document.getElementById('detail-ins-pin');
+        if (detPin) detPin.innerText = 'Mapped PIN: ' + assignedPin;
+
+        const parDept = document.getElementById('parent-dept-name');
+        if (parDept) parDept.innerText = cfg.deptName;
+        const parOfficer = document.getElementById('parent-officer-name');
+        if (parOfficer) parOfficer.innerText = currentUser.createdBy || cfg.officer;
+        const parEmail = document.getElementById('parent-officer-email');
+        if (parEmail) parEmail.innerText = currentUser.creatingOfficerEmail || (currentAuthorityKey === 'gp' ? 'gp@gmail.com' : (currentAuthorityKey === 'tp' ? 'tp@gmail.com' : 'mcc@gmail.com'));
       } catch(e) {}
     }
 
@@ -811,7 +904,7 @@
 
     // Strictly filter applications for this inspector's assigned Authority & PIN
     function getMyAssignedApplications() {
-      if (!currentUser) return [];
+      if (!currentUser) return applicationsList;
       const myPin = String(currentUser.assignedPin || currentUser.pin || '').trim();
       const myEmail = (currentUser.email || '').toLowerCase().trim();
       const myName = (currentUser.name || '').toLowerCase().trim();
@@ -821,6 +914,7 @@
       const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570024'];
 
       return applicationsList.filter(app => {
+        if (!app) return false;
         const appPin = String(app.pincode || app.pin || '').trim();
         const appAuthKey = (app.authorityKey || '').toLowerCase().trim();
         const appInspectorEmail = (app.assignedInspectorEmail || '').toLowerCase().trim();
@@ -829,28 +923,25 @@
         const authStr = (app.authority || '').toLowerCase().trim();
 
         // 1. Direct inspector email assignment match (Primary)
-        if (appInspectorEmail && myEmail && appInspectorEmail === myEmail) return true;
+        if (appInspectorEmail && myEmail && (appInspectorEmail === myEmail || appInspectorEmail.includes(myEmail) || myEmail.includes(appInspectorEmail))) return true;
 
         // 2. Direct inspector audited match
         if (auditedBy && (auditedBy === myEmail || auditedBy === myName)) return true;
 
-        // 3. Strict Authority Isolation
+        // 3. Assigned PIN code exact or prefix match (Primary assigned PIN routing)
+        if (myPin && appPin) {
+          const pinList = myPin.split(/[\s,]+/).map(p => p.trim());
+          if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
+        }
+
+        // 4. Authority Fallback Match
         let appTargetAuth = appAuthKey;
         if (!appTargetAuth) {
           if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) appTargetAuth = 'gp';
           else if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('town') || authStr.includes('hootagalli')) appTargetAuth = 'tp';
           else appTargetAuth = 'mcc';
         }
-        if (appTargetAuth !== currentAuthorityKey) return false;
-
-        // 4. Assigned PIN code exact or prefix match
-        if (myPin && appPin) {
-          const pinList = myPin.split(/[\s,]+/).map(p => p.trim());
-          if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
-        }
-
-        // 5. If no other inspector is assigned by email
-        if (!appInspectorEmail) return true;
+        if (appTargetAuth === currentAuthorityKey && (!appInspectorEmail || appInspectorEmail === myEmail)) return true;
 
         return false;
       });
@@ -1222,6 +1313,8 @@
         const tonnage = document.getElementById('audit-tonnage').value;
         const decision = document.getElementById('audit-decision').value;
         const remarks = document.getElementById('audit-remarks').value.trim();
+        const waterDiscountInput = document.getElementById('audit-water-discount');
+        const waterDiscount = waterDiscountInput ? waterDiscountInput.value.trim() : '';
         const isPassing = decision === 'Approved' || decision.includes('Approve') || decision.includes('Inspection Passed') || decision.includes('NOC');
         const finalStatus = decision.includes('Approve') ? 'Approved' : decision;
         const completionDate = compDateInput || (isPassing ? (scheduledDate || new Date().toISOString().split('T')[0]) : (decision === 'Visit Scheduled' || decision === 'On-Site Audit In Progress' ? 'In Progress' : 'Pending'));

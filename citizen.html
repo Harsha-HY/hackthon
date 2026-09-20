@@ -424,29 +424,14 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Jurisdiction / Panchayat <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                      <select id="form-cust-authority" onchange="handleAuthoritySelectChange()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition cursor-pointer">
-                        <option value="">⚡ Auto-Detect by PIN Code</option>
-                        <option value="gp">🏛️ Gram Panchayat (Rural PIN: 570026, 571130...)</option>
-                        <option value="tp">🏢 Town Panchayat (Peri-Urban PIN: 570018, 570017...)</option>
-                        <option value="mcc">🏙️ Mysuru City Corporation (MCC Urban PIN: 570001, 570002...)</option>
-                      </select>
-                    </div>
-                    <span class="text-[10px] text-slate-400 block mt-1">Select or let PIN code auto-detect your local jurisdiction</span>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Site PIN Code <span class="text-rose-500">*</span></label>
+                  <div class="relative">
+                    <span class="absolute left-3.5 top-3 text-slate-400 text-sm">📍</span>
+                    <input id="form-cust-pin" type="text" required maxlength="6" oninput="handlePinChange()" placeholder="e.g. 570026 (Bogadi GP), 570018 (Hootagalli TP), 570001 (MCC Urban)" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
                   </div>
-
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Code <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                      <span class="absolute left-3.5 top-3 text-slate-400 text-sm">📍</span>
-                      <input id="form-cust-pin" type="text" required maxlength="6" oninput="handlePinChange()" placeholder="e.g. 570026 (GP) or 570018 (TP)" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
-                    </div>
-                    <div id="pin-route-sub" class="mt-1">
-                      <span class="text-[10px] text-emerald-700 font-mono font-semibold block">Routing: Enter PIN code or click "Autofill by GPS"</span>
-                    </div>
+                  <div id="pin-route-sub" class="mt-1">
+                    <span class="text-[10px] text-emerald-700 font-mono font-semibold block">Routing: Enter 6-digit PIN code or click "Autofill Form" above for auto-routing.</span>
                   </div>
                 </div>
 
@@ -909,8 +894,8 @@
       }
     }
 
-    // Dynamic Resolution of Authority & Inspector based on PIN and/or user selection
-    function resolveAuthorityAndInspector(pin, preferredAuthKey = '') {
+    // Dynamic Resolution of Authority & Inspector based exclusively on PIN Code
+    function resolveAuthorityAndInspector(pin) {
       const GP_PINS = ['570026', '571130', '570028', '560079', '570021', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610', '570016'];
       const MCC_PINS = ['570001', '570002', '570004', '570008', '570010', '570020', '570023', '570024'];
@@ -962,41 +947,66 @@
         const isGp = GP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
         const isTp = TP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
 
-        if (preferredAuthKey === 'gp' || isGp) {
+        if (isGp) {
           authorityKey = 'gp';
           authority = 'Gram Panchayat (Bogadi Rural)';
-          assignedInspectorName = 'Seervi';
-          assignedInspectorEmail = 'q@gmail.com';
           assignedOfficerEmail = 'gp@gmail.com';
           badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
           tag = 'Gram Panchayat';
-        } else if (preferredAuthKey === 'tp' || isTp) {
+
+          if (cleanPin === '571130') {
+            assignedInspectorName = 'Basavarajappa M.';
+            assignedInspectorEmail = 'basava.gp@gmail.com';
+          } else if (cleanPin === '571311') {
+            assignedInspectorName = 'S. Nanjappa';
+            assignedInspectorEmail = 'nanjappa.gp@gmail.com';
+          } else if (cleanPin === '570028') {
+            assignedInspectorName = 'Dimple';
+            assignedInspectorEmail = 'dim@gmail.com';
+          } else {
+            assignedInspectorName = 'Seervi';
+            assignedInspectorEmail = 'q@gmail.com';
+          }
+        } else if (isTp) {
           authorityKey = 'tp';
           authority = 'Town Panchayat (Hootagalli Town)';
-          assignedInspectorName = 'M. Anand';
-          assignedInspectorEmail = 'anand.tp@gmail.com';
           assignedOfficerEmail = 'tp@gmail.com';
           badgeColor = 'bg-teal-50 text-teal-900 border-teal-300';
           tag = 'Town Panchayat';
+
+          if (cleanPin === '570017') {
+            assignedInspectorName = 'Manjunatha Rao';
+            assignedInspectorEmail = 'manju.tp@gmail.com';
+          } else if (cleanPin === '570027') {
+            assignedInspectorName = 'Prashanth G.';
+            assignedInspectorEmail = 'prashanth.tp@gmail.com';
+          } else if (cleanPin === '571607' || cleanPin === '571604') {
+            assignedInspectorName = 'K. Suresh';
+            assignedInspectorEmail = 'suresh.tp@gmail.com';
+          } else {
+            assignedInspectorName = 'M. Anand';
+            assignedInspectorEmail = 'anand.tp@gmail.com';
+          }
         } else {
           authorityKey = 'mcc';
           authority = 'Mysuru Municipal Corporation (MCC Urban)';
-          assignedInspectorName = 'Rajesh Kumar';
-          assignedInspectorEmail = 'inspector.mcc@gmail.com';
           assignedOfficerEmail = 'mcc@gmail.com';
           badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
           tag = 'Mysuru City Corporation';
-        }
 
-        // Check if any custom inspector exists in that dept
-        const deptInspector = allInspectors.find(ins => {
-          const d = (ins.department || '').toLowerCase();
-          const dn = (ins.departmentName || '').toLowerCase();
-          return d === authorityKey || (authorityKey === 'gp' && (d.includes('panchayat') || dn.includes('panchayat'))) || (authorityKey === 'tp' && (d.includes('town') || dn.includes('town')));
-        });
-        if (deptInspector) {
-          assignedInspectorName = deptInspector.name;
-          assignedInspectorEmail = deptInspector.email;
+          if (cleanPin === '570002') {
+            assignedInspectorName = 'S. Swamy';
+            assignedInspectorEmail = 'swamy.mcc@gmail.com';
+          } else if (cleanPin === '570004') {
+            assignedInspectorName = 'Divya Shankar';
+            assignedInspectorEmail = 'divya.mcc@gmail.com';
+          } else if (cleanPin === '570023') {
+            assignedInspectorName = 'P. Ramesh';
+            assignedInspectorEmail = 'ramesh.mcc@gmail.com';
+          } else {
+            assignedInspectorName = 'Rajesh Kumar';
+            assignedInspectorEmail = 'inspector.mcc@gmail.com';
+          }
         }
       }
 
@@ -1005,22 +1015,14 @@
 
     function handlePinChange() {
       const pin = (document.getElementById('form-cust-pin').value || '').trim();
-      const authSelect = document.getElementById('form-cust-authority');
-      const prefAuth = authSelect ? authSelect.value : '';
-
-      const matched = resolveAuthorityAndInspector(pin, prefAuth);
-      
-      // Update form select if auto-matched and user didn't explicitly force another
-      if (authSelect && !prefAuth && matched.authorityKey) {
-        authSelect.value = matched.authorityKey;
-      }
+      const matched = resolveAuthorityAndInspector(pin);
 
       const sub = document.getElementById('pin-route-sub');
       if (sub) {
         if (!pin) {
           sub.innerHTML = `
             <span class="text-slate-500 font-mono text-[10px] block">
-              Routing: Enter PIN code or click "Autofill by GPS" to auto-match your Ward Inspector & Panchayat
+              Routing: Enter 6-digit PIN code or click "Autofill Form" above for auto-routing.
             </span>
           `;
         } else {
@@ -1031,7 +1033,7 @@
                 <span>${matched.authority}</span>
               </div>
               <div class="font-mono text-[10px] font-semibold text-slate-700">
-                👮 Designated Inspector: <strong class="text-slate-900">${matched.assignedInspectorName}</strong> (${matched.assignedInspectorEmail})
+                👮 Auto-Assigned Inspector: <strong class="text-slate-900">${matched.assignedInspectorName}</strong> (${matched.assignedInspectorEmail})
               </div>
             </div>
           `;
@@ -1046,22 +1048,6 @@
         if (authNameEl) authNameEl.innerText = matched.authority;
         if (inspNameEl) inspNameEl.innerText = `${matched.assignedInspectorName} (${matched.assignedInspectorEmail}) · Zone: PIN ${pin || 'Auto'}`;
       }
-    }
-
-    function handleAuthoritySelectChange() {
-      const authSelect = document.getElementById('form-cust-authority');
-      const pinInput = document.getElementById('form-cust-pin');
-      if (authSelect && pinInput) {
-        const val = authSelect.value;
-        if (val === 'gp' && (!pinInput.value || !['570026', '571130', '570028', '560079', '570021'].includes(pinInput.value))) {
-          pinInput.value = '570026';
-        } else if (val === 'tp' && (!pinInput.value || !['570018', '570017', '570027', '571607'].includes(pinInput.value))) {
-          pinInput.value = '570018';
-        } else if (val === 'mcc' && (!pinInput.value || !['570001', '570002', '570004', '570023'].includes(pinInput.value))) {
-          pinInput.value = '570001';
-        }
-      }
-      handlePinChange();
     }
 
     // Photo Capture & Upload Handling (Supports live camera & bulk multi-file uploads)
@@ -1445,9 +1431,7 @@
       const issueDate = new Date().toISOString().split('T')[0];
       const status = 'Pending Inspection';
 
-      const authSelect = document.getElementById('form-cust-authority');
-      const prefAuth = authSelect ? authSelect.value : '';
-      const matched = resolveAuthorityAndInspector(pin, prefAuth);
+      const matched = resolveAuthorityAndInspector(pin);
 
       const authorityKey = matched.authorityKey;
       const authority = matched.authority;
