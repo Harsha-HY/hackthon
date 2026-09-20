@@ -336,8 +336,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[880px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Citizen ID</th>
                   <th class="px-4 py-3">Applicant Full Name</th>
@@ -346,7 +346,7 @@
                   <th class="px-4 py-3">Authority Jurisdiction</th>
                   <th class="px-4 py-3">Clearance Permits</th>
                   <th class="px-4 py-3">Account Status</th>
-                  <th class="px-4 py-3">Action</th>
+                  <th class="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody id="table-citizens" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
@@ -374,8 +374,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[850px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Property PID / Khatta</th>
                   <th class="px-4 py-3">Site Address</th>
@@ -410,8 +410,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[920px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Application ID</th>
                   <th class="px-4 py-3">Applicant Details</th>
@@ -453,8 +453,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[920px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Inspector ID</th>
                   <th class="px-4 py-3">Officer Name & Designation</th>
@@ -492,8 +492,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[920px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Request ID</th>
                   <th class="px-4 py-3">Structure Details</th>
@@ -534,8 +534,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[950px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Certificate No.</th>
                   <th class="px-4 py-3">Application ID</th>
@@ -1421,37 +1421,37 @@
 
       tbody.innerHTML = citizens.map((c, i) => `
         <tr class="hover:bg-slate-50/80 transition">
-          <td class="px-4 py-3 font-mono font-bold text-emerald-800">${c.id || `CITZ-${currentAuthorityKey.toUpperCase()}-${String(i+101)}`}</td>
-          <td class="px-4 py-3">
-            <span class="font-bold text-slate-900 block">${c.name}</span>
+          <td class="px-4 py-3 font-mono font-bold text-emerald-800 whitespace-nowrap">${c.id || `CITZ-${currentAuthorityKey.toUpperCase()}-${String(i+101)}`}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="font-bold text-slate-900 block text-xs">${c.name}</span>
             <span class="text-[10px] text-slate-400 font-mono">Reg: ${c.registeredDate || '2026-09-18'}</span>
           </td>
-          <td class="px-4 py-3">
+          <td class="px-4 py-3 whitespace-nowrap">
             <span class="font-mono text-emerald-900 font-semibold block text-xs">${c.email}</span>
             <span class="font-mono text-slate-500 text-[11px] block">📱 ${c.phone}</span>
           </td>
-          <td class="px-4 py-3">
-            <span class="font-bold text-slate-800 block text-xs">${c.propId || 'PID-MYS-101'}</span>
-            <span class="text-slate-600 text-[11px] block">${c.address || 'Mysuru Site'}</span>
+          <td class="px-4 py-3 min-w-[180px]">
+            <span class="font-bold text-slate-800 font-mono block text-xs">${c.propId || 'PID-MYS-101'}</span>
+            <span class="text-slate-600 text-[11px] block leading-tight">${c.address || 'Mysuru Site'}</span>
             <span class="font-mono text-emerald-700 text-[10px] font-bold">PIN: ${c.pin || '570001'}</span>
           </td>
-          <td class="px-4 py-3">
-            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 font-bold text-[10px] border border-slate-200 block w-fit">
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 font-bold text-[10px] border border-slate-200 inline-block">
               🏛️ ${dept.name.split('(')[0].trim()}
             </span>
           </td>
-          <td class="px-4 py-3 font-mono font-bold text-emerald-700">
-            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200">
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 font-mono font-bold text-xs border border-emerald-200 inline-block">
               ${c.permits || 1} Permit${(c.permits || 1) > 1 ? 's' : ''} Filed
             </span>
           </td>
-          <td class="px-4 py-3">
-            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold inline-block">
               ✓ ${c.status || 'Active'}
             </span>
           </td>
-          <td class="px-4 py-3">
-            <button onclick="switchOfficerTab('applications')" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 hover:underline cursor-pointer">
+          <td class="px-4 py-3 whitespace-nowrap text-right">
+            <button onclick="switchOfficerTab('applications')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs font-bold transition cursor-pointer">
               Applications &rarr;
             </button>
           </td>
@@ -2124,37 +2124,34 @@
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-4 py-3 font-mono font-bold text-emerald-800">${formattedEmpId}</td>
-            <td class="px-4 py-3">
-              <span class="font-bold text-slate-900 block">${ins.name}</span>
+            <td class="px-4 py-3 font-mono font-bold text-emerald-800 whitespace-nowrap">${formattedEmpId}</td>
+            <td class="px-4 py-3 whitespace-nowrap min-w-[170px]">
+              <span class="font-bold text-slate-900 block text-xs">${ins.name}</span>
               <span class="text-[11px] text-slate-500 block">${ins.designation || 'Ward Health Inspector'}</span>
             </td>
-            <td class="px-4 py-3">
-              <span class="font-semibold text-slate-800 block">${ins.assignedArea || 'Zone Area'}</span>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span class="font-semibold text-slate-800 block text-xs">${ins.assignedArea || 'Zone Area'}</span>
             </td>
-            <td class="px-4 py-3 font-mono font-semibold text-emerald-800">${ins.email}</td>
-            <td class="px-4 py-3 font-mono text-slate-700">${ins.phone || '+91 98450 11001'}</td>
-            <td class="px-4 py-3">
-              <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-950 font-mono font-bold text-xs border border-emerald-200 block w-fit">
+            <td class="px-4 py-3 font-mono font-semibold text-emerald-800 whitespace-nowrap text-xs">${ins.email}</td>
+            <td class="px-4 py-3 font-mono text-slate-700 whitespace-nowrap text-xs">${ins.phone || '+91 98450 11001'}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-950 font-mono font-bold text-xs border border-emerald-200 inline-block">
                 📍 PIN: ${pin}
               </span>
             </td>
-            <td class="px-4 py-3 font-mono text-xs">
-              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold border border-slate-200 block w-fit">
+            <td class="px-4 py-3 font-mono text-xs whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold border border-slate-200 inline-block">
                 ${workloadText}
               </span>
             </td>
-            <td class="px-4 py-3">
+            <td class="px-4 py-3 whitespace-nowrap">
               <button type="button" onclick="toggleInspectorStatus('${ins.email}')" class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold transition cursor-pointer border ${(ins.status || 'Active').includes('Leave') ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-emerald-100 hover:text-emerald-900' : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-amber-100 hover:text-amber-900'}" title="Click to toggle Active / On Leave">
                 ${(ins.status || 'Active').includes('Leave') ? '⏸️ On Leave' : '✓ Active (On Duty)'}
               </button>
             </td>
-            <td class="px-4 py-3 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <button type="button" onclick="loginDirectlyAsInspector('${ins.email}', '${password}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer flex items-center gap-1" title="Test Login as this Inspector">
-                  <span>🚀 Sign In</span>
-                </button>
-                <button type="button" onclick="deleteOfficerInspector('${ins.email}', '${ins.name}')" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition cursor-pointer flex items-center gap-1" title="Delete Inspector and revoke login access">
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end">
+                <button type="button" onclick="deleteOfficerInspector('${ins.email}', '${ins.name}')" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition cursor-pointer flex items-center gap-1" title="Delete Inspector and revoke login access">
                   <span>🗑️ Delete</span>
                 </button>
               </div>

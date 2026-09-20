@@ -486,8 +486,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[920px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Department / Authority</th>
                   <th class="px-4 py-3">Head / Officer Name</th>
@@ -518,51 +518,56 @@
             </div>
             <div>
               <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Officers</p>
-              <h4 id="stat-total-officers" class="text-2xl font-extrabold text-slate-900 mt-0.5">3 Active</h4>
+              <h3 id="stat-total-officers" class="text-2xl font-black text-slate-900 mt-0.5">12</h3>
+              <span class="text-[10px] text-emerald-700 font-semibold font-mono">Karnataka Cadre</span>
             </div>
           </div>
           <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xl">
+            <div class="size-12 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xl">
               🏛️
             </div>
             <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">MCC Officers</p>
-              <h4 id="stat-mcc-officers" class="text-2xl font-extrabold text-emerald-800 mt-0.5">1 Assigned</h4>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">MCC Urban Staff</p>
+              <h3 id="stat-mcc-officers" class="text-2xl font-black text-slate-900 mt-0.5">4</h3>
+              <span class="text-[10px] text-blue-700 font-semibold font-mono">Wards 01-65</span>
             </div>
           </div>
           <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xl">
+            <div class="size-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xl">
               🏡
             </div>
             <div>
               <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Gram Panchayat</p>
-              <h4 id="stat-gp-officers" class="text-2xl font-extrabold text-amber-800 mt-0.5">1 Assigned</h4>
+              <h3 id="stat-gp-officers" class="text-2xl font-black text-slate-900 mt-0.5">4</h3>
+              <span class="text-[10px] text-amber-700 font-semibold font-mono">Bogadi & Rural</span>
             </div>
           </div>
           <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
-            <div class="size-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xl">
+            <div class="size-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-xl">
               🏭
             </div>
             <div>
               <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Town Panchayat</p>
-              <h4 id="stat-tp-officers" class="text-2xl font-extrabold text-blue-800 mt-0.5">1 Assigned</h4>
+              <h3 id="stat-tp-officers" class="text-2xl font-black text-slate-900 mt-0.5">4</h3>
+              <span class="text-[10px] text-purple-700 font-semibold font-mono">Hootagalli & Periphery</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-5">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <!-- Officers & Inspectors Directory Table -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <h3 class="text-base font-bold text-slate-900">Officers & Field Inspectors Management Console</h3>
-              <p class="text-xs text-slate-500">All officers configured across MCC, Gram Panchayat, and Town Panchayat with their assigned jurisdictions, login status & active debris cases.</p>
+              <h3 class="text-base font-bold text-slate-900">Field Inspectors & Designated Officers Directory</h3>
+              <p class="text-xs text-slate-500">Departmental field staff responsible for physical site visits, rubble estimation, and compliance approvals.</p>
             </div>
-            <!-- Department Filter Tabs -->
-            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+            <!-- Department Quick Filter Pill Tabs -->
+            <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl">
               <button onclick="filterOfficersByDept('all')" id="btn-filter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
-                All Officers
+                ⭐ All Cadres
               </button>
               <button onclick="filterOfficersByDept('mcc')" id="btn-filter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏛️ MCC
+                🏛️ MCC Urban
               </button>
               <button onclick="filterOfficersByDept('gp')" id="btn-filter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
                 🏡 Gram Panchayat
@@ -580,8 +585,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[920px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Officer / Inspector</th>
                   <th class="px-4 py-3">Role & Employee ID</th>
@@ -619,14 +624,14 @@
               <button onclick="filterDemolitionRequestsByDept('all')" id="btn-demfilter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
                 🌐 All Jurisdictions
               </button>
+              <button onclick="filterDemolitionRequestsByDept('mcc')" id="btn-demfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏛️ MCC Urban
+              </button>
               <button onclick="filterDemolitionRequestsByDept('gp')" id="btn-demfilter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
                 🏡 Gram Panchayat
               </button>
               <button onclick="filterDemolitionRequestsByDept('tp')" id="btn-demfilter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
                 🏭 Town Panchayat
-              </button>
-              <button onclick="filterDemolitionRequestsByDept('mcc')" id="btn-demfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
-                🏛️ MCC
               </button>
             </div>
           </div>
@@ -638,8 +643,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[950px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Request ID</th>
                   <th class="px-4 py-3">Property</th>
@@ -692,8 +697,8 @@
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <table class="w-full text-left text-xs min-w-[950px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th class="px-4 py-3">Certificate ID</th>
                   <th class="px-4 py-3">Application / Property</th>
