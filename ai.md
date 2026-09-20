@@ -15,7 +15,7 @@ This separates AI tools used **to build** this project from AI **inside the prod
 |---|---|
 | Were AI tools used during development? | Yes — a Gemini-based local workspace (see Section 1) and Claude for documentation |
 | Does the product use AI/ML at runtime? | yes |
-| Roughly how much of the code was AI-assisted? | [Team to fill in your own estimate] |
+| Roughly how much of the code was AI-assisted? | [Tfrontend 35% database 10% server.js 20%] |
 
 ## 1. AI Tools Used During Development
 
