@@ -21,8 +21,8 @@ This separates AI tools used **to build** this project from AI **inside the prod
 
 | Tool | Model / plan | Used by | What it was used for |
 |---|---|---|---|
-| Gemini-based local workspace (`.gemini\antigravity\scratch` path) | Not specified | Team | Early prototype: `build_index.py` writes its output to `C:\Users\harsh\.gemini\antigravity\scratch\mysuru-civic-routing\index.html`, which shows this folder was created in that workspace |
-| Claude (Anthropic), claude.ai chat | Not specified | Team | Submission documents only: reformatting the Decision Log to one page and into the Q1–Q3 template, converting it to PDF, and drafting this disclosure. No application code was written in this chat |
+| Gemini-based local workspace (`.gemini\antigravity\scratch` path) | auto | Team | Early prototype: `build_index.py` writes its output to `C:\Users\harsh\.gemini\antigravity\scratch\mysuru-civic-routing\index.html`, which shows this folder was created in that workspace |
+| Claude (Anthropic), claude.ai chat | sonnet opus | Team | Submission documents only: reformatting the Decision Log to one page and into the Q1–Q3 template, converting it to PDF, and drafting this disclosure. No application code was written in this chat |
 
 **Reference design:** the README states the first UI was replicated from a Lovable-hosted app (`hello-web-magic-70.lovable.app`). Lovable is an AI app-building platform. The repository does not say whether that original app was AI-generated.
 
