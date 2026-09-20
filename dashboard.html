@@ -747,8 +747,10 @@
           const type = event.data.type;
           if (type === 'INSPECTOR_CREATED' || type === 'INSPECTOR_UPDATED' || type === 'INSPECTOR_DELETED' || type === 'OFFICER_CREATED' || type === 'OFFICER_DELETED') {
             renderAuthoritiesTable();
+            renderInspectorsTable();
           }
-          if (type === 'APPLICATION_UPDATED' || type === 'APPLICATION_CREATED') {
+          if (type === 'APPLICATION_UPDATED' || type === 'APPLICATION_CREATED' || type === 'STATUS_UPDATED') {
+            loadData();
             renderDemolitionRequestsTable();
             renderCertificatesTable();
           }
@@ -758,7 +760,9 @@
     }
 
     window.addEventListener('storage', (e) => {
+      loadData();
       renderAuthoritiesTable();
+      renderInspectorsTable();
       renderDemolitionRequestsTable();
       renderCertificatesTable();
     });

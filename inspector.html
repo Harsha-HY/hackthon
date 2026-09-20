@@ -1222,9 +1222,9 @@
         const tonnage = document.getElementById('audit-tonnage').value;
         const decision = document.getElementById('audit-decision').value;
         const remarks = document.getElementById('audit-remarks').value.trim();
-        const waterDiscount = document.getElementById('audit-water-discount') ? document.getElementById('audit-water-discount').value.trim() : '10% discount on Water Bill for 2 Years';
-
-        const completionDate = compDateInput || ((decision === 'Approved' || decision === 'Inspection Passed & Verified') ? new Date().toISOString().split('T')[0] : 'In Progress');
+        const isPassing = decision === 'Approved' || decision.includes('Approve') || decision.includes('Inspection Passed') || decision.includes('NOC');
+        const finalStatus = decision.includes('Approve') ? 'Approved' : decision;
+        const completionDate = compDateInput || (isPassing ? (scheduledDate || new Date().toISOString().split('T')[0]) : (decision === 'Visit Scheduled' || decision === 'On-Site Audit In Progress' ? 'In Progress' : 'Pending'));
 
         app.gpsLocation = gps;
         app.inspectionTime = datetime;
@@ -1232,16 +1232,24 @@
         app.completionDate = completionDate;
         app.tonnage = tonnage;
         app.verifiedTonnage = tonnage;
-        app.status = decision;
+        app.status = finalStatus;
         app.inspectorNotes = remarks;
-        app.waterBillDiscount = waterDiscount || '10% discount on Water Bill for 2 Years';
+        app.waterBillDiscount = waterDiscount || '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)';
         app.auditedBy = currentUser ? (currentUser.name || 'Field Inspector') : 'Field Inspector';
-        app.assignedInspectorName = currentUser ? (currentUser.name || app.assignedInspectorName) : app.assignedInspectorName;
-        app.assignedInspectorEmail = currentUser ? (currentUser.email || app.assignedInspectorEmail) : app.assignedInspectorEmail;
+        app.assignedInspectorName = currentUser ? (currentUser.name || app.assignedInspectorName) : (app.assignedInspectorName || 'Field Inspector');
+        app.assignedInspectorEmail = currentUser ? (currentUser.email || app.assignedInspectorEmail) : (app.assignedInspectorEmail || 'inspector@gmail.com');
         app.auditedAt = new Date().toISOString();
 
-        if (decision === 'Approved' || decision === 'Inspection Passed & Verified') {
+        if (isPassing) {
           app.certificateStatus = 'Issued';
+          if (!app.certificateNo) {
+            const cleanId = (app.id || 'REQ101').replace(/[^a-zA-Z0-9]/g, '');
+            const authPrefix = (app.authorityKey || currentAuthorityKey || 'mcc').toUpperCase();
+            app.certificateNo = `NOC/${authPrefix}/2026/${cleanId.slice(-6)}`;
+          }
+          if (!app.issueDate) {
+            app.issueDate = new Date().toISOString().split('T')[0];
+          }
         }
 
         // 1. Post updated status to Server Backend API
@@ -1253,7 +1261,7 @@
           });
         } catch(err) {}
 
-        // 2. Save locally
+        // 2. Save locally in master applications list
         localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
         
         // Sync to customer requests cache
@@ -1264,16 +1272,18 @@
           localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
         }
 
-        // 3. Broadcast to all open tabs immediately
+        // 3. Broadcast to all open tabs immediately for 0ms cross-portal sync
         if (civicSyncChannel) {
           try {
-            civicSyncChannel.postMessage({ type: 'STATUS_UPDATED', id: appId, status: decision });
+            civicSyncChannel.postMessage({ type: 'STATUS_UPDATED', id: appId, status: app.status, application: app });
+            civicSyncChannel.postMessage({ type: 'APPLICATION_UPDATED', id: appId, status: app.status, application: app });
           } catch(e) {}
         }
+        window.dispatchEvent(new Event('storage'));
 
         closeModal();
         renderAllPanels();
-        showToast('🎉 Status updated to "' + decision + '" for ' + appId + '! Official NOC Certificate generated.', 'success');
+        showToast('🎉 Status updated to "' + finalStatus + '" for ' + appId + '! ' + (isPassing ? 'Official NOC Certificate issued.' : 'Customer tracker updated live.'), 'success');
       }
     }
 

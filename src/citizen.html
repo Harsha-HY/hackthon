@@ -1720,27 +1720,39 @@
       });
     }
 
-    async function syncLiveCustomerApplications() {
+    function syncLiveCustomerApplications() {
+      // 1. Immediately read from LocalStorage for instant 0ms cross-tab reactivity
       try {
-        const res = await fetch('/api/applications');
-        if (res.ok) {
-          const serverApps = await res.json();
-          if (Array.isArray(serverApps)) {
+        const localApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+        if (Array.isArray(localApps) && localApps.length > 0) {
+          const myRequests = getLoggedInUserApplications(localApps);
+          localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
+          if (myRequests.length > 0) {
+            updateLiveTrackerUI(myRequests[0]);
+          } else {
+            resetLiveTrackerUI();
+          }
+          renderApplicationsHistory();
+          checkActiveApplicationLock();
+        }
+      } catch (err) {}
+
+      // 2. Fetch latest server state in background
+      fetch('/api/applications')
+        .then(res => res.ok ? res.json() : null)
+        .then(serverApps => {
+          if (Array.isArray(serverApps) && serverApps.length > 0) {
             localStorage.setItem('civic_applications', JSON.stringify(serverApps));
-            
             const myRequests = getLoggedInUserApplications(serverApps);
             localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
-            
             if (myRequests.length > 0) {
               updateLiveTrackerUI(myRequests[0]);
-            } else {
-              resetLiveTrackerUI();
             }
             renderApplicationsHistory();
             checkActiveApplicationLock();
           }
-        }
-      } catch(e) {}
+        })
+        .catch(() => {});
     }
 
     // ==========================================
