@@ -1471,8 +1471,8 @@
       ctx.shadowBlur = 0;
 
       // 5. Convert canvas to compressed JPEG
-      const rawDataUrl = canvas.toDataURL('image/jpeg', 0.88);
-      const dataUrl = await compressImage(rawDataUrl, 1200, 1200, 0.82);
+      const rawDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const dataUrl = await compressImage(rawDataUrl, 800, 800, 0.65);
 
       uploadedPhotos.push(dataUrl);
       renderPhotoPreviewSlots();
@@ -1489,7 +1489,7 @@
       let addedCount = 0;
       for (let i = 0; i < files.length && uploadedPhotos.length < 5; i++) {
         const file = files[i];
-        const dataUrl = await compressImage(file, 1200, 1200, 0.82);
+        const dataUrl = await compressImage(file, 800, 800, 0.65);
         if (dataUrl) {
           uploadedPhotos.push(dataUrl);
           addedCount++;
@@ -1521,7 +1521,7 @@
       const count = uploadedPhotos.length;
 
       if (badge) {
-        badge.innerText = `● ${count}/5 photos attached`;
+        badge.innerText = `📷 ${count}/5 photos attached`;
         badge.className = count > 0 
           ? 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-mono font-bold border border-emerald-300'
           : 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-mono font-bold border border-slate-200';
@@ -1530,19 +1530,27 @@
       if (btnTrigger) {
         if (count >= 5) {
           btnTrigger.disabled = true;
-          btnTrigger.className = 'px-4 py-2.5 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-2 cursor-not-allowed shadow-none';
-          btnTrigger.innerHTML = `<span>🔒 Max 5 Photos Captured</span>`;
+          btnTrigger.classList.add('opacity-50', 'cursor-not-allowed');
+          btnTrigger.title = 'Maximum 5 photos reached';
         } else {
           btnTrigger.disabled = false;
-          btnTrigger.className = 'px-4 py-2.5 rounded-xl bg-[#065f46] hover:bg-[#047857] text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition cursor-pointer';
-          btnTrigger.innerHTML = `<span>📷</span> <span>Capture Live Photo (${count}/5)</span>`;
+          btnTrigger.classList.remove('opacity-50', 'cursor-not-allowed');
+          btnTrigger.title = `Capture live geotagged photo (${count}/5)`;
         }
       }
 
       if (grid) {
-        if (count > 0) {
+        if (count === 0) {
           grid.innerHTML = `
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div class="col-span-full py-4 px-3 rounded-2xl border-2 border-dashed border-emerald-900/30 bg-black/20 text-center space-y-1">
+              <span class="text-2xl block">📸</span>
+              <p class="text-xs font-bold text-slate-300">No photos captured yet</p>
+              <p class="text-[11px] text-slate-400">Click "Capture Real Location Photo" above to take 1 to 5 live site photos.</p>
+            </div>
+          `;
+        } else {
+          grid.innerHTML = `
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 col-span-full">
               ${uploadedPhotos.map((p, idx) => `
                 <div class="relative aspect-video rounded-xl overflow-hidden border-2 border-emerald-500 shadow-sm bg-slate-950 group">
                   <img src="${p}" alt="Site Photo ${idx+1}" class="w-full h-full object-cover group-hover:scale-105 transition cursor-pointer" onclick="openPhotoLightbox(uploadedPhotos, ${idx})" title="Click to enlarge"/>
@@ -1556,33 +1564,19 @@
               `).join('')}
               ${count < 5 ? `
                 <div onclick="triggerCameraCapture()" class="aspect-video rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/50 flex flex-col items-center justify-center p-3 text-center cursor-pointer transition group">
-                  <span class="text-xl">➕</span>
-                  <span class="text-[10px] font-bold text-slate-600 mt-1">Add Photo (${count}/5)</span>
+                  <span class="text-lg group-hover:scale-110 transition block">➕</span>
+                  <span class="text-[10px] font-bold text-slate-600 group-hover:text-emerald-800 mt-1">Add Photo (${count+1}/5)</span>
                 </div>
               ` : ''}
-            </div>
-          `;
-        } else {
-          grid.innerHTML = `
-            <div onclick="triggerCameraCapture()" class="w-full aspect-video rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/40 flex flex-col items-center justify-center p-6 text-center cursor-pointer transition group">
-              <div class="size-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-xs">
-                📸
-              </div>
-              <h5 class="font-bold text-slate-800 text-xs mt-3">Attach Site Photo Evidence (1 to 5 Photos)</h5>
-              <p class="text-[11px] text-slate-400 mt-0.5">Live camera capture with GPS Geotag or direct file upload from your phone/PC.</p>
             </div>
           `;
         }
       }
     }
 
+    // Reset Form
     function resetCustomerForm() {
-      const activeApp = getActiveCustomerApplication();
-      if (activeApp) {
-        showToast('Cannot reset while an active application is in progress.', 'error');
-        return;
-      }
-      document.getElementById('customer-main-form').reset();
+      document.getElementById('customer-permit-form').reset();
       uploadedPhotos = [];
       renderPhotoPreviewSlots();
       initDefaultValues();
@@ -1594,28 +1588,25 @@
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text);
       }
-      showToast('Copied Application ID: ' + text, 'success');
     }
 
-    // Check if a complaint status is finalized (meaning lock is released)
-    function isFinalizedStatus(status) {
-      if (!status) return false;
-      const s = String(status).trim().toLowerCase();
+    // Check if status is completed/finalized (Permit approved or cancelled)
+    function isFinalizedStatus(st) {
+      if (!st) return false;
+      const s = String(st).trim().toLowerCase();
       return s === 'approved' || s === 'issued' || s === 'certificate issued' || s === 'cancelled' || s === 'rejected';
     }
 
+    // Identify the currently logged-in customer user
     function getLoggedInUser() {
-      try {
-        return JSON.parse(sessionStorage.getItem('current_user') || localStorage.getItem('current_user') || '{}');
-      } catch(e) {
-        return {};
-      }
+      return JSON.parse(sessionStorage.getItem('current_user') || localStorage.getItem('current_user') || '{}');
     }
 
     function normalizePhone(p) {
       return String(p || '').replace(/[^0-9]/g, '').slice(-10);
     }
 
+    // Filter applications strictly belonging to the currently logged-in customer
     function getLoggedInUserApplications(allApps) {
       const user = getLoggedInUser();
       const userEmail = (user.email || '').toLowerCase().trim();
@@ -1658,45 +1649,40 @@
       return userApps.find(app => !isFinalizedStatus(app.status));
     }
 
-    // Renders lock banner and completely hides form if an active complaint is in progress
+    // Check lock status and toggle form disabled state
     function checkActiveApplicationLock() {
       const activeApp = getActiveCustomerApplication();
-      const banner = document.getElementById('active-lock-banner-container');
-      const form = document.getElementById('customer-main-form');
-      const submitBtn = document.getElementById('btn-submit-application');
+      const form = document.getElementById('customer-permit-form');
+      const banner = document.getElementById('active-application-banner');
+      const submitBtn = document.getElementById('btn-submit-app');
 
       if (activeApp) {
+        const isApproved = activeApp.status === 'Approved' || activeApp.certificateStatus === 'Issued';
         if (form) form.classList.add('hidden');
         if (banner) {
-          const isApproved = activeApp.status === 'Approved' || activeApp.status === 'Clearance Approved' || activeApp.status === 'Issued' || activeApp.status === 'Certificate Issued';
-          const isViolation = activeApp.status === 'Flagged Violation' || activeApp.status === 'Cancelled' || activeApp.status === 'Rejected';
-
-          banner.className = 'mb-6 p-6 rounded-3xl bg-[#081d19] text-white border border-emerald-800 shadow-xl space-y-5';
+          banner.className = 'block mb-6 p-5 rounded-3xl bg-slate-900 border-2 border-emerald-500/50 shadow-xl space-y-4';
           banner.innerHTML = `
-            <!-- Lock Header -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-emerald-900/60 pb-4">
-              <div class="flex items-center gap-3">
-                <div class="size-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center font-bold text-lg shadow-xs">
-                  🔒
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h3 class="font-bold text-sm text-white">Active Complaint In Progress</h3>
-                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/30">${activeApp.id}</span>
-                  </div>
-                  <p class="text-xs text-slate-400 mt-0.5">Submitted and actively managed by ${activeApp.authority || 'Local Jurisdiction'}</p>
-                </div>
+            <!-- Top Alert Badge -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-900/60 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="flex size-3 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Permit Status Tracking</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-black text-white font-mono font-bold text-xs">${activeApp.id || '#MCC2026'}</span>
               </div>
-              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${isApproved ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' : (isViolation ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40' : 'bg-amber-500/30 text-amber-200 border border-amber-400/40')}">
-                ● ${activeApp.status || 'Pending Inspection'}
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${isApproved ? 'bg-emerald-500 text-slate-950' : 'bg-amber-400 text-slate-950'}">
+                ${activeApp.status || 'Pending Inspection'}
               </span>
             </div>
 
-            <!-- Explanation Notice -->
-            <div class="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800/60 text-xs text-emerald-200 space-y-1">
-              <span class="font-bold text-emerald-300 block">ℹ️ Single Active Application Policy:</span>
-              <p class="text-emerald-100/80 leading-relaxed">
-                Your C&D waste clearance request has been lodged. The submission form is hidden and locked until Ward Inspector <strong>${activeApp.assignedInspectorName || 'Ward Officer'}</strong> finishes the site audit, issues your NOC clearance, or cancels the request.
+            <!-- Descriptive Guidance -->
+            <div class="space-y-1">
+              <h4 class="text-sm font-extrabold text-white">
+                ${isApproved ? '🎉 NOC Clearance Certificate Issued!' : '⏳ Your application is actively under on-site inspection.'}
+              </h4>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                ${isApproved 
+                  ? 'Your C&D Waste NOC has been officially approved. You can view or download the valid NOC certificate below.' 
+                  : 'Municipal rules allow 1 active application per site until finalized by the assigned Ward Inspector. You can track progress or view details below.'}
               </p>
             </div>
 
@@ -1837,49 +1823,60 @@
         submittedAt: new Date().toISOString()
       };
 
-      // 1. Save directly to Supabase Cloud Database + Server Backend
+      // 1. Save directly to Backend REST API AND Supabase Cloud Database
+      try {
+        const postRes = await fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newApplication)
+        });
+        if (postRes.ok) {
+          const resData = await postRes.json().catch(() => ({}));
+          if (resData && resData.item) {
+            Object.assign(newApplication, resData.item);
+          }
+        } else {
+          const resData = await postRes.json().catch(() => ({}));
+          if (resData && resData.message && !resData.success) {
+            showToast('⚠️ ' + resData.message, 'error');
+            checkActiveApplicationLock();
+            return;
+          }
+        }
+      } catch(err) {
+        console.warn('Backend API /api/applications err:', err);
+      }
+
       if (window.civicDb && typeof window.civicDb.saveApplication === 'function') {
         try {
           await window.civicDb.saveApplication(newApplication);
         } catch(err) {
           console.warn('civicDb saveApplication err:', err);
         }
-      } else {
-        try {
-          const postRes = await fetch('/api/applications', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newApplication)
-          });
-          if (!postRes.ok) {
-            const resData = await postRes.json();
-            if (resData && resData.message) {
-              showToast('⚠️ ' + resData.message, 'error');
-              checkActiveApplicationLock();
-              return;
-            }
-          }
-        } catch(err) {}
       }
 
-      // 2. Save in LocalStorage
-      const apps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
-      const existIdx = apps.findIndex(a => a.id === newApplication.id);
-      if (existIdx >= 0) {
-        apps[existIdx] = newApplication;
-      } else {
-        apps.unshift(newApplication);
-      }
-      localStorage.setItem('civic_applications', JSON.stringify(apps));
+      // 2. Save in LocalStorage with safe quota fallback
+      try {
+        const apps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+        const existIdx = apps.findIndex(a => a.id === newApplication.id);
+        if (existIdx >= 0) {
+          apps[existIdx] = newApplication;
+        } else {
+          apps.unshift(newApplication);
+        }
+        localStorage.setItem('civic_applications', JSON.stringify(apps));
 
-      const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const myExistIdx = myRequests.findIndex(a => a.id === newApplication.id);
-      if (myExistIdx >= 0) {
-        myRequests[myExistIdx] = newApplication;
-      } else {
-        myRequests.unshift(newApplication);
+        const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
+        const myExistIdx = myRequests.findIndex(a => a.id === newApplication.id);
+        if (myExistIdx >= 0) {
+          myRequests[myExistIdx] = newApplication;
+        } else {
+          myRequests.unshift(newApplication);
+        }
+        localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
+      } catch(storageErr) {
+        console.warn('LocalStorage save warning:', storageErr);
       }
-      localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
 
       // 3. Broadcast to all open tabs immediately
       if (civicSyncChannel) {

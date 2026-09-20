@@ -1694,32 +1694,38 @@
           }
         }
 
-        // 1. Save directly to Supabase Cloud Database + Server Backend
+        // 1. Save directly to Backend REST API AND Supabase Cloud Database
+        try {
+          await fetch('/api/applications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(app)
+          });
+        } catch(err) {
+          console.warn('Backend API save err:', err);
+        }
+
         if (window.civicDb && typeof window.civicDb.saveApplication === 'function') {
           try {
             await window.civicDb.saveApplication(app);
           } catch(err) {
             console.warn('civicDb saveApplication err:', err);
           }
-        } else {
-          try {
-            await fetch('/api/applications', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(app)
-            });
-          } catch(err) {}
         }
 
-        // 2. Save locally in master applications list
-        localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
-        
-        // Sync to customer requests cache
-        const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-        const custIdx = myRequests.findIndex(r => r.id === appId);
-        if (custIdx >= 0) {
-          myRequests[custIdx] = { ...myRequests[custIdx], ...app };
-          localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
+        // 2. Save locally in master applications list with quota protection
+        try {
+          localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
+          
+          // Sync to customer requests cache
+          const myRequests = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
+          const custIdx = myRequests.findIndex(r => r.id === appId);
+          if (custIdx >= 0) {
+            myRequests[custIdx] = { ...myRequests[custIdx], ...app };
+            localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
+          }
+        } catch(storageErr) {
+          console.warn('LocalStorage save warning:', storageErr);
         }
 
         // 3. Broadcast to all open tabs immediately for 0ms cross-portal sync
