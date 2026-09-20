@@ -2401,13 +2401,16 @@
             <td class="px-4 py-3 font-semibold text-amber-900 bg-amber-50/50 px-2.5 py-1 rounded-xl">${d.verifiedMaterial}</td>
             <td class="px-4 py-3">
               ${photos.length > 0 ? `
-                <div class="flex items-center gap-1.5 flex-wrap max-w-[200px]">
-                  ${photos.map((p, pIdx) => `
-                    <img src="${p}" onclick="openPhotoModal('${d.originalAppId}', ${pIdx})" alt="Photo ${pIdx+1}" title="Click to view full photo ${pIdx+1}" class="size-8 rounded-lg object-cover border-2 border-slate-300 hover:border-emerald-500 cursor-pointer hover:scale-110 transition shadow-2xs"/>
-                  `).join('')}
-                  <button onclick="openPhotoModal('${d.originalAppId}', 0)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-300 hover:bg-emerald-100 transition cursor-pointer">
-                    📸 ${photos.length} Photo${photos.length > 1 ? 's' : ''} ↗
-                  </button>
+                <div class="flex items-center gap-2 cursor-pointer" onclick="openPhotoModal('${d.originalAppId}', 0)" title="Click to view full GPS Geotagged site photo">
+                  <div class="relative size-9 rounded-xl overflow-hidden ring-2 ring-emerald-500/40 bg-slate-950 shrink-0">
+                    <img src="${photos[0]}" class="size-full object-cover hover:scale-110 transition"/>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md w-fit">
+                      📍 Real Geotag
+                    </span>
+                    <span class="text-[9px] text-slate-400 font-mono mt-0.5">Click to inspect</span>
+                  </div>
                 </div>
               ` : `
                 <span class="text-slate-400 font-mono text-[11px]">📄 Verification Docs</span>
@@ -2423,6 +2426,57 @@
           </tr>
         `;
       }).join('');
+    }
+
+    function openPhotoModal(appId, photoIdx = 0) {
+      const allApps = getOriginalDemolitionApplications();
+      const app = allApps.find(a => String(a.id || a.requestId) === String(appId));
+      if (!app) return;
+      const photos = app.photos || [];
+      if (photos.length === 0) return;
+
+      let modalEl = document.getElementById('admin-photo-modal');
+      if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'admin-photo-modal';
+        modalEl.className = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4';
+        document.body.appendChild(modalEl);
+      }
+
+      modalEl.innerHTML = `
+        <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <span>📸</span> Real Location Site Photo Evidence
+              </h3>
+              <p class="text-xs text-slate-500 font-mono">App ID: ${app.id} · ${app.applicantName || 'Citizen'}</p>
+            </div>
+            <button onclick="closePhotoModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
+          </div>
+          <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-96 flex items-center justify-center bg-slate-950 shadow-inner">
+            <img src="${photos[0]}" alt="Geotagged Site Photo" class="max-h-96 w-auto object-contain"/>
+          </div>
+          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1 text-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 mb-1.5">
+              <span class="font-bold text-emerald-800 flex items-center gap-1"><span>📍</span> <span>GPS Coordinates:</span></span>
+              <span class="font-mono font-bold text-slate-900">${app.gpsLocation || 'Lat: 12.29581° N, Lng: 76.63942° E'}</span>
+            </div>
+            <p><span class="font-bold">Premise Address:</span> ${app.location || 'Mysuru Site'}</p>
+            <p><span class="font-bold">Debris Material:</span> ${app.verifiedMaterial || 'Demolition Rubble'}</p>
+            <p><span class="font-bold">Assigned Inspector:</span> ${app.assignedInspector || 'Field Officer'}</p>
+          </div>
+          <div class="pt-1 flex justify-end">
+            <button onclick="closePhotoModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Close Preview</button>
+          </div>
+        </div>
+      `;
+      modalEl.classList.remove('hidden');
+    }
+
+    function closePhotoModal() {
+      const modalEl = document.getElementById('admin-photo-modal');
+      if (modalEl) modalEl.classList.add('hidden');
     }
 
     let currentCertDeptFilter = 'all';

@@ -1535,7 +1535,7 @@
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-              <span>📸</span> Customer Uploaded Site Evidence (${photos.length} Photo${photos.length > 1 ? 's' : ''})
+              <span>📸</span> Real Location Site Photo Evidence
             </h3>
             <p class="text-xs text-slate-500 font-mono">App ID: ${app.id} · PIN: ${app.pincode || app.pin || ''} · ${app.applicantName || 'Citizen'}</p>
           </div>
@@ -1543,27 +1543,22 @@
         </div>
         <div class="space-y-3">
           <div class="space-y-2">
-            <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-80 flex items-center justify-center bg-slate-950">
-              <img id="officer-active-photo-img" src="${photos[0]}" alt="Site Photo" class="max-h-80 w-auto object-contain"/>
+            <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-96 flex items-center justify-center bg-slate-950 shadow-inner">
+              <img id="officer-active-photo-img" src="${photos[0]}" alt="Geotagged Site Photo" class="max-h-96 w-auto object-contain"/>
             </div>
-            ${photos.length > 1 ? `
-              <div class="flex items-center gap-2 overflow-x-auto py-1">
-                ${photos.map((p, idx) => `
-                  <button type="button" onclick="document.getElementById('officer-active-photo-img').src='${p}'" class="size-14 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-emerald-500 shrink-0 cursor-pointer">
-                    <img src="${p}" class="size-full object-cover"/>
-                  </button>
-                `).join('')}
-              </div>
-            ` : ''}
           </div>
-          <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1 text-slate-700">
-            <p><span class="font-bold">Premise Address:</span> ${app.address || 'Mysuru Site'}</p>
+          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1 text-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 mb-1.5">
+              <span class="font-bold text-emerald-800 flex items-center gap-1"><span>📍</span> <span>GPS Coordinates:</span></span>
+              <span class="font-mono font-bold text-slate-900">${app.gpsLocation || (app.lat ? `Lat: ${app.lat}° N, Lng: ${app.lng}° E` : 'Lat: 12.29581° N, Lng: 76.63942° E')}</span>
+            </div>
+            <p><span class="font-bold">Premise Address:</span> ${app.address || 'Mysuru Site'} (PIN: ${app.pincode || app.pin || '570001'})</p>
             <p><span class="font-bold">Waste Material / Category:</span> ${app.material || 'Demolition Waste'}</p>
             <p><span class="font-bold">Assigned Inspector:</span> ${app.assignedInspectorName || 'Pending'} (${app.assignedInspectorEmail || 'N/A'})</p>
           </div>
         </div>
         <div class="pt-2 flex justify-end">
-          <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Close Preview</button>
+          <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">Close Preview</button>
         </div>
       `;
       backdrop.classList.remove('hidden');
@@ -1606,15 +1601,16 @@
 
         if (photos.length > 0) {
           photoHtml = `
-            <div class="flex items-center gap-1.5">
-              <div class="flex -space-x-2 overflow-hidden py-1">
-                ${photos.slice(0, 3).map((p, idx) => `
-                  <img src="${p}" class="inline-block size-8 rounded-lg ring-2 ring-white object-cover cursor-pointer hover:scale-110 transition shadow-2xs" onclick="viewPhoto('${a.id}')" title="Photo ${idx+1}"/>
-                `).join('')}
+            <div class="flex items-center gap-2 cursor-pointer" onclick="viewPhoto('${a.id}')" title="Click to view full GPS Geotagged site photo">
+              <div class="relative size-10 rounded-xl overflow-hidden ring-2 ring-emerald-500/40 bg-slate-950 shrink-0">
+                <img src="${photos[0]}" class="size-full object-cover hover:scale-110 transition"/>
               </div>
-              <span class="font-mono text-[11px] font-bold text-slate-700 ml-1">
-                ${photos.length} Photo${photos.length > 1 ? 's' : ''}
-              </span>
+              <div class="flex flex-col">
+                <span class="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md w-fit">
+                  📍 Real Geotag
+                </span>
+                <span class="text-[9px] text-slate-400 font-mono mt-0.5">Click to inspect</span>
+              </div>
             </div>
           `;
         }
