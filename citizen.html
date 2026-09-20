@@ -2658,6 +2658,16 @@
 
     async function syncLiveCustomerApplications() {
       try {
+        if (window.civicDb && typeof window.civicDb.fetchUsers === 'function') {
+          const users = await window.civicDb.fetchUsers();
+          if (Array.isArray(users) && users.length > 0) {
+            localStorage.setItem('civic_registered_users', JSON.stringify(users));
+            const inspectors = users.filter(u => (u.role || '').toLowerCase() === 'inspector' || (u.authority || '').toLowerCase().includes('inspector'));
+            if (inspectors.length > 0) {
+              localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+            }
+          }
+        }
         if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
           const apps = await window.civicDb.fetchApplications();
           if (Array.isArray(apps) && apps.length > 0) {
