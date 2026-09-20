@@ -993,6 +993,10 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Smart Civic Waste Routing Backend Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`🚀 Smart Civic Waste Routing Backend Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = server;
