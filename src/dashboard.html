@@ -210,13 +210,9 @@
             <span class="icon-box bg-cyan-500/10 text-cyan-400">👷</span>
             <span>4. Inspectors / Officers</span>
           </button>
-          <button onclick="switchView('inspections')" id="btn-inspections" class="nav-btn">
-            <span class="icon-box bg-teal-500/10 text-teal-400">🔍</span>
-            <span>5. Site Inspections</span>
-          </button>
           <button onclick="switchView('demolition_requests')" id="btn-demolition_requests" class="nav-btn">
             <span class="icon-box bg-orange-500/10 text-orange-400">🏗️</span>
-            <span>6. Demolition Requests</span>
+            <span>5. Demolition Requests</span>
           </button>
         </div>
       </div>
@@ -227,15 +223,15 @@
         <div class="space-y-1">
           <button onclick="switchView('certificates')" id="btn-certificates" class="nav-btn">
             <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
-            <span>7. Certificates</span>
+            <span>6. Certificates</span>
           </button>
           <button onclick="switchView('notifications')" id="btn-notifications" class="nav-btn">
             <span class="icon-box bg-purple-500/10 text-purple-400">📢</span>
-            <span>8. Notifications</span>
+            <span>7. Notifications</span>
           </button>
           <button onclick="switchView('settings')" id="btn-settings" class="nav-btn">
             <span class="icon-box bg-slate-500/10 text-slate-400">⚙️</span>
-            <span>9. Settings & Policies</span>
+            <span>8. Settings & Policies</span>
           </button>
         </div>
       </div>
@@ -528,7 +524,6 @@
                   <th class="px-4 py-3">Head / Officer Name</th>
                   <th class="px-4 py-3">Officer ID & Role</th>
                   <th class="px-4 py-3">Official Gmail / Email</th>
-                  <th class="px-4 py-3">🔑 Login Password</th>
                   <th class="px-4 py-3">Jurisdiction & PINs</th>
                   <th class="px-4 py-3">Status</th>
                   <th class="px-4 py-3 text-right">Action</th>
@@ -623,7 +618,6 @@
                   <th class="px-4 py-3">Officer Name & Designation</th>
                   <th class="px-4 py-3">📍 Assigned Area & Panchayat</th>
                   <th class="px-4 py-3">Official Gmail / Email</th>
-                  <th class="px-4 py-3">🔑 Password / Login Key</th>
                   <th class="px-4 py-3">Contact Phone</th>
                   <th class="px-4 py-3">Mapped PIN Code</th>
                   <th class="px-4 py-3">Linked Requests</th>
@@ -632,35 +626,6 @@
                 </tr>
               </thead>
               <tbody id="table-inspectors" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 6. INSPECTION MANAGEMENT                                              -->
-      <!-- ===================================================================== -->
-      <section id="panel-inspections" class="panel-view space-y-6">
-        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">Site Inspection & Rubble Audit Management</h3>
-            <p class="text-xs text-slate-500">Application audits, site verifications, inspection dates, and inspector remarks.</p>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-200">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Application</th>
-                  <th class="px-4 py-3">Location</th>
-                  <th class="px-4 py-3">Inspector</th>
-                  <th class="px-4 py-3">Inspection Date</th>
-                  <th class="px-4 py-3">Material Category & Quantity</th>
-                  <th class="px-4 py-3">Remarks</th>
-                  <th class="px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-inspections" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
             </table>
           </div>
         </div>
@@ -883,7 +848,7 @@
       civicSyncChannel.onmessage = (event) => {
         if (event.data) {
           const type = event.data.type;
-          if (type === 'INSPECTOR_CREATED' || type === 'INSPECTOR_UPDATED' || type === 'OFFICER_CREATED') {
+          if (type === 'INSPECTOR_CREATED' || type === 'INSPECTOR_UPDATED' || type === 'INSPECTOR_DELETED' || type === 'OFFICER_CREATED' || type === 'OFFICER_DELETED') {
             renderInspectorsTable();
             renderPinMappingInspectors();
             renderAuthoritiesTable();
@@ -908,7 +873,7 @@
 
     const views = [
       'dashboard', 'pinmapping', 'authorities',
-      'inspectors', 'inspections', 'demolition_requests',
+      'inspectors', 'demolition_requests',
       'certificates', 'notifications', 'settings'
     ];
 
@@ -917,11 +882,10 @@
       'pinmapping': '2. PIN Code & Area Mapping Engine',
       'authorities': '3. Corporations & Civic Authorities',
       'inspectors': '4. Inspectors & Field Officers',
-      'inspections': '5. Site Inspections & Audits',
-      'demolition_requests': '6. Building Demolition Clearance Requests',
-      'certificates': '7. Green Disposal Certificates',
-      'notifications': '8. Notifications Dispatch Center',
-      'settings': '9. System Configurations & Settings'
+      'demolition_requests': '5. Building Demolition Clearance Requests',
+      'certificates': '6. Green Disposal Certificates',
+      'notifications': '7. Notifications Dispatch Center',
+      'settings': '8. System Configurations & Settings'
     };
 
     function switchView(viewName) {
@@ -1571,14 +1535,17 @@
         customIns = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
       } catch(e) {}
 
+      const deletedUsers = JSON.parse(localStorage.getItem('civic_deleted_users') || '[]').map(e => (e || '').toLowerCase().trim());
+
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
 
-      const merged = [...defaultSquad];
+      const merged = defaultSquad.filter(d => !deletedUsers.includes(d.email.toLowerCase().trim()));
 
       [...regUsers, ...customIns].forEach(ins => {
         if (!ins || !ins.email) return;
         const email = ins.email.toLowerCase().trim();
+        if (deletedUsers.includes(email)) return;
         const isInsp = (ins.role || '').toLowerCase() === 'inspector' || (ins.authority || '').toLowerCase().includes('inspector');
         if (!isInsp) return;
 
@@ -1654,6 +1621,37 @@
       showToast('Status updated for ' + (ins ? (ins.name || ins.headName) : email), 'success');
     }
 
+    function deleteAdminInspector(email, name) {
+      if (!confirm(`Are you sure you want to delete Inspector "${name}" (${email})?\nThis will permanently delete their account and immediately revoke login access across all portals.`)) {
+        return;
+      }
+      const targetEmail = (email || '').toLowerCase().trim();
+
+      let inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      inspectors = inspectors.filter(i => (i.email || '').toLowerCase().trim() !== targetEmail);
+      localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+
+      let users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      users = users.filter(u => (u.email || '').toLowerCase().trim() !== targetEmail);
+      localStorage.setItem('civic_registered_users', JSON.stringify(users));
+
+      let deleted = JSON.parse(localStorage.getItem('civic_deleted_users') || '[]');
+      if (!deleted.includes(targetEmail)) {
+        deleted.push(targetEmail);
+        localStorage.setItem('civic_deleted_users', JSON.stringify(deleted));
+      }
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        const channel = new BroadcastChannel('civic_sync_channel');
+        channel.postMessage({ type: 'INSPECTOR_DELETED', email: targetEmail });
+      }
+      window.dispatchEvent(new Event('storage'));
+
+      renderInspectorsTable();
+      renderPinMappingInspectors();
+      showToast(`Inspector "${name}" deleted successfully.`, 'success');
+    }
+
     function loginDirectlyAsInspector(email, password) {
       const users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
@@ -1714,7 +1712,7 @@
       if (displayed.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
               No field inspectors found matching "${searchQueryPinInspectors || 'jurisdiction filter'}".
             </td>
           </tr>
@@ -1758,8 +1756,8 @@
               </span>
             </td>
             <td class="px-4 py-3.5 text-right">
-              <button onclick="copyOfficerLogin('${ins.email}', '${ins.password || '123456'}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
-                Copy Login
+              <button onclick="loginDirectlyAsInspector('${ins.email}', '${ins.password || '123456'}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-xs transition cursor-pointer">
+                🚀 Sign In
               </button>
             </td>
           </tr>
@@ -1829,7 +1827,7 @@
       if (displayed.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10" class="px-4 py-8 text-center text-slate-400 font-medium">
+            <td colspan="9" class="px-4 py-8 text-center text-slate-400 font-medium">
               No officers or field inspectors found matching "${searchQueryOfficersList || 'current filter'}".
             </td>
           </tr>
@@ -1884,12 +1882,6 @@
             <td class="px-4 py-3.5 font-mono text-[11px]">
               <span class="block text-emerald-950 font-bold bg-emerald-50/80 px-2 py-0.5 rounded border border-emerald-200 mb-0.5 inline-block">${ins.email}</span>
             </td>
-            <td class="px-4 py-3.5">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-950 font-mono font-bold text-xs border border-amber-300 shadow-2xs">
-                <span>🔑 ${password}</span>
-                <button type="button" onclick="navigator.clipboard.writeText('${password}'); showToast('Copied password: ${password}', 'success')" class="text-amber-700 hover:text-amber-900 cursor-pointer ml-1" title="Copy password">📋</button>
-              </span>
-            </td>
             <td class="px-4 py-3.5 font-mono text-slate-700 text-xs">${ins.phone}</td>
             <td class="px-4 py-3.5">
               <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-950 font-mono font-bold text-xs border border-emerald-200 block w-fit">
@@ -1911,8 +1903,8 @@
                 <button onclick="loginDirectlyAsInspector('${ins.email}', '${password}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer flex items-center gap-1" title="Sign In as Inspector">
                   <span>🚀 Sign In</span>
                 </button>
-                <button onclick="copyOfficerLogin('${ins.email}', '${password}')" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer" title="Copy Login Details">
-                  📋
+                <button onclick="deleteAdminInspector('${ins.email}', '${ins.headName}')" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition cursor-pointer flex items-center gap-1" title="Delete Inspector and revoke login access">
+                  <span>🗑️ Delete</span>
                 </button>
               </div>
             </td>
@@ -3729,11 +3721,6 @@
               <span class="block text-emerald-950 font-bold bg-emerald-50/80 px-2 py-0.5 rounded border border-emerald-200 mb-1 inline-block">${item.email}</span>
               <span class="block text-slate-500 text-[10px]">${item.phone}</span>
             </td>
-            <td class="px-4 py-3.5 font-mono">
-              <span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 font-bold text-xs border border-amber-200 inline-flex items-center gap-1">
-                🔒 <span>${item.password || 'admin123'}</span>
-              </span>
-            </td>
             <td class="px-4 py-3.5 text-slate-700">
               <span class="block font-semibold text-xs text-slate-900">${item.jurisdiction || item.wardsAreasCovered || item.townLocalityCovered || 'Mysuru District'}</span>
               <span class="block font-mono text-[10px] text-emerald-800 font-bold">PIN: ${item.pinCodes || 'All PINs'}</span>
@@ -3762,98 +3749,32 @@
       }).join('');
     }
 
-    function addCustomOfficer(deptKey) {
-      const orgName = deptKey === 'mcc' ? 'Mysuru City Corporation (MCC)' : (deptKey === 'gp' ? 'Bogadi Gram Panchayat' : 'Hootagalli Town Panchayat');
-      const icon = deptKey === 'mcc' ? '🏛️' : (deptKey === 'gp' ? '🏡' : '🏭');
-      const roleName = deptKey === 'mcc' ? 'MCC Officer' : (deptKey === 'gp' ? 'Panchayat Officer' : 'Town Panchayat Officer');
-
-      const name = prompt('Enter Officer / Member Full Name:');
-      if (!name) return;
-      const desig = prompt('Enter Officer Designation:', deptKey === 'mcc' ? 'Assistant Executive Engineer' : (deptKey === 'gp' ? 'Panchayat Secretary' : 'Town Revenue Inspector'));
-      if (!desig) return;
-      const empId = prompt('Enter Employee / Officer ID:', deptKey.toUpperCase() + '-OFF-' + Math.floor(100 + Math.random() * 900));
-      if (!empId) return;
-      const email = prompt('Enter Official Gmail Address for Login:', name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@gmail.com');
-      if (!email) return;
-      const password = prompt('Enter Login Password to Create for this Officer:', 'officer123');
-      if (!password) return;
-      const phone = prompt('Enter Official Phone Number:', '+91 98450 ' + Math.floor(10000 + Math.random() * 90000));
-      if (!phone) return;
-
-      const newOfficer = {
-        type: deptKey,
-        icon,
-        organization: orgName,
-        headName: name,
-        designation: desig,
-        empId,
-        email: email.trim().toLowerCase(),
-        password: password.trim(),
-        phone: phone.trim(),
-        jurisdiction: deptKey === 'mcc' ? 'MCC Zones 1-9' : (deptKey === 'gp' ? 'GP Rural Wards' : 'TP Suburban Sectors'),
-        pinCodes: deptKey === 'mcc' ? '570001, 570002' : (deptKey === 'gp' ? '570026' : '570018'),
-        role: roleName,
-        status: 'Active'
-      };
-
-      additionalOfficers.push(newOfficer);
-      try {
-        localStorage.setItem('civic_additional_officers', JSON.stringify(additionalOfficers));
-      } catch(e) {}
-
-      // Register credentials in global auth pool
-      const officerAccount = {
-        id: 'u_' + empId.replace(/[^a-zA-Z0-9]/g, '_'),
-        name: name + ' (' + orgName + ')',
-        email: email.trim().toLowerCase(),
-        password: password.trim(),
-        passwords: [password.trim(), 'admin123', 'admin'],
-        phone: phone.trim(),
-        role: 'officer',
-        authority: roleName,
-        department: orgName,
-        departmentName: orgName,
-        assignedPin: deptKey === 'mcc' ? '570001, 570002' : (deptKey === 'gp' ? '570026' : '570018'),
-        designation: desig,
-        createdAt: new Date().toISOString()
-      };
-
-      try {
-        const reg = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
-        reg.push(officerAccount);
-        localStorage.setItem('civic_registered_users', JSON.stringify(reg));
-      } catch(e) {}
-
-      // Sync with server API & cloud store
-      try {
-        fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(officerAccount)
-        }).catch(() => {});
-      } catch(e) {}
-
-      // Broadcast to other dashboards
-      if (civicSyncChannel) {
-        civicSyncChannel.postMessage({ type: 'OFFICER_CREATED', officer: officerAccount });
-      }
-
-      renderAuthoritiesTable();
-      renderInspectorsTable();
-      renderPinMappingInspectors();
-      loadData();
-      showToast('🎉 Officer ' + name + ' registered with login: ' + email + ' (Password: ' + password + ')!');
-    }
-
     function removeCustomOfficer(idx) {
-      if (confirm('Remove this officer member?')) {
+      const off = additionalOfficers[idx];
+      if (!off) return;
+      if (confirm(`Are you sure you want to remove Officer "${off.headName}" (${off.email})?\nThis will permanently remove the officer and revoke their login access.`)) {
+        const targetEmail = (off.email || '').toLowerCase().trim();
         additionalOfficers.splice(idx, 1);
         try {
           localStorage.setItem('civic_additional_officers', JSON.stringify(additionalOfficers));
+          let reg = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+          reg = reg.filter(u => (u.email || '').toLowerCase().trim() !== targetEmail);
+          localStorage.setItem('civic_registered_users', JSON.stringify(reg));
+
+          let deleted = JSON.parse(localStorage.getItem('civic_deleted_users') || '[]');
+          if (!deleted.includes(targetEmail)) {
+            deleted.push(targetEmail);
+            localStorage.setItem('civic_deleted_users', JSON.stringify(deleted));
+          }
         } catch(e) {}
+
+        if (civicSyncChannel) {
+          civicSyncChannel.postMessage({ type: 'OFFICER_DELETED', email: targetEmail });
+        }
+        window.dispatchEvent(new Event('storage'));
         renderAuthoritiesTable();
         renderInspectorsTable();
-        showToast('Officer removed.');
+        showToast(`Officer "${off.headName}" removed and login access revoked.`);
       }
     }
 

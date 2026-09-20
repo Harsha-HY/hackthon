@@ -248,18 +248,21 @@
       try {
         const stored = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
         const storedInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+        const deletedUsers = JSON.parse(localStorage.getItem('civic_deleted_users') || '[]').map(e => (e || '').toLowerCase().trim());
         const merged = [...SYSTEM_ACCOUNTS];
         stored.forEach(su => {
-          if (!merged.find(m => (m.email || '').toLowerCase().trim() === (su.email || '').toLowerCase().trim())) {
+          const email = (su.email || '').toLowerCase().trim();
+          if (email && !deletedUsers.includes(email) && !merged.find(m => (m.email || '').toLowerCase().trim() === email)) {
             merged.push(su);
           }
         });
         storedInspectors.forEach(si => {
-          if (!merged.find(m => (m.email || '').toLowerCase().trim() === (si.email || '').toLowerCase().trim())) {
+          const email = (si.email || '').toLowerCase().trim();
+          if (email && !deletedUsers.includes(email) && !merged.find(m => (m.email || '').toLowerCase().trim() === email)) {
             merged.push(si);
           }
         });
-        return merged;
+        return merged.filter(u => !deletedUsers.includes((u.email || '').toLowerCase().trim()));
       } catch(e) {
         return SYSTEM_ACCOUNTS;
       }
@@ -371,6 +374,13 @@
       const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
       const passwordInput = document.getElementById('login-password').value.trim();
 
+      // Check if account has been deleted by authority
+      const deletedUsers = JSON.parse(localStorage.getItem('civic_deleted_users') || '[]').map(e => (e || '').toLowerCase().trim());
+      if (deletedUsers.includes(emailInput)) {
+        showToast('This account has been deactivated or removed by authority.', 'error');
+        return;
+      }
+
       let user = null;
 
       // 1. Authenticate with Supabase Database Backend (Enables instant multi-device login)
@@ -383,6 +393,10 @@
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.user) {
+            if (deletedUsers.includes((data.user.email || '').toLowerCase().trim())) {
+              showToast('This account has been deactivated or removed by authority.', 'error');
+              return;
+            }
             user = data.user;
           }
         }
