@@ -171,7 +171,7 @@
       </div>
     </div>
 
-    <!-- Navigation List (4 Clean Panels) -->
+    <!-- Navigation List (6 Core Panels) -->
     <div class="flex-1 overflow-y-auto custom-scrollbar px-3.5 py-4 space-y-6">
       
       <!-- Core Governance -->
@@ -182,17 +182,25 @@
             <span class="icon-box bg-blue-500/10 text-blue-400">📊</span>
             <span>1. Dashboard</span>
           </button>
+          <button onclick="switchView('pinmapping')" id="btn-pinmapping" class="nav-btn">
+            <span class="icon-box bg-emerald-500/10 text-emerald-400">📍</span>
+            <span>2. PIN Code & Area Mapping</span>
+          </button>
           <button onclick="switchView('authorities')" id="btn-authorities" class="nav-btn">
             <span class="icon-box bg-indigo-500/10 text-indigo-400">🏛️</span>
-            <span>2. Departments / Authorities</span>
+            <span>3. Departments / Authorities</span>
+          </button>
+          <button onclick="switchView('inspectors')" id="btn-inspectors" class="nav-btn">
+            <span class="icon-box bg-purple-500/10 text-purple-400">👷</span>
+            <span>4. Inspectors & Officers</span>
           </button>
           <button onclick="switchView('demolition_requests')" id="btn-demolition_requests" class="nav-btn">
             <span class="icon-box bg-orange-500/10 text-orange-400">🏗️</span>
-            <span>3. Demolition Requests</span>
+            <span>5. Demolition Requests</span>
           </button>
           <button onclick="switchView('certificates')" id="btn-certificates" class="nav-btn">
-            <span class="icon-box bg-emerald-500/10 text-emerald-400">📜</span>
-            <span>4. Certificates</span>
+            <span class="icon-box bg-teal-500/10 text-teal-400">📜</span>
+            <span>6. Certificates</span>
           </button>
         </div>
       </div>
@@ -262,8 +270,111 @@
       <!-- ===================================================================== -->
       <!-- 2. PIN CODE & AREA MAPPING                                            -->
       <!-- ===================================================================== -->
+      <section id="panel-pinmapping" class="panel-view space-y-6">
+        
+        <!-- Header & Panchayat Switcher -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-mono font-bold uppercase border border-emerald-200 mb-1.5">
+              <span>📍 Geospatial & Field Inspector Matrix</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">PIN Code, Ward & Area Jurisdiction Mapping</h3>
+            <p class="text-xs text-slate-500">Maps postal PINs to Responsible Authority (MCC, Gram Panchayat, Town Panchayat) with Assigned Field Inspectors.</p>
+          </div>
+
+          <!-- Panchayat Filter Tabs -->
+          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+            <button onclick="filterPinMappingByDept('all')" id="btn-pinfilter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
+              🌐 All Jurisdictions
+            </button>
+            <button onclick="filterPinMappingByDept('gp')" id="btn-pinfilter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+              🏡 Gram Panchayat
+            </button>
+            <button onclick="filterPinMappingByDept('tp')" id="btn-pinfilter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+              🏭 Town Panchayat
+            </button>
+            <button onclick="filterPinMappingByDept('mcc')" id="btn-pinfilter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+              🏛️ MCC
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. ASSIGNED FIELD INSPECTORS ROSTER FOR THIS PANCHAYAT -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-100 pb-3 gap-3">
+            <div>
+              <h4 id="pin-inspectors-title" class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>👷</span> <span>Assigned Field Inspectors & Officers (7 Registered Field Officers)</span>
+              </h4>
+              <p class="text-xs text-slate-500">Official field inspectors assigned to handle site inspections and demolition clearances in this jurisdiction.</p>
+            </div>
+            <span id="pin-inspectors-count" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-mono text-[11px] font-bold border border-emerald-200">
+              7 Active Inspectors
+            </span>
+          </div>
+
+          <!-- Search Inspectors Bar -->
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
+            <input type="text" id="search-pin-inspectors" oninput="handlePinInspectorsSearch(this.value)" placeholder="Search inspectors by Name, Gmail, Phone, Assigned Area, PIN, or Employee ID (e.g. MCCU1001, BOGP1001, HTMC1001)..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3">Inspector Name & Designation</th>
+                  <th class="px-4 py-3">Department & Authority</th>
+                  <th class="px-4 py-3">Employee ID</th>
+                  <th class="px-4 py-3">Official Gmail</th>
+                  <th class="px-4 py-3">Phone Number</th>
+                  <th class="px-4 py-3">Assigned Area / Ward</th>
+                  <th class="px-4 py-3">Assigned PIN Codes</th>
+                  <th class="px-4 py-3">Duty Status</th>
+                  <th class="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-pin-inspectors" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. PIN CODE & AREA MAPPING TABLE -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span>📍</span> <span>Jurisdiction Postal PIN Routing Directory</span>
+            </h4>
+            <p class="text-xs text-slate-500">Ward boundary mappings and automatic routing to responsible panchayat desks.</p>
+          </div>
+
+          <!-- Search PIN Mapping Bar -->
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
+            <input type="text" id="search-pin-routes" oninput="handlePinRoutesSearch(this.value)" placeholder="Search by PIN Code, Ward, Area, Street, Responsible Authority, or Assigned Officer..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3">PIN Code</th>
+                  <th class="px-4 py-3">Ward & Area</th>
+                  <th class="px-4 py-3">Streets Covered</th>
+                  <th class="px-4 py-3">Map Location (GPS)</th>
+                  <th class="px-4 py-3">Responsible Authority</th>
+                  <th class="px-4 py-3">Assigned Officer / Inspector</th>
+                </tr>
+              </thead>
+              <tbody id="table-pinmappings" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
       <!-- ===================================================================== -->
-      <!-- 2. DEPARTMENTS / AUTHORITIES                                          -->
+      <!-- 3. DEPARTMENTS / AUTHORITIES                                          -->
       <!-- ===================================================================== -->
       <section id="panel-authorities" class="panel-view space-y-6">
         
@@ -395,7 +506,102 @@
       </section>
 
       <!-- ===================================================================== -->
-      <!-- 3. DEMOLITION REQUESTS                                                -->
+      <!-- 4. INSPECTORS / FIELD OFFICERS & DEPARTMENT ROSTER                    -->
+      <!-- ===================================================================== -->
+      <section id="panel-inspectors" class="panel-view space-y-6">
+        
+        <!-- Department Summary Counters -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
+            <div class="size-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xl">
+              👥
+            </div>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Officers</p>
+              <h4 id="stat-total-officers" class="text-2xl font-extrabold text-slate-900 mt-0.5">3 Active</h4>
+            </div>
+          </div>
+          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
+            <div class="size-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xl">
+              🏛️
+            </div>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">MCC Officers</p>
+              <h4 id="stat-mcc-officers" class="text-2xl font-extrabold text-emerald-800 mt-0.5">1 Assigned</h4>
+            </div>
+          </div>
+          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
+            <div class="size-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xl">
+              🏡
+            </div>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Gram Panchayat</p>
+              <h4 id="stat-gp-officers" class="text-2xl font-extrabold text-amber-800 mt-0.5">1 Assigned</h4>
+            </div>
+          </div>
+          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center gap-4">
+            <div class="size-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xl">
+              🏭
+            </div>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Town Panchayat</p>
+              <h4 id="stat-tp-officers" class="text-2xl font-extrabold text-blue-800 mt-0.5">1 Assigned</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Officers & Field Inspectors Management Console</h3>
+              <p class="text-xs text-slate-500">All officers configured across MCC, Gram Panchayat, and Town Panchayat with their assigned jurisdictions, login status & active debris cases.</p>
+            </div>
+            <!-- Department Filter Tabs -->
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+              <button onclick="filterOfficersByDept('all')" id="btn-filter-all" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-xs transition cursor-pointer">
+                All Officers
+              </button>
+              <button onclick="filterOfficersByDept('mcc')" id="btn-filter-mcc" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏛️ MCC
+              </button>
+              <button onclick="filterOfficersByDept('gp')" id="btn-filter-gp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏡 Gram Panchayat
+              </button>
+              <button onclick="filterOfficersByDept('tp')" id="btn-filter-tp" class="px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs transition cursor-pointer">
+                🏭 Town Panchayat
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Officers Bar -->
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
+            <input type="text" id="search-officers-list" oninput="handleOfficersSearch(this.value)" placeholder="Search officers & inspectors by Name, Gmail, Phone, Employee ID (MCCU1001, BOGP1001, HTMC1001), Jurisdiction, or Role..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"/>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3">Officer / Inspector</th>
+                  <th class="px-4 py-3">Role & Employee ID</th>
+                  <th class="px-4 py-3">Department</th>
+                  <th class="px-4 py-3">Official Gmail</th>
+                  <th class="px-4 py-3">Phone</th>
+                  <th class="px-4 py-3">Assigned Jurisdiction & PINs</th>
+                  <th class="px-4 py-3">Linked Requests</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-inspectors" class="divide-y divide-slate-100 font-medium text-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 5. DEMOLITION REQUESTS                                                -->
       <!-- ===================================================================== -->
       <section id="panel-demolition_requests" class="panel-view space-y-6">
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
@@ -553,14 +759,16 @@
     });
 
     const views = [
-      'dashboard', 'authorities', 'demolition_requests', 'certificates'
+      'dashboard', 'pinmapping', 'authorities', 'inspectors', 'demolition_requests', 'certificates'
     ];
 
     const viewTitles = {
       'dashboard': '1. Dashboard Overview',
-      'authorities': '2. Departments & Civic Authorities',
-      'demolition_requests': '3. Building Demolition Clearance Requests',
-      'certificates': '4. Green Disposal Certificates (NOC)'
+      'pinmapping': '2. PIN Code & Area Mapping',
+      'authorities': '3. Departments & Civic Authorities',
+      'inspectors': '4. Field Inspectors & Officers Management',
+      'demolition_requests': '5. Building Demolition Clearance Requests',
+      'certificates': '6. Green Disposal Certificates (NOC)'
     };
 
     function switchView(viewName) {
