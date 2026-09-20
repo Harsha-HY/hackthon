@@ -1475,14 +1475,15 @@
         const authStr = (app.authority || '').toLowerCase().trim();
 
         // 1. Strict Exclusion: If app belongs to another jurisdiction by ID or authorityKey, reject immediately
-        if (id.startsWith('GP-') && currentAuthorityKey !== 'gp') return false;
-        if (id.startsWith('TP-') && currentAuthorityKey !== 'tp') return false;
-        if (id.startsWith('MCC-') && currentAuthorityKey !== 'mcc') return false;
+        const cleanId = id.replace(/^#/, '');
+        if ((cleanId.startsWith('GP-') || cleanId.startsWith('GP')) && currentAuthorityKey !== 'gp') return false;
+        if ((cleanId.startsWith('TP-') || cleanId.startsWith('TP')) && currentAuthorityKey !== 'tp') return false;
+        if ((cleanId.startsWith('MCC-') || cleanId.startsWith('MCC')) && currentAuthorityKey !== 'mcc') return false;
 
         if (appAuthKey && appAuthKey !== currentAuthorityKey.toLowerCase()) return false;
 
         // 2. Positive Prefix Match
-        if (id.startsWith(currentAuthorityKey.toUpperCase() + '-')) return true;
+        if (cleanId.startsWith(currentAuthorityKey.toUpperCase())) return true;
 
         // 3. Positive Department / AuthorityKey Match
         if (appAuthKey === currentAuthorityKey.toLowerCase()) return true;

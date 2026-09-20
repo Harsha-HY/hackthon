@@ -1658,6 +1658,38 @@
 
       if (activeApp) {
         const isApproved = activeApp.status === 'Approved' || activeApp.certificateStatus === 'Issued';
+        const st = activeApp.status || 'Pending Inspection';
+        
+        let statusBadgeClass = 'bg-amber-400 text-slate-950';
+        let statusTitle = '⏳ Your application is actively under on-site inspection.';
+        let statusDesc = `Municipal rules allow 1 active application per site until finalized by assigned Inspector ${activeApp.assignedInspectorName || 'Ward Officer'}. You can track live progress below.`;
+
+        if (isApproved) {
+          statusBadgeClass = 'bg-emerald-500 text-slate-950 font-bold';
+          statusTitle = '🎉 NOC Clearance Certificate Issued!';
+          statusDesc = 'Your C&D Waste NOC has been officially approved. You can view or download the valid NOC certificate below.';
+        } else if (st === 'Visit Scheduled') {
+          statusBadgeClass = 'bg-blue-400 text-slate-950 font-bold';
+          statusTitle = '📅 Site Visit Scheduled (Date & Time Fixed)';
+          statusDesc = `Field inspection has been scheduled. Inspector ${activeApp.assignedInspectorName || 'Ward Inspector'} will arrive for physical GPS verification and debris assessment.`;
+        } else if (st === 'On-Site Audit In Progress') {
+          statusBadgeClass = 'bg-purple-400 text-slate-950 font-bold';
+          statusTitle = '🚶 Inspector On-Site Auditing In Progress';
+          statusDesc = `Inspector ${activeApp.assignedInspectorName || 'Ward Inspector'} is actively on-site at your premise verifying boundary geotags, blueprints, and measuring rubble tonnage.`;
+        } else if (st === 'Inspection Passed & Verified') {
+          statusBadgeClass = 'bg-teal-400 text-slate-950 font-bold';
+          statusTitle = '🟢 Physical Inspection Passed & Verified';
+          statusDesc = `Physical site audit passed. Verified Tonnage: ${activeApp.verifiedTonnage || activeApp.tonnage || 10} MT. Awaiting final officer certificate dispatch.`;
+        } else if (st === 'Action Required') {
+          statusBadgeClass = 'bg-amber-300 text-slate-950 font-bold';
+          statusTitle = '⚠️ Action Required / Resubmission Needed';
+          statusDesc = `Inspector Note: "${activeApp.inspectorNotes || 'Please ensure site access or safety barricades are in place.'}".`;
+        } else if (st === 'Flagged Violation') {
+          statusBadgeClass = 'bg-rose-500 text-white font-bold';
+          statusTitle = '❌ Flagged Municipal Compliance Violation';
+          statusDesc = `Site flagged by inspector: "${activeApp.inspectorNotes || 'Unauthorized disposal detected.'}". Please contact ${activeApp.authority || 'Local Office'}.`;
+        }
+
         if (form) form.classList.add('hidden');
         if (banner) {
           banner.className = 'block mb-6 p-5 rounded-3xl bg-slate-900 border-2 border-emerald-500/50 shadow-xl space-y-4';
@@ -1669,20 +1701,18 @@
                 <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Permit Status Tracking</span>
                 <span class="px-2.5 py-0.5 rounded-lg bg-black text-white font-mono font-bold text-xs">${activeApp.id || '#MCC2026'}</span>
               </div>
-              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${isApproved ? 'bg-emerald-500 text-slate-950' : 'bg-amber-400 text-slate-950'}">
-                ${activeApp.status || 'Pending Inspection'}
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${statusBadgeClass}">
+                ${st}
               </span>
             </div>
 
             <!-- Descriptive Guidance -->
             <div class="space-y-1">
               <h4 class="text-sm font-extrabold text-white">
-                ${isApproved ? '🎉 NOC Clearance Certificate Issued!' : '⏳ Your application is actively under on-site inspection.'}
+                ${statusTitle}
               </h4>
               <p class="text-xs text-slate-300 leading-relaxed">
-                ${isApproved 
-                  ? 'Your C&D Waste NOC has been officially approved. You can view or download the valid NOC certificate below.' 
-                  : 'Municipal rules allow 1 active application per site until finalized by the assigned Ward Inspector. You can track progress or view details below.'}
+                ${statusDesc}
               </p>
             </div>
 
