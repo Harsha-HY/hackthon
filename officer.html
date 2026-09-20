@@ -670,7 +670,10 @@
               <h2 class="text-lg font-bold text-slate-900">Inspectors & Field Officers Roster</h2>
               <p class="text-xs text-slate-500">Official directory of assigned field inspectors and routing PIN codes. Requests auto-route to designated inspectors based on citizen PIN codes.</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2.5">
+              <button onclick="openCreateInspectorModal()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer transition">
+                <span>➕</span> <span>Add Field Inspector</span>
+              </button>
               <span class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono font-bold flex items-center gap-1.5">
                 <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Official Civic Staff Roster
@@ -2066,6 +2069,7 @@
     function closeModal() {
       document.getElementById('modal-backdrop').classList.add('hidden');
     }
+    window.openAddInspectorModal = openCreateInspectorModal;
 
     
     function toggleInspectorStatus(email) {
@@ -2123,6 +2127,15 @@
         status: 'Active (On Duty)',
         createdAt: new Date().toISOString()
       };
+
+      // 1. Supabase Cloud DB direct persistence
+      if (window.civicDb && typeof window.civicDb.registerUser === 'function') {
+        try {
+          await window.civicDb.registerUser(newInspector);
+        } catch(e) {
+          console.warn('civicDb registerUser err:', e);
+        }
+      }
 
       try {
         await fetch('/api/auth/register', {
@@ -2446,6 +2459,16 @@
         return;
       }
       const targetEmail = (email || '').toLowerCase().trim();
+
+      // Supabase Cloud DB delete
+      if (window.civicDb && window.civicDb.getClient) {
+        try {
+          const client = window.civicDb.getClient();
+          if (client) {
+            client.from('users').delete().eq('email', targetEmail).then(() => {});
+          }
+        } catch(e) {}
+      }
 
       // 1. Remove from civic_inspectors
       let inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
