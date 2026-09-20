@@ -1189,7 +1189,8 @@
 
         const localApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
         const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-        const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(Array.isArray(localApps) ? localApps : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+        const liveLocal = [...(Array.isArray(localApps) ? localApps : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+        const combined = liveLocal.length > 0 ? liveLocal : [...BASELINE_SUBMITTED_APPLICATIONS];
         const uniqueMap = new Map();
         combined.forEach(a => {
           if (!a) return;
@@ -1331,7 +1332,8 @@
 
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
       const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const combined = [...BASELINE_SUBMITTED_APPLICATIONS, ...(Array.isArray(fetchedApps) ? fetchedApps : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+      const liveData = [...(Array.isArray(fetchedApps) ? fetchedApps : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
+      const combined = liveData.length > 0 ? liveData : [...BASELINE_SUBMITTED_APPLICATIONS];
       const uniqueMap = new Map();
       combined.forEach(a => {
         if (!a) return;
@@ -1474,45 +1476,57 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Strict Authority Isolation: Show applications belonging to this officer's authority
-    function getAuthorityApplications() {
+    // Helper: Accurately resolve an application's jurisdiction ('gp', 'tp', or 'mcc')
+    function resolveAppJurisdiction(app) {
+      if (!app) return 'mcc';
+
+      // 1. Direct explicit authorityKey / dept
+      const authKey = (app.authorityKey || app.authority_key || app.dept || '').toLowerCase().trim();
+      if (authKey === 'gp' || authKey === 'tp' || authKey === 'mcc') return authKey;
+
+      // 2. Assigned Officer Email
+      const offEmail = (app.assignedOfficerEmail || app.assigned_officer_email || '').toLowerCase().trim();
+      if (offEmail.includes('gp@') || offEmail.includes('bogadi') || offEmail.includes('panchayat')) return 'gp';
+      if (offEmail.includes('tp@') || offEmail.includes('hootagalli') || offEmail.includes('town')) return 'tp';
+      if (offEmail.includes('mcc@') || offEmail.includes('corporation')) return 'mcc';
+
+      // 3. Assigned Inspector Email / Name
+      const inspEmail = (app.assignedInspectorEmail || app.assigned_inspector_email || '').toLowerCase().trim();
+      const inspName = (app.assignedInspectorName || app.assigned_inspector_name || '').toLowerCase().trim();
+      if (inspEmail === 'q@gmail.com' || inspEmail.includes('dim@') || inspEmail.includes('basava') || inspEmail.includes('gp') || inspName.includes('seervi') || inspName.includes('basava')) return 'gp';
+      if (inspEmail.includes('anand') || inspEmail.includes('suresh') || inspEmail.includes('tp') || inspName.includes('anand') || inspName.includes('suresh')) return 'tp';
+      if (inspEmail.includes('inspector.mcc') || inspEmail.includes('swamy') || inspEmail.includes('mcc') || inspName.includes('swamy') || inspName.includes('rajesh')) return 'mcc';
+
+      // 4. PIN Code Matching (Authoritative Jurisdiction Mapping)
+      const pin = String(app.pincode || app.pin || '').trim();
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
       const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570023', '570024'];
 
+      if (GP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin))) return 'gp';
+      if (TP_PINS.some(p => pin.startsWith(p) || p.startsWith(pin))) return 'tp';
+      if (MCC_PINS.some(p => pin.startsWith(p) || p.startsWith(pin))) return 'mcc';
+
+      // 5. Authority String Content
+      const authStr = (app.authority || '').toLowerCase().trim();
+      if (authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) return 'gp';
+      if (authStr.includes('town') || authStr.includes('hootagalli')) return 'tp';
+      if (authStr.includes('mcc') || authStr.includes('corporation') || authStr.includes('mysuru city')) return 'mcc';
+
+      // 6. ID Prefix Fallback
+      const id = String(app.id || app.requestId || '').toUpperCase().trim().replace(/^#/, '');
+      if (id.startsWith('GP-') || id.startsWith('GP')) return 'gp';
+      if (id.startsWith('TP-') || id.startsWith('TP')) return 'tp';
+      if (id.startsWith('MCC-') || id.startsWith('MCC')) return 'mcc';
+
+      return 'mcc';
+    }
+
+    // Strict Authority Isolation: Show applications belonging to this officer's authority
+    function getAuthorityApplications() {
+      const activeKey = (currentAuthorityKey || 'mcc').toLowerCase().trim();
       return applicationsList.filter(app => {
-        const id = (app.id || app.requestId || '').toUpperCase().trim();
-        const appPin = String(app.pincode || app.pin || '').trim();
-        const appAuthKey = (app.authorityKey || app.dept || '').toLowerCase().trim();
-        const authStr = (app.authority || '').toLowerCase().trim();
-
-        // 1. Strict Exclusion: If app belongs to another jurisdiction by ID or authorityKey, reject immediately
-        const cleanId = id.replace(/^#/, '');
-        if ((cleanId.startsWith('GP-') || cleanId.startsWith('GP')) && currentAuthorityKey !== 'gp') return false;
-        if ((cleanId.startsWith('TP-') || cleanId.startsWith('TP')) && currentAuthorityKey !== 'tp') return false;
-        if ((cleanId.startsWith('MCC-') || cleanId.startsWith('MCC')) && currentAuthorityKey !== 'mcc') return false;
-
-        if (appAuthKey && appAuthKey !== currentAuthorityKey.toLowerCase()) return false;
-
-        // 2. Positive Prefix Match
-        if (cleanId.startsWith(currentAuthorityKey.toUpperCase())) return true;
-
-        // 3. Positive Department / AuthorityKey Match
-        if (appAuthKey === currentAuthorityKey.toLowerCase()) return true;
-
-        // 4. Fallback to PIN / Authority text matches
-        if (currentAuthorityKey === 'gp') {
-          if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
-          if (authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) return true;
-        } else if (currentAuthorityKey === 'tp') {
-          if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
-          if (authStr.includes('town') || authStr.includes('hootagalli')) return true;
-        } else if (currentAuthorityKey === 'mcc') {
-          if (MCC_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin))) return true;
-          if (authStr.includes('mcc') || authStr.includes('mysuru city') || authStr.includes('corporation')) return true;
-        }
-
-        return false;
+        return resolveAppJurisdiction(app) === activeKey;
       });
     }
 
