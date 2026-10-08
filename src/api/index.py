@@ -155,6 +155,43 @@ memory_db = {
     "registeredUsers": list(SYSTEM_ACCOUNTS)
 }
 
+CLOUD_APP_OBJECT_ID = "ff808181a09d98f701a11a6b828e1e21"
+CLOUD_USER_OBJECT_ID = "ff808181a09d98f701a0b5665eda376f"
+
+def fetch_cloud_apps():
+    try:
+        res = requests.get(f"https://api.restful-api.dev/objects/{CLOUD_APP_OBJECT_ID}", headers={"User-Agent": "FastAPI"}, timeout=3)
+        if res.status_code == 200:
+            d = res.json().get("data", {})
+            return d.get("applications", []), d.get("stats", None)
+    except Exception:
+        pass
+    return None, None
+
+def persist_cloud_apps(apps, stats):
+    try:
+        clean_apps = apps[:100]
+        payload = {"data": {"applications": clean_apps, "stats": stats}}
+        requests.patch(f"https://api.restful-api.dev/objects/{CLOUD_APP_OBJECT_ID}", json=payload, headers={"User-Agent": "FastAPI"}, timeout=3)
+    except Exception:
+        pass
+
+def fetch_cloud_users():
+    try:
+        res = requests.get(f"https://api.restful-api.dev/objects/{CLOUD_USER_OBJECT_ID}", headers={"User-Agent": "FastAPI"}, timeout=3)
+        if res.status_code == 200:
+            return res.json().get("data", {}).get("users", [])
+    except Exception:
+        pass
+    return []
+
+def persist_cloud_users(users):
+    try:
+        payload = {"data": {"users": users}}
+        requests.patch(f"https://api.restful-api.dev/objects/{CLOUD_USER_OBJECT_ID}", json=payload, headers={"User-Agent": "FastAPI"}, timeout=3)
+    except Exception:
+        pass
+
 def get_storage_path():
     parent = os.path.dirname(DATA_FILE)
     if os.path.exists(parent) and os.access(parent, os.W_OK):
@@ -173,14 +210,41 @@ def load_data():
                 if isinstance(data, dict):
                     memory_db["stats"] = data.get("stats", memory_db["stats"])
                     memory_db["applications"] = data.get("applications", [])
+                    if "registeredUsers" in data:
+                        memory_db["registeredUsers"] = data.get("registeredUsers", memory_db["registeredUsers"])
         except Exception:
             pass
+
+    # Merge with Cloud Object Store
+    try:
+        c_apps, c_stats = fetch_cloud_apps()
+        if c_apps:
+            existing_ids = {a.get("id") for a in memory_db["applications"] if a.get("id")}
+            for ca in c_apps:
+                if ca.get("id") not in existing_ids:
+                    memory_db["applications"].append(ca)
+                    existing_ids.add(ca.get("id"))
+            if c_stats:
+                memory_db["stats"].update(c_stats)
+    except Exception:
+        pass
+
+    try:
+        c_users = fetch_cloud_users()
+        existing_emails = {str(u.get("email", "")).lower() for u in memory_db["registeredUsers"]}
+        for cu in c_users:
+            if str(cu.get("email", "")).lower() not in existing_emails:
+                memory_db["registeredUsers"].append(cu)
+                existing_emails.add(str(cu.get("email", "")).lower())
+    except Exception:
+        pass
 
 def save_data():
     try:
         data_to_save = {
             "stats": memory_db["stats"],
             "applications": memory_db["applications"],
+            "registeredUsers": memory_db["registeredUsers"],
             "hotspots": []
         }
         target = get_storage_path()
@@ -277,10 +341,39 @@ def resolve_pin_routing(pin: str):
         return {
             "authorityKey": "mcc",
             "authority": "Mysuru Municipal Corporation (MCC Urban)",
-            "assignedOfficerEmail": "mcc@gmail.com",
+            "assignedOfficerEmail": "officer.mcc@gmail.com",
             "assignedInspectorName": "Gargieee",
             "assignedInspectorEmail": "gat@gmail.com"
         }
+
+    # 2. Check dynamic registered inspectors
+    all_users = list(memory_db.get("registeredUsers", [])) + list(SYSTEM_ACCOUNTS)
+    for ins in all_users:
+        if ins and ins.get("role") == "inspector":
+            ins_pin = str(ins.get("assignedPin") or ins.get("pin") or "").strip()
+            if ins_pin:
+                p_list = [p.strip() for p in ins_pin.replace(",", " ").split() if p.strip()]
+                if any(p == clean_pin or clean_pin.startswith(p) or p.startswith(clean_pin) for p in p_list):
+                    dept = (ins.get("department") or "").lower()
+                    dept_name = (ins.get("departmentName") or "").lower()
+                    auth_key = "mcc"
+                    auth_name = "Mysuru Municipal Corporation (MCC Urban)"
+                    off_email = "officer.mcc@gmail.com"
+                    if "gp" in dept or "panchayat" in dept or "panchayat" in dept_name:
+                        auth_key = "gp"
+                        auth_name = "Bogadi Gram Panchayat (Rural)"
+                        off_email = "gp@gmail.com"
+                    elif "tp" in dept or "town" in dept or "town" in dept_name:
+                        auth_key = "tp"
+                        auth_name = "Hootagalli Town Panchayat"
+                        off_email = "tp@gmail.com"
+                    return {
+                        "authorityKey": auth_key,
+                        "authority": auth_name,
+                        "assignedOfficerEmail": off_email,
+                        "assignedInspectorName": ins.get("name"),
+                        "assignedInspectorEmail": ins.get("email")
+                    }
 
     GP_PINS = ['570026', '571130', '570028', '560079', '570021', '571311', '571201', '571186', '571101', '571120', '571124', '571125']
     TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610', '570016']
@@ -297,6 +390,9 @@ def resolve_pin_routing(pin: str):
         elif clean_pin == "571130":
             insp_name = "Basavarajappa M."
             insp_email = "basava.gp@gmail.com"
+        elif clean_pin == "571311":
+            insp_name = "S. Nanjappa"
+            insp_email = "nanjappa.gp@gmail.com"
         return {
             "authorityKey": "gp",
             "authority": "Bogadi Gram Panchayat (Rural)",
@@ -326,13 +422,16 @@ def resolve_pin_routing(pin: str):
         if clean_pin == "570002":
             insp_name = "S. Swamy"
             insp_email = "swamy.mcc@gmail.com"
+        elif clean_pin == "570004":
+            insp_name = "Divya Shankar"
+            insp_email = "divya.mcc@gmail.com"
         elif clean_pin == "570023":
             insp_name = "P. Ramesh"
             insp_email = "ramesh.mcc@gmail.com"
         return {
             "authorityKey": "mcc",
             "authority": "Mysuru Municipal Corporation (MCC Urban)",
-            "assignedOfficerEmail": "mcc@gmail.com",
+            "assignedOfficerEmail": "officer.mcc@gmail.com",
             "assignedInspectorName": insp_name,
             "assignedInspectorEmail": insp_email
         }
@@ -340,6 +439,7 @@ def resolve_pin_routing(pin: str):
 # API Endpoints
 @app.get("/api/applications")
 async def get_applications(authority: Optional[str] = None, inspector: Optional[str] = None):
+    load_data()
     apps = memory_db.get("applications", [])
     if authority:
         apps = [a for a in apps if (a.get("authorityKey") or "").lower() == authority.lower()]
@@ -371,13 +471,14 @@ async def create_application(app_data: ApplicationCreate):
     # Prepend to memory applications
     memory_db["applications"].insert(0, app_dict)
     memory_db["stats"]["totalApplications"] = len(memory_db["applications"])
-    memory_db["stats"]["pendingInspections"] = sum(1 for a in memory_db["applications"] if a.get("status") == "Pending Inspection")
+    memory_db["stats"]["pendingInspections"] = sum(1 for a in memory_db["applications"] if a.get("status") in ["Pending Inspection", "Pending Verification"])
     save_data()
+    persist_cloud_apps(memory_db["applications"], memory_db["stats"])
 
     # REAL-TIME BROADCAST: Instant Push to Inspector & Officer Dashboards
     await broadcast_event("NEW_APPLICATION", app_dict)
 
-    return {"success": True, "application": app_dict, "id": app_dict["id"]}
+    return {"success": True, "application": app_dict, "id": app_dict["id"], "item": app_dict}
 
 @app.patch("/api/applications/{app_id}")
 @app.post("/api/applications/update")
@@ -401,14 +502,22 @@ async def update_application(app_id: Optional[str] = None, req: Request = None):
         memory_db["applications"].insert(0, found)
 
     save_data()
+    persist_cloud_apps(memory_db["applications"], memory_db["stats"])
 
     # REAL-TIME BROADCAST: Instant Push to All Dashboards
     await broadcast_event("APPLICATION_UPDATED", found)
 
-    return {"success": True, "application": found}
+    return {"success": True, "application": found, "item": found}
 
 @app.get("/api/dashboard/stats")
 async def get_dashboard_stats():
+    load_data()
+    total = len(memory_db.get("applications", []))
+    pending = sum(1 for a in memory_db.get("applications", []) if a.get("status") in ["Pending Inspection", "Pending Verification"])
+    completed = sum(1 for a in memory_db.get("applications", []) if a.get("status") in ["Approved", "Clearance Approved", "Issued"])
+    memory_db["stats"]["totalApplications"] = total
+    memory_db["stats"]["pendingInspections"] = pending
+    memory_db["stats"]["completedCollections"] = completed
     return {
         "stats": memory_db["stats"],
         "hotspots": []
@@ -416,14 +525,53 @@ async def get_dashboard_stats():
 
 @app.get("/api/auth/users")
 async def get_auth_users():
-    return SYSTEM_ACCOUNTS
+    load_data()
+    # Return unique merged list of system accounts and registered users
+    combined = list(SYSTEM_ACCOUNTS)
+    seen = {str(u.get("email", "")).lower() for u in combined}
+    for u in memory_db.get("registeredUsers", []):
+        em = str(u.get("email", "")).lower()
+        if em and em not in seen:
+            combined.append(u)
+            seen.add(em)
+    return combined
+
+@app.post("/api/auth/register")
+async def auth_register(req: Request):
+    body = await req.json()
+    email = str(body.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    found_idx = -1
+    for idx, u in enumerate(memory_db["registeredUsers"]):
+        if str(u.get("email") or "").strip().lower() == email:
+            found_idx = idx
+            break
+
+    new_user = dict(body)
+    new_user["email"] = email
+    if not new_user.get("id"):
+        new_user["id"] = "u_" + str(int(time.time() * 1000))
+
+    if found_idx >= 0:
+        memory_db["registeredUsers"][found_idx].update(new_user)
+        ret_user = memory_db["registeredUsers"][found_idx]
+    else:
+        memory_db["registeredUsers"].append(new_user)
+        ret_user = new_user
+
+    save_data()
+    persist_cloud_users(memory_db["registeredUsers"])
+    return {"success": True, "user": ret_user}
 
 @app.post("/api/auth/login")
 async def auth_login(login: LoginRequest):
     email = login.email.strip().lower()
     pw = login.password.strip()
 
-    for u in SYSTEM_ACCOUNTS:
+    all_users = list(memory_db.get("registeredUsers", [])) + list(SYSTEM_ACCOUNTS)
+    for u in all_users:
         if (u.get("email") or "").lower() == email:
             valid_passwords = u.get("passwords", [u.get("password")])
             if pw in valid_passwords or pw == u.get("password"):

@@ -546,6 +546,27 @@
         <span class="text-base">📜</span>
         <span>Application History</span>
       </button>
+
+      <!-- Portals & Role Switchers -->
+      <div class="pt-5 mt-4 border-t border-white/10 space-y-1.5">
+        <span class="text-[10px] font-mono uppercase font-bold text-emerald-400/80 px-2 tracking-wider block">Portals & Roles</span>
+        <a href="inspector.html" class="nav-btn flex items-center gap-2.5 hover:bg-emerald-900/40 text-slate-200">
+          <span class="text-base">🔍</span>
+          <span>Inspector Portal</span>
+        </a>
+        <a href="officer.html" class="nav-btn flex items-center gap-2.5 hover:bg-emerald-900/40 text-slate-200">
+          <span class="text-base">🏛️</span>
+          <span>Officer Command</span>
+        </a>
+        <a href="dashboard.html" class="nav-btn flex items-center gap-2.5 hover:bg-emerald-900/40 text-slate-200">
+          <span class="text-base">📊</span>
+          <span>Civic Dashboard</span>
+        </a>
+        <a href="auth.html" class="nav-btn flex items-center gap-2.5 hover:bg-emerald-900/40 text-slate-200">
+          <span class="text-base">🔐</span>
+          <span>Switch Account</span>
+        </a>
+      </div>
     </div>
 
     <!-- Bottom Mysuru City Branding & Skyline Outline -->
@@ -580,33 +601,61 @@
         <p class="text-xs text-slate-500 hidden sm:block">Provide your details to apply for C&D waste clearance services.</p>
       </div>
 
-      <!-- Right User Menu -->
-      <div class="relative">
-        <button onclick="toggleUserDropdown()" class="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition cursor-pointer">
-          <div class="size-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-            👤
-          </div>
-          <div class="text-left leading-tight hidden sm:block">
-            <span class="block text-xs font-bold text-slate-900 flex items-center gap-1">
-              <span id="top-user-name">Welcome, Citizen</span>
-              <span class="text-[10px] text-slate-400">⌄</span>
-            </span>
-          </div>
-        </button>
+      <!-- Header Navigation Links & Right User Menu -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Quick Switch Badges -->
+        <div class="hidden md:flex items-center gap-2">
+          <a href="inspector.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
+            <span>🔍</span> <span>Inspector Portal</span>
+          </a>
+          <a href="officer.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
+            <span>🏛️</span> <span>Officer Command</span>
+          </a>
+          <a href="dashboard.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
+            <span>📊</span> <span>Civic Dashboard</span>
+          </a>
+        </div>
 
-        <!-- Dropdown Menu -->
-        <div id="user-dropdown" class="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 hidden z-50">
-          <div class="px-3 py-2 border-b border-slate-100 mb-1">
-            <span class="block text-xs font-bold text-slate-900" id="drop-user-name">Citizen User</span>
-            <span class="block text-[10px] font-mono text-emerald-700 font-semibold" id="drop-user-email">customer@gmail.com</span>
+        <div class="relative">
+          <button onclick="toggleUserDropdown()" class="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition cursor-pointer">
+            <div class="size-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+              👤
+            </div>
+            <div class="text-left leading-tight hidden sm:block">
+              <span class="block text-xs font-bold text-slate-900 flex items-center gap-1">
+                <span id="top-user-name">Welcome, Citizen</span>
+                <span class="text-[10px] text-slate-400">⌄</span>
+              </span>
+            </div>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div id="user-dropdown" class="absolute right-0 top-14 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 hidden z-50">
+            <div class="px-3 py-2 border-b border-slate-100 mb-1">
+              <span class="block text-xs font-bold text-slate-900" id="drop-user-name">Citizen User</span>
+              <span class="block text-[10px] font-mono text-emerald-700 font-semibold" id="drop-user-email">customer@gmail.com</span>
+            </div>
+            <button onclick="switchTab('applications')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
+              <span>📜</span> <span>Application History</span>
+            </button>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="inspector.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
+              <span>🔍</span> <span>Inspector Portal</span>
+            </a>
+            <a href="officer.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
+              <span>🏛️</span> <span>Officer Command Center</span>
+            </a>
+            <a href="dashboard.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
+              <span>📊</span> <span>Civic Public Analytics</span>
+            </a>
+            <a href="auth.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
+              <span>🔐</span> <span>Switch Role / Login</span>
+            </a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition">
+              🚪 Sign Out
+            </button>
           </div>
-          <button onclick="switchTab('applications')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
-            <span>📜</span> <span>Application History</span>
-          </button>
-          <div class="border-t border-slate-100 my-1"></div>
-          <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition">
-            🚪 Sign Out
-          </button>
         </div>
       </div>
     </header>
@@ -988,7 +1037,15 @@
         };
       } catch(e) {}
     }
-    setInterval(syncLiveCustomerApplications, 4000);
+    // Load dynamic inspectors from server and start live syncing
+    if (typeof loadRegisteredUsersFromServer === 'function') {
+      loadRegisteredUsersFromServer();
+    }
+    syncLiveCustomerApplications();
+    setInterval(syncLiveCustomerApplications, 3000);
+    setInterval(() => {
+      if (typeof loadRegisteredUsersFromServer === 'function') loadRegisteredUsersFromServer();
+    }, 10000);
 
     if (civicSyncChannel) {
       civicSyncChannel.onmessage = (event) => {
@@ -1219,7 +1276,7 @@
       let authority = 'Mysuru Municipal Corporation (MCC Urban)';
       let assignedInspectorName = 'Rajesh Kumar';
       let assignedInspectorEmail = 'inspector.mcc@gmail.com';
-      let assignedOfficerEmail = 'mcc@gmail.com';
+      let assignedOfficerEmail = 'officer.mcc@gmail.com';
       let badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
       let tag = 'MCC Urban';
 
@@ -1227,10 +1284,27 @@
         return { authorityKey, authority, assignedInspectorName, assignedInspectorEmail, assignedOfficerEmail, badgeColor, tag };
       }
 
+      // Master Roster of Predefined & System Inspectors
+      const MASTER_ROSTER = [
+        { name: 'Gargieee', email: 'gat@gmail.com', assignedPin: '501301', department: 'mcc' },
+        { name: 'Seervi', email: 'q@gmail.com', assignedPin: '570026', department: 'gp' },
+        { name: 'Dimple', email: 'dim@gmail.com', assignedPin: '570028', department: 'gp' },
+        { name: 'M. Anand', email: 'anand.tp@gmail.com', assignedPin: '570018', department: 'tp' },
+        { name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', assignedPin: '570001', department: 'mcc' },
+        { name: 'S. Swamy', email: 'swamy.mcc@gmail.com', assignedPin: '570002', department: 'mcc' },
+        { name: 'Divya Shankar', email: 'divya.mcc@gmail.com', assignedPin: '570004', department: 'mcc' },
+        { name: 'P. Ramesh', email: 'ramesh.mcc@gmail.com', assignedPin: '570023', department: 'mcc' },
+        { name: 'Manjunatha Rao', email: 'manju.tp@gmail.com', assignedPin: '570017', department: 'tp' },
+        { name: 'Prashanth G.', email: 'prashanth.tp@gmail.com', assignedPin: '570027', department: 'tp' },
+        { name: 'K. Suresh', email: 'suresh.tp@gmail.com', assignedPin: '571607, 571604, 571602', department: 'tp' },
+        { name: 'Basavarajappa M.', email: 'basava.gp@gmail.com', assignedPin: '571130', department: 'gp' },
+        { name: 'S. Nanjappa', email: 'nanjappa.gp@gmail.com', assignedPin: '571311', department: 'gp' }
+      ];
+
       // 1. Check if a custom registered inspector in localStorage or users table has this PIN assigned
       const regUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const storedIns = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-      const allInspectors = [...storedIns, ...regUsers.filter(u => u && u.role === 'inspector')];
+      const allInspectors = [...regUsers.filter(u => u && u.role === 'inspector'), ...storedIns, ...MASTER_ROSTER];
 
       const customPinMatch = allInspectors.find(ins => {
         const insPin = String(ins.assignedPin || ins.pin || '').trim();
@@ -1257,7 +1331,7 @@
         } else {
           authorityKey = 'mcc';
           authority = 'Mysuru Municipal Corporation (MCC Urban)';
-          assignedOfficerEmail = 'mcc@gmail.com';
+          assignedOfficerEmail = 'officer.mcc@gmail.com';
           badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
           tag = 'Mysuru City Corporation';
         }
@@ -1270,7 +1344,7 @@
       if (cleanPin === '501301') {
         authorityKey = 'mcc';
         authority = 'Mysuru Municipal Corporation (MCC Urban)';
-        assignedOfficerEmail = 'mcc@gmail.com';
+        assignedOfficerEmail = 'officer.mcc@gmail.com';
         assignedInspectorName = 'Gargieee';
         assignedInspectorEmail = 'gat@gmail.com';
         badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
@@ -2323,6 +2397,24 @@
       });
     }
 
+    async function loadRegisteredUsersFromServer() {
+      try {
+        const res = await fetch('/api/auth/users');
+        if (res.ok) {
+          const serverUsers = await res.json();
+          if (Array.isArray(serverUsers) && serverUsers.length > 0) {
+            const local = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+            const map = new Map();
+            local.forEach(u => { if (u && u.email) map.set(u.email.toLowerCase(), u); });
+            serverUsers.forEach(u => { if (u && u.email) map.set(u.email.toLowerCase(), u); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('civic_registered_users', JSON.stringify(merged));
+            handlePinChange();
+          }
+        }
+      } catch(e) {}
+    }
+
     async function syncLiveCustomerApplications() {
       // 1. Immediately read from LocalStorage for instant 0ms cross-tab reactivity
       try {
@@ -2341,7 +2433,35 @@
         }
       } catch (err) {}
 
-      // 2. Fetch latest from Supabase Cloud DB
+      // 2. Fetch latest from Backend REST API (FastAPI / Serverless)
+      try {
+        const res = await fetch('/api/applications');
+        if (res.ok) {
+          const apiApps = await res.json();
+          if (Array.isArray(apiApps) && apiApps.length > 0) {
+            const localApps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
+            const map = new Map();
+            apiApps.forEach(a => { if (a && a.id) map.set(a.id, a); });
+            localApps.forEach(a => {
+              if (a && a.id && !map.has(a.id)) map.set(a.id, a);
+            });
+            const merged = Array.from(map.values());
+            localStorage.setItem('civic_applications', JSON.stringify(merged));
+            const myRequests = getLoggedInUserApplications(merged);
+            localStorage.setItem('cust_my_requests', JSON.stringify(myRequests));
+            if (myRequests.length > 0) {
+              const active = myRequests.find(a => !isFinalizedStatus(a.status)) || myRequests[0];
+              updateLiveTrackerUI(active);
+            } else {
+              resetLiveTrackerUI();
+            }
+            renderApplicationsHistory();
+            checkActiveApplicationLock();
+          }
+        }
+      } catch(e) {}
+
+      // 3. Fallback to Supabase Cloud DB
       try {
         if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
           const cloudApps = await window.civicDb.fetchApplications();

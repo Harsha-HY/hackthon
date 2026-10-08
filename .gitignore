@@ -6,7 +6,6 @@
 
 
 # Local database files & mock stores
-database.json
 *.db
 *.sqlite
 *.sqlite3
