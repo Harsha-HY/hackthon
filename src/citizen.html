@@ -9,12 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (function() {
-      const SUPABASE_URL = 'https://evnjukozsucobknwvzfp.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bmp1a296c3Vjb2Jrbnd2emZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTc3MjA1MywiZXhwIjoyMTA1MzQ4MDUzfQ.OzV3s8TKPGefQPdAKfMEUwKFYJwa4cYH6vsl7E9uGKk';
+      const SUPABASE_URL = window.CIVIC_SUPABASE_URL || '';
+      const SUPABASE_KEY = window.CIVIC_SUPABASE_KEY || '';
       let suClient = null;
       function initClient() {
         if (suClient) return suClient;
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
+        if (SUPABASE_URL && SUPABASE_KEY && window.supabase && typeof window.supabase.createClient === 'function') {
           try {
             suClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
               auth: { persistSession: false, autoRefreshToken: false }
@@ -149,6 +149,16 @@
               }
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/applications');
+            if (res.ok) {
+              const apiApps = await res.json();
+              if (Array.isArray(apiApps) && apiApps.length > 0) {
+                localStorage.setItem('civic_applications', JSON.stringify(apiApps));
+                return apiApps;
+              }
+            }
+          } catch(e) {}
           return JSON.parse(localStorage.getItem('civic_applications') || '[]');
         },
         async saveApplication(app) {
@@ -157,6 +167,13 @@
           if (client) {
             try { await client.from('applications').upsert(dbRow); } catch(e) {}
           }
+          try {
+            await fetch('/api/applications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(app)
+            });
+          } catch(e) {}
           const apps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
           const idx = apps.findIndex(a => a.id === app.id);
           if (idx >= 0) apps[idx] = { ...apps[idx], ...app };
@@ -177,6 +194,17 @@
               }
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+            });
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData.success) return resData;
+            }
+          } catch(e) {}
           return { success: false, message: 'Invalid credentials.' };
         },
         async registerUser(userData) {
@@ -185,6 +213,13 @@
           if (client) {
             try { await client.from('users').upsert(dbUser); } catch(e) {}
           }
+          try {
+            await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(userData)
+            });
+          } catch(e) {}
           return { success: true, user: userData };
         },
         async fetchUsers() {
@@ -195,6 +230,13 @@
               if (!error && Array.isArray(data)) return data.map(mapDbToUser);
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/auth/users');
+            if (res.ok) {
+              const resData = await res.json();
+              if (Array.isArray(resData)) return resData;
+            }
+          } catch(e) {}
           return [];
         },
         subscribeToApplications(onChange) {
@@ -993,60 +1035,79 @@
       }, 400);
     }
 
-    // High-Accuracy Reverse Geocoding & Local Mysuru Boundary Mapping
+    // High-Accuracy Reverse Geocoding & Boundary Resolution
     async function reverseGeocodeCoords(lat, lng) {
-      // 1. Attempt OpenStreetMap Nominatim reverse API with quick timeout
+      // 1. Attempt High-Accuracy Backend Server Proxy (OSM Nominatim with valid User-Agent)
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2600);
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
-          signal: controller.signal,
-          headers: { 'Accept-Language': 'en' }
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`, {
+          signal: controller.signal
         });
         clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
-          if (data && data.address) {
-            const addr = data.address;
-            const road = addr.road || addr.street || addr.neighbourhood || addr.suburb || addr.residential || '';
-            const locality = addr.suburb || addr.village || addr.town || addr.city_district || addr.city || 'Mysuru';
-            const postcode = addr.postcode ? addr.postcode.replace(/[^0-9]/g, '').substring(0, 6) : '';
-            const fullAddress = [road, locality, 'Mysuru'].filter(Boolean).join(', ');
+          if (data && data.success && data.fullAddress) {
+            return {
+              fullAddress: data.fullAddress,
+              postcode: data.postcode || ''
+            };
+          }
+        }
+      } catch (e) {}
+
+      // 2. Direct browser fallback via BigDataCloud Reverse Geocoding Client
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          const road = data.locality || '';
+          const city = data.city || data.principalSubdivision || '';
+          const fullAddress = [road, city].filter(Boolean).join(', ');
+          const postcode = data.postcode || '';
+          if (fullAddress) {
             return { fullAddress, postcode };
           }
         }
       } catch (e) {}
 
-      // 2. High-precision Mysuru local zone boundary fallback
-      // Bogadi GP zone (lat ~ 12.27 to 12.31, lng ~ 76.57 to 76.62)
+      // 3. High-precision Mysuru local zone boundary fallback
       if (lat >= 12.27 && lat <= 12.31 && lng >= 76.57 && lng <= 76.62) {
         return {
           fullAddress: 'Bogadi 2nd Stage, Ring Road, Bogadi Rural',
           postcode: '570026'
         };
       }
-      // Hootagalli TP zone (lat ~ 12.33 to 12.37, lng ~ 76.56 to 76.61)
       if (lat >= 12.33 && lat <= 12.37 && lng >= 76.56 && lng <= 76.61) {
         return {
           fullAddress: 'Hootagalli Industrial Area, Belavadi, Hootagalli',
           postcode: '570018'
         };
       }
-      // Kuvempunagar / Saraswathipuram MCC
       if (lat >= 12.27 && lat <= 12.30 && lng >= 76.62 && lng <= 76.66) {
         return {
           fullAddress: 'Kuvempunagar 5th Main, Saraswathipuram, Mysuru',
           postcode: '570023'
         };
       }
-      // Gokulam / V.V. Mohalla MCC
       if (lat >= 12.32 && lat <= 12.35 && lng >= 76.62 && lng <= 76.66) {
         return {
           fullAddress: 'Gokulam 3rd Stage, Contour Road, Mysuru',
           postcode: '570002'
         };
       }
-      // Central / Devaraja Mohalla MCC
+      if (lat >= 17.30 && lat <= 17.55 && lng >= 78.30 && lng <= 78.60) {
+        return {
+          fullAddress: 'City Central Zone, Greater Municipal Region',
+          postcode: '501301'
+        };
+      }
+
       return {
         fullAddress: 'Sayyaji Rao Road, Devaraja Mohalla, Mysuru',
         postcode: '570001'
@@ -1064,16 +1125,18 @@
           async pos => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
-            const gpsStr = `Lat: ${lat.toFixed(5)}° N, Lng: ${lng.toFixed(5)}° E`;
+            const accuracy = pos.coords.accuracy ? ` (±${Math.round(pos.coords.accuracy)}m)` : '';
+            const gpsStr = `Lat: ${lat.toFixed(5)}° N, Lng: ${lng.toFixed(5)}° E${accuracy}`;
             customerLiveCoords = { lat, lng, gpsText: gpsStr };
             if (displayEl) displayEl.innerText = gpsStr;
             if (mapLink) mapLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
 
-            if (autofill) {
-              const geoInfo = await reverseGeocodeCoords(lat, lng);
-              if (geoInfo) {
-                const addrInput = document.getElementById('form-cust-address');
-                const pinInput = document.getElementById('form-cust-pin');
+            const geoInfo = await reverseGeocodeCoords(lat, lng);
+            if (geoInfo) {
+              const addrInput = document.getElementById('form-cust-address');
+              const pinInput = document.getElementById('form-cust-pin');
+
+              if (autofill) {
                 if (pinInput && geoInfo.postcode) {
                   pinInput.value = geoInfo.postcode;
                 }
@@ -1081,47 +1144,59 @@
                   addrInput.value = geoInfo.fullAddress;
                 }
                 handlePinChange();
-                showToast(`📍 Autofilled location: ${geoInfo.fullAddress} (PIN: ${geoInfo.postcode || 'Detected'})`, 'success');
+                showToast(`📍 Autofilled: ${geoInfo.fullAddress} ${geoInfo.postcode ? '(PIN: ' + geoInfo.postcode + ')' : ''}`, 'success');
+              } else {
+                if (pinInput && !pinInput.value && geoInfo.postcode) {
+                  pinInput.value = geoInfo.postcode;
+                  handlePinChange();
+                }
+                showToast('📍 Live GPS acquired: ' + gpsStr, 'success');
               }
             } else {
               showToast('📍 Live GPS acquired: ' + gpsStr, 'success');
             }
           },
           async err => {
-            const pin = (document.getElementById('form-cust-pin')?.value || '').trim();
+            console.warn('Geolocation error:', err.message);
+            const pinInput = document.getElementById('form-cust-pin');
+            const pin = (pinInput?.value || '').trim();
             let fallbackLat = 12.29581, fallbackLng = 76.63942;
-            if (pin.startsWith('570026') || pin.startsWith('571130') || pin.startsWith('570028') || pin.startsWith('560079') || pin.startsWith('570021')) {
+            if (pin === '501301') {
+              fallbackLat = 17.38504; fallbackLng = 78.48671;
+            } else if (pin.startsWith('570026') || pin.startsWith('571130') || pin.startsWith('570028')) {
               fallbackLat = 12.28504; fallbackLng = 76.59201;
-            } else if (pin.startsWith('570018') || pin.startsWith('570017') || pin.startsWith('570027') || pin.startsWith('571607')) {
+            } else if (pin.startsWith('570018') || pin.startsWith('570017') || pin.startsWith('570027')) {
               fallbackLat = 12.34102; fallbackLng = 76.58905;
             }
             const gpsStr = `Lat: ${fallbackLat.toFixed(5)}° N, Lng: ${fallbackLng.toFixed(5)}° E`;
             customerLiveCoords = { lat: fallbackLat, lng: fallbackLng, gpsText: gpsStr };
-            if (displayEl) displayEl.innerText = gpsStr + ' (Mysuru Zone)';
+            if (displayEl) displayEl.innerText = gpsStr;
             if (mapLink) mapLink.href = `https://www.google.com/maps?q=${fallbackLat},${fallbackLng}`;
 
             if (autofill) {
               const geoInfo = await reverseGeocodeCoords(fallbackLat, fallbackLng);
               if (geoInfo) {
                 const addrInput = document.getElementById('form-cust-address');
-                const pinInput = document.getElementById('form-cust-pin');
                 if (pinInput && geoInfo.postcode && !pinInput.value) pinInput.value = geoInfo.postcode;
                 if (addrInput && geoInfo.fullAddress && !addrInput.value) addrInput.value = geoInfo.fullAddress;
                 handlePinChange();
-                showToast(`📍 Autofilled location: ${geoInfo.fullAddress} (PIN: ${geoInfo.postcode || '570001'})`, 'info');
+                showToast(`📍 Autofilled: ${geoInfo.fullAddress} (PIN: ${geoInfo.postcode || '570001'})`, 'info');
               }
             }
           },
-          { timeout: 7000, enableHighAccuracy: true }
+          { timeout: 9000, enableHighAccuracy: true, maximumAge: 10000 }
         );
+      } else {
+        showToast('Geolocation is not supported by your browser', 'error');
       }
     }
 
     // Dynamic Resolution of Authority & Inspector based exclusively on PIN Code
     function resolveAuthorityAndInspector(pin) {
+      const cleanPin = String(pin || '').trim();
       const GP_PINS = ['570026', '571130', '570028', '560079', '570021', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610', '570016'];
-      const MCC_PINS = ['570001', '570002', '570004', '570008', '570010', '570020', '570023', '570024'];
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570010', '570020', '570023', '570024', '501301'];
 
       let authorityKey = 'mcc';
       let authority = 'Mysuru Municipal Corporation (MCC Urban)';
@@ -1131,10 +1206,15 @@
       let badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
       let tag = 'MCC Urban';
 
-      const cleanPin = String(pin || '').trim();
+      if (!cleanPin) {
+        return { authorityKey, authority, assignedInspectorName, assignedInspectorEmail, assignedOfficerEmail, badgeColor, tag };
+      }
 
       // 1. Check if a custom registered inspector in localStorage or users table has this PIN assigned
-      const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      const regUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
+      const storedIns = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+      const allInspectors = [...storedIns, ...regUsers.filter(u => u && u.role === 'inspector')];
+
       const customPinMatch = allInspectors.find(ins => {
         const insPin = String(ins.assignedPin || ins.pin || '').trim();
         if (!insPin) return false;
@@ -1166,70 +1246,83 @@
         }
         assignedInspectorName = customPinMatch.name;
         assignedInspectorEmail = customPinMatch.email;
-      } else {
-        const isGp = GP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
-        const isTp = TP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
+        return { authorityKey, authority, assignedInspectorName, assignedInspectorEmail, assignedOfficerEmail, badgeColor, tag };
+      }
 
-        if (isGp) {
-          authorityKey = 'gp';
-          authority = 'Gram Panchayat (Bogadi Rural)';
-          assignedOfficerEmail = 'gp@gmail.com';
-          badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
-          tag = 'Gram Panchayat';
+      // 2. Exact PIN Mappings
+      if (cleanPin === '501301') {
+        authorityKey = 'mcc';
+        authority = 'Mysuru Municipal Corporation (MCC Urban)';
+        assignedOfficerEmail = 'mcc@gmail.com';
+        assignedInspectorName = 'Gargieee';
+        assignedInspectorEmail = 'gat@gmail.com';
+        badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
+        tag = 'MCC Urban';
+        return { authorityKey, authority, assignedInspectorName, assignedInspectorEmail, assignedOfficerEmail, badgeColor, tag };
+      }
 
-          if (cleanPin === '571130') {
-            assignedInspectorName = 'Basavarajappa M.';
-            assignedInspectorEmail = 'basava.gp@gmail.com';
-          } else if (cleanPin === '571311') {
-            assignedInspectorName = 'S. Nanjappa';
-            assignedInspectorEmail = 'nanjappa.gp@gmail.com';
-          } else if (cleanPin === '570028') {
-            assignedInspectorName = 'Dimple';
-            assignedInspectorEmail = 'dim@gmail.com';
-          } else {
-            assignedInspectorName = 'Seervi';
-            assignedInspectorEmail = 'q@gmail.com';
-          }
-        } else if (isTp) {
-          authorityKey = 'tp';
-          authority = 'Town Panchayat (Hootagalli Town)';
-          assignedOfficerEmail = 'tp@gmail.com';
-          badgeColor = 'bg-teal-50 text-teal-900 border-teal-300';
-          tag = 'Town Panchayat';
+      const isGp = GP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
+      const isTp = TP_PINS.some(p => cleanPin.startsWith(p) || p.startsWith(cleanPin) || cleanPin === p);
 
-          if (cleanPin === '570017') {
-            assignedInspectorName = 'Manjunatha Rao';
-            assignedInspectorEmail = 'manju.tp@gmail.com';
-          } else if (cleanPin === '570027') {
-            assignedInspectorName = 'Prashanth G.';
-            assignedInspectorEmail = 'prashanth.tp@gmail.com';
-          } else if (cleanPin === '571607' || cleanPin === '571604') {
-            assignedInspectorName = 'K. Suresh';
-            assignedInspectorEmail = 'suresh.tp@gmail.com';
-          } else {
-            assignedInspectorName = 'M. Anand';
-            assignedInspectorEmail = 'anand.tp@gmail.com';
-          }
+      if (isGp) {
+        authorityKey = 'gp';
+        authority = 'Gram Panchayat (Bogadi Rural)';
+        assignedOfficerEmail = 'gp@gmail.com';
+        badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
+        tag = 'Gram Panchayat';
+
+        if (cleanPin === '571130') {
+          assignedInspectorName = 'Basavarajappa M.';
+          assignedInspectorEmail = 'basava.gp@gmail.com';
+        } else if (cleanPin === '571311') {
+          assignedInspectorName = 'S. Nanjappa';
+          assignedInspectorEmail = 'nanjappa.gp@gmail.com';
+        } else if (cleanPin === '570028') {
+          assignedInspectorName = 'Dimple';
+          assignedInspectorEmail = 'dim@gmail.com';
         } else {
-          authorityKey = 'mcc';
-          authority = 'Mysuru Municipal Corporation (MCC Urban)';
-          assignedOfficerEmail = 'mcc@gmail.com';
-          badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
-          tag = 'Mysuru City Corporation';
+          assignedInspectorName = 'Seervi';
+          assignedInspectorEmail = 'q@gmail.com';
+        }
+      } else if (isTp) {
+        authorityKey = 'tp';
+        authority = 'Town Panchayat (Hootagalli Town)';
+        assignedOfficerEmail = 'tp@gmail.com';
+        badgeColor = 'bg-teal-50 text-teal-900 border-teal-300';
+        tag = 'Town Panchayat';
 
-          if (cleanPin === '570002') {
-            assignedInspectorName = 'S. Swamy';
-            assignedInspectorEmail = 'swamy.mcc@gmail.com';
-          } else if (cleanPin === '570004') {
-            assignedInspectorName = 'Divya Shankar';
-            assignedInspectorEmail = 'divya.mcc@gmail.com';
-          } else if (cleanPin === '570023') {
-            assignedInspectorName = 'P. Ramesh';
-            assignedInspectorEmail = 'ramesh.mcc@gmail.com';
-          } else {
-            assignedInspectorName = 'Rajesh Kumar';
-            assignedInspectorEmail = 'inspector.mcc@gmail.com';
-          }
+        if (cleanPin === '570017') {
+          assignedInspectorName = 'Manjunatha Rao';
+          assignedInspectorEmail = 'manju.tp@gmail.com';
+        } else if (cleanPin === '570027') {
+          assignedInspectorName = 'Prashanth G.';
+          assignedInspectorEmail = 'prashanth.tp@gmail.com';
+        } else if (cleanPin === '571607' || cleanPin === '571604') {
+          assignedInspectorName = 'K. Suresh';
+          assignedInspectorEmail = 'suresh.tp@gmail.com';
+        } else {
+          assignedInspectorName = 'M. Anand';
+          assignedInspectorEmail = 'anand.tp@gmail.com';
+        }
+      } else {
+        authorityKey = 'mcc';
+        authority = 'Mysuru Municipal Corporation (MCC Urban)';
+        assignedOfficerEmail = 'mcc@gmail.com';
+        badgeColor = 'bg-amber-50 text-amber-900 border-amber-300';
+        tag = 'Mysuru City Corporation';
+
+        if (cleanPin === '570002') {
+          assignedInspectorName = 'S. Swamy';
+          assignedInspectorEmail = 'swamy.mcc@gmail.com';
+        } else if (cleanPin === '570004') {
+          assignedInspectorName = 'Divya Shankar';
+          assignedInspectorEmail = 'divya.mcc@gmail.com';
+        } else if (cleanPin === '570023') {
+          assignedInspectorName = 'P. Ramesh';
+          assignedInspectorEmail = 'ramesh.mcc@gmail.com';
+        } else {
+          assignedInspectorName = 'Rajesh Kumar';
+          assignedInspectorEmail = 'inspector.mcc@gmail.com';
         }
       }
 

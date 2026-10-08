@@ -17,12 +17,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (function() {
-      const SUPABASE_URL = 'https://evnjukozsucobknwvzfp.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bmp1a296c3Vjb2Jrbnd2emZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTc3MjA1MywiZXhwIjoyMTA1MzQ4MDUzfQ.OzV3s8TKPGefQPdAKfMEUwKFYJwa4cYH6vsl7E9uGKk';
+      const SUPABASE_URL = window.CIVIC_SUPABASE_URL || '';
+      const SUPABASE_KEY = window.CIVIC_SUPABASE_KEY || '';
       let suClient = null;
       function initClient() {
         if (suClient) return suClient;
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
+        if (SUPABASE_URL && SUPABASE_KEY && window.supabase && typeof window.supabase.createClient === 'function') {
           try {
             suClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
               auth: { persistSession: false, autoRefreshToken: false }
@@ -157,6 +157,16 @@
               }
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/applications');
+            if (res.ok) {
+              const apiApps = await res.json();
+              if (Array.isArray(apiApps) && apiApps.length > 0) {
+                localStorage.setItem('civic_applications', JSON.stringify(apiApps));
+                return apiApps;
+              }
+            }
+          } catch(e) {}
           return JSON.parse(localStorage.getItem('civic_applications') || '[]');
         },
         async saveApplication(app) {
@@ -165,6 +175,13 @@
           if (client) {
             try { await client.from('applications').upsert(dbRow); } catch(e) {}
           }
+          try {
+            await fetch('/api/applications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(app)
+            });
+          } catch(e) {}
           const apps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
           const idx = apps.findIndex(a => a.id === app.id);
           if (idx >= 0) apps[idx] = { ...apps[idx], ...app };
@@ -185,6 +202,17 @@
               }
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+            });
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData.success) return resData;
+            }
+          } catch(e) {}
           return { success: false, message: 'Invalid credentials.' };
         },
         async registerUser(userData) {
@@ -193,6 +221,13 @@
           if (client) {
             try { await client.from('users').upsert(dbUser); } catch(e) {}
           }
+          try {
+            await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(userData)
+            });
+          } catch(e) {}
           return { success: true, user: userData };
         },
         async fetchUsers() {
@@ -203,6 +238,13 @@
               if (!error && Array.isArray(data)) return data.map(mapDbToUser);
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/auth/users');
+            if (res.ok) {
+              const resData = await res.json();
+              if (Array.isArray(resData)) return resData;
+            }
+          } catch(e) {}
           return [];
         },
         subscribeToApplications(onChange) {
@@ -2232,241 +2274,27 @@
       renderDemolitionRequestsTable(dept);
     }
 
-    const BASELINE_SUBMITTED_APPLICATIONS = [
-      {
-        id: 'MCC-2026-101',
-        applicantName: 'Ramesh Somanna',
-        phone: '+91 98450 11021',
-        propertyId: '40291001',
-        address: 'Sayyaji Rao Road, Devaraja Market Area, Mysuru',
-        pincode: '570001',
-        pin: '570001',
-        ward: 'Ward 14 (Palace Core)',
-        propertyDetails: 'Commercial Complex Renovation & Wall Demolition',
-        propertyType: 'Commercial Building',
-        verifiedMaterial: 'Reinforced Concrete & Brick Rubble',
-        material: 'Reinforced Concrete & Brick Rubble',
-        verifiedTonnage: 14.5,
-        tonnage: 14.5,
-        status: 'Certificate Issued',
-        certificateNo: 'NOC/MCC/2026/101',
-        scheduledDate: '2026-09-17',
-        completionDate: '2026-09-18',
-        assignedInspectorName: 'Rajesh Kumar',
-        assignedInspectorEmail: 'inspector.mcc@gmail.com',
-        authority: 'Mysuru City Corporation (MCC)',
-        authorityKey: 'mcc',
-        headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
-        headTitle: 'Municipal Commissioner',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        issueDate: '2026-09-18',
-        gpsLocation: '12.3051° N, 76.6554° E',
-        photos: ['https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=600&auto=format&fit=crop&q=80']
-      },
-      {
-        id: 'GP-2026-104',
-        applicantName: 'Naveen Kumar Gowda',
-        phone: '+91 98450 33419',
-        propertyId: '88215002',
-        address: 'Survey No. 44/2, Outer Ring Road, Bogadi Village',
-        pincode: '570026',
-        pin: '570026',
-        ward: 'GP Ward 01 (Bogadi Rural)',
-        propertyDetails: 'Old Farmhouse & Boundary Wall Dismantling',
-        propertyType: 'Rural Residential Structure',
-        verifiedMaterial: 'Stone Masonry, Brick Rubble & Soil',
-        material: 'Stone Masonry, Brick Rubble & Soil',
-        verifiedTonnage: 22.0,
-        tonnage: 22.0,
-        status: 'Certificate Issued',
-        certificateNo: 'NOC/GP/2026/104',
-        scheduledDate: '2026-09-16',
-        completionDate: '2026-09-18',
-        assignedInspectorName: 'Seervi',
-        assignedInspectorEmail: 'q@gmail.com',
-        authority: 'Bogadi Gram Panchayat',
-        authorityKey: 'gp',
-        headName: 'K. S. Manjunath (PDO)',
-        headTitle: 'Panchayat Development Officer',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        issueDate: '2026-09-18',
-        gpsLocation: '12.3021° N, 76.5912° E',
-        photos: ['https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80']
-      },
-      {
-        id: 'TP-2026-106',
-        applicantName: 'Suresh B. Patil',
-        phone: '+91 98450 77102',
-        propertyId: '55106003',
-        address: 'Plot 18, KIADB Belagola Industrial Area, Hootagalli',
-        pincode: '570018',
-        pin: '570018',
-        ward: 'TP Ward 01 (Hootagalli Town)',
-        propertyDetails: 'Industrial Shed & Floor Slab Demolition',
-        propertyType: 'Industrial Workshop',
-        verifiedMaterial: 'Heavy Concrete Slabs & Steel Rubble',
-        material: 'Heavy Concrete Slabs & Steel Rubble',
-        verifiedTonnage: 35.0,
-        tonnage: 35.0,
-        status: 'Certificate Issued',
-        certificateNo: 'NOC/TP/2026/106',
-        scheduledDate: '2026-09-17',
-        completionDate: '2026-09-19',
-        assignedInspectorName: 'M. Anand',
-        assignedInspectorEmail: 'anand.tp@gmail.com',
-        authority: 'Hootagalli Town Panchayat (CMC)',
-        authorityKey: 'tp',
-        headName: 'S. Ramesh (Chief Officer)',
-        headTitle: 'Chief Officer / Zonal Superintendent',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        issueDate: '2026-09-19',
-        gpsLocation: '12.3489° N, 76.5744° E',
-        photos: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80']
-      },
-      {
-        id: 'GP-2026-112',
-        applicantName: 'Channappa Marigowda',
-        phone: '+91 98450 99812',
-        propertyId: '90145004',
-        address: 'Maratikyathanahalli Village Main Road, Bogadi GP',
-        pincode: '570026',
-        pin: '570026',
-        ward: 'GP Ward 02 (Maratikyathanahalli)',
-        propertyDetails: 'Old Tiled Roof House Structural Clearance',
-        propertyType: 'Residential Premise',
-        verifiedMaterial: 'Clay Roof Tiles & Red Brick Masonry',
-        material: 'Clay Roof Tiles & Red Brick Masonry',
-        verifiedTonnage: 8.5,
-        tonnage: 8.5,
-        status: 'Pending Inspection',
-        scheduledDate: '2026-09-20',
-        completionDate: 'Pending Final Clearance',
-        assignedInspectorName: 'Seervi',
-        assignedInspectorEmail: 'q@gmail.com',
-        authority: 'Bogadi Gram Panchayat',
-        authorityKey: 'gp',
-        headName: 'K. S. Manjunath (PDO)',
-        headTitle: 'Panchayat Development Officer',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        gpsLocation: '12.2710° N, 76.5640° E',
-        photos: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80']
-      },
-      {
-        id: 'MCC-2026-108',
-        applicantName: 'Vinayaka Traders (P. Murthy)',
-        phone: '+91 98450 44520',
-        propertyId: '66231005',
-        address: 'Kuvempunagar Double Road, Mysuru',
-        pincode: '570023',
-        pin: '570023',
-        ward: 'Ward 32 (Kuvempunagar)',
-        propertyDetails: 'Commercial Building Partition Demolition',
-        propertyType: 'Commercial Premise',
-        verifiedMaterial: 'Concrete Blocks & Plaster Rubble',
-        material: 'Concrete Blocks & Plaster Rubble',
-        verifiedTonnage: 11.2,
-        tonnage: 11.2,
-        status: 'Pending Inspection',
-        scheduledDate: '2026-09-20',
-        completionDate: 'Pending Final Clearance',
-        assignedInspectorName: 'P. Ramesh',
-        assignedInspectorEmail: 'ramesh.mcc@gmail.com',
-        authority: 'Mysuru City Corporation (MCC)',
-        authorityKey: 'mcc',
-        headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
-        headTitle: 'Municipal Commissioner',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        gpsLocation: '12.2890° N, 76.6260° E',
-        photos: []
-      },
-      {
-        id: 'TP-2026-119',
-        applicantName: 'KIADB Industrial Shed Renovations',
-        phone: '+91 98450 77140',
-        propertyId: '50216006',
-        address: 'Koorgalli Industrial Area, Phase 2, Hootagalli',
-        pincode: '570018',
-        pin: '570018',
-        ward: 'TP Ward 04 (Koorgalli KIADB)',
-        propertyDetails: 'Factory RCC Flooring & Partition Clearance',
-        propertyType: 'Industrial Premise',
-        verifiedMaterial: 'Heavy RCC Slabs & Aggregate Rubble',
-        material: 'Heavy RCC Slabs & Aggregate Rubble',
-        verifiedTonnage: 24.0,
-        tonnage: 24.0,
-        status: 'Pending Inspection',
-        scheduledDate: '2026-09-21',
-        completionDate: 'Pending Final Clearance',
-        assignedInspectorName: 'M. Anand',
-        assignedInspectorEmail: 'anand.tp@gmail.com',
-        authority: 'Hootagalli Town Panchayat (CMC)',
-        authorityKey: 'tp',
-        headName: 'S. Ramesh (Chief Officer)',
-        headTitle: 'Chief Officer / Zonal Superintendent',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        gpsLocation: '12.3512° N, 76.5680° E',
-        photos: []
-      },
-      {
-        id: 'GP-2026-125',
-        applicantName: 'Belavadi Agro Farmhouse (N. Gowda)',
-        phone: '+91 98450 88231',
-        propertyId: '88325007',
-        address: 'Belavadi Rural Road, Near Ring Road, Bogadi GP',
-        pincode: '570026',
-        pin: '570026',
-        ward: 'GP Ward 03 (Belavadi Rural)',
-        propertyDetails: 'Old Compound Wall & Shed Clearance',
-        propertyType: 'Rural Residential Premise',
-        verifiedMaterial: 'Brick Rubble, Mortar & Clay Tiles',
-        material: 'Brick Rubble, Mortar & Clay Tiles',
-        verifiedTonnage: 9.5,
-        tonnage: 9.5,
-        status: 'Pending Inspection',
-        scheduledDate: '2026-09-22',
-        completionDate: 'Pending Final Clearance',
-        assignedInspectorName: 'Seervi',
-        assignedInspectorEmail: 'q@gmail.com',
-        authority: 'Bogadi Gram Panchayat',
-        authorityKey: 'gp',
-        headName: 'K. S. Manjunath (PDO)',
-        headTitle: 'Panchayat Development Officer',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        gpsLocation: '12.2850° N, 76.5820° E',
-        photos: []
-      },
-      {
-        id: 'MCC-2026-130',
-        applicantName: 'Vijayanagar Commercial Plaza (Dr. S. Rao)',
-        phone: '+91 98450 33910',
-        propertyId: '77141008',
-        address: 'Vijayanagar 2nd Stage Main Commercial Road, Mysuru',
-        pincode: '570017',
-        pin: '570017',
-        ward: 'Ward 28 (Vijayanagar 2nd Stage)',
-        propertyDetails: 'Commercial Complex Renovation Demolition',
-        propertyType: 'Commercial Complex',
-        verifiedMaterial: 'Reinforced Concrete & Ceramic Tiles',
-        material: 'Reinforced Concrete & Ceramic Tiles',
-        verifiedTonnage: 16.5,
-        tonnage: 16.5,
-        status: 'Pending Inspection',
-        scheduledDate: '2026-09-23',
-        completionDate: 'Pending Final Clearance',
-        assignedInspectorName: 'Rajesh Kumar',
-        assignedInspectorEmail: 'inspector.mcc@gmail.com',
-        authority: 'Mysuru City Corporation (MCC)',
-        authorityKey: 'mcc',
-        headName: 'Dr. N. Chandrashekar, IAS (MCC Commissioner)',
-        headTitle: 'Municipal Commissioner',
-        waterBillDiscount: '10% discount on Municipal / Panchayat Water Bill for 2 Years (24 Months)',
-        gpsLocation: '12.3210° N, 76.6120° E',
-        photos: []
-      }
-    ];
+    const BASELINE_SUBMITTED_APPLICATIONS = [];
 
     async function syncAdminDatabase() {
       try {
+        // Auto-purge legacy mock records from browser localStorage
+        ['civic_applications', 'cust_my_requests', 'mcc_applications'].forEach(k => {
+          try {
+            const stored = JSON.parse(localStorage.getItem(k) || '[]');
+            if (Array.isArray(stored)) {
+              const cleaned = stored.filter(item => {
+                if (!item || !item.id) return false;
+                const sid = String(item.id);
+                return !sid.startsWith('MCC-2026-1') && !sid.startsWith('GP-2026-1') && !sid.startsWith('HTMC-2026-1') && item.applicantName !== 'Test Backend Citizen';
+              });
+              if (cleaned.length !== stored.length) {
+                localStorage.setItem(k, JSON.stringify(cleaned));
+              }
+            }
+          } catch(e) {}
+        });
+
         if (window.civicDb && typeof window.civicDb.fetchApplications === 'function') {
           const apps = await window.civicDb.fetchApplications();
           if (Array.isArray(apps) && apps.length > 0) {

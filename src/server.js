@@ -50,8 +50,16 @@ function persistCloudUsers(users) {
   });
 }
 
-// Clean start: All accounts and data stored dynamically on Supabase
-const SYSTEM_ACCOUNTS = [];
+const SYSTEM_ACCOUNTS = [
+  { id: 'INS-MCC-183', name: 'Gargieee', email: 'gat@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11099', role: 'inspector', department: 'mcc', assignedPin: '501301', assignedArea: 'Ward 14 (Palace & City Zone)', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+  { id: 'BOGP1001', name: 'Seervi', email: 'q@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11002', role: 'inspector', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural & Ring Road)', designation: 'Panchayat Health Inspector', status: 'Active (On Duty)' },
+  { id: 'BOGP1002', name: 'Dimple', email: 'dim@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 22003', role: 'inspector', department: 'gp', assignedPin: '570028', assignedArea: 'GP Ward 02 (Maratikyathanahalli Village)', designation: 'Village Sanitary Inspector', status: 'Active (On Duty)' },
+  { id: 'HTMC1001', name: 'M. Anand', email: 'anand.tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11003', role: 'inspector', department: 'tp', assignedPin: '570018', assignedArea: 'TP Ward 01 (Hootagalli Town & Industrial)', designation: 'Town Municipal Inspector', status: 'Active (On Duty)' },
+  { id: 'MCCU1001', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11001', role: 'inspector', department: 'mcc', assignedPin: '570001', assignedArea: 'MCC Central & Urban Core', designation: 'Ward Health Inspector', status: 'Active (On Duty)' },
+  { id: 'OFF-MCC-01', name: 'Dr. N. Chandrashekar, IAS', email: 'officer.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11000', role: 'officer', department: 'mcc', designation: 'Municipal Commissioner', status: 'Active (On Duty)' },
+  { id: 'OFF-GP-01', name: 'K. S. Manjunath', email: 'gp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 22000', role: 'officer', department: 'gp', designation: 'Panchayat Development Officer', status: 'Active (On Duty)' },
+  { id: 'OFF-TP-01', name: 'S. Ramesh', email: 'tp@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 33000', role: 'officer', department: 'tp', designation: 'Chief Officer / Zonal Superintendent', status: 'Active (On Duty)' }
+];
 
 function checkUserCredentials(u, email, pass) {
   if ((u.email || '').toLowerCase().trim() !== email.toLowerCase().trim()) return false;
@@ -365,6 +373,62 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // High-Accuracy Reverse Geocode API (OSM Nominatim with valid User-Agent)
+    if (pathname === '/api/reverse-geocode' && method === 'GET') {
+      const q = parsedUrl.query;
+      const lat = parseFloat(q.lat);
+      const lng = parseFloat(q.lng);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Valid lat and lng required' }));
+        return;
+      }
+
+      const reqUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+      const options = {
+        headers: {
+          'User-Agent': 'CivicTrack-Mysuru/2.0 (contact@civictrack.org)',
+          'Accept-Language': 'en'
+        },
+        timeout: 5000
+      };
+
+      const proxyReq = https.get(reqUrl, options, (proxyRes) => {
+        let body = '';
+        proxyRes.on('data', chunk => body += chunk);
+        proxyRes.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            let postcode = (data.address && data.address.postcode) ? String(data.address.postcode).replace(/[^0-9]/g, '').substring(0, 6) : '';
+            const road = (data.address && (data.address.road || data.address.street || data.address.suburb || data.address.neighbourhood)) || '';
+            const locality = (data.address && (data.address.suburb || data.address.city || data.address.town || data.address.village || data.address.state_district)) || '';
+            const city = (data.address && (data.address.city || data.address.state_district || data.address.county)) || '';
+            const fullAddress = [road, locality, city].filter(Boolean).join(', ') || data.display_name || '';
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: true,
+              postcode: postcode,
+              fullAddress: fullAddress,
+              displayName: data.display_name || fullAddress,
+              lat: lat,
+              lng: lng
+            }));
+          } catch(err) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: 'Parse failed' }));
+          }
+        });
+      });
+
+      proxyReq.on('error', () => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Request failed' }));
+      });
+      return;
+    }
+
     // 1. Dashboard Stats
     if (pathname === '/api/dashboard/stats' && method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -574,7 +638,10 @@ const server = http.createServer(async (req, res) => {
               resolvedAuthKey = 'mcc';
               resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
               resolvedOfficerEmail = 'mcc@gmail.com';
-              if (pin === '570002') {
+              if (pin === '501301') {
+                resolvedInspName = 'Gargieee';
+                resolvedInspEmail = 'gat@gmail.com';
+              } else if (pin === '570002') {
                 resolvedInspName = 'S. Swamy';
                 resolvedInspEmail = 'swamy.mcc@gmail.com';
               } else if (pin === '570004') {

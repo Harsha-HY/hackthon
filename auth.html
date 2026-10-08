@@ -9,12 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (function() {
-      const SUPABASE_URL = 'https://evnjukozsucobknwvzfp.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bmp1a296c3Vjb2Jrbnd2emZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTc3MjA1MywiZXhwIjoyMTA1MzQ4MDUzfQ.OzV3s8TKPGefQPdAKfMEUwKFYJwa4cYH6vsl7E9uGKk';
+      const SUPABASE_URL = window.CIVIC_SUPABASE_URL || '';
+      const SUPABASE_KEY = window.CIVIC_SUPABASE_KEY || '';
       let suClient = null;
       function initClient() {
         if (suClient) return suClient;
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
+        if (SUPABASE_URL && SUPABASE_KEY && window.supabase && typeof window.supabase.createClient === 'function') {
           try {
             suClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
               auth: { persistSession: false, autoRefreshToken: false }
@@ -149,6 +149,16 @@
               }
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/applications');
+            if (res.ok) {
+              const apiApps = await res.json();
+              if (Array.isArray(apiApps) && apiApps.length > 0) {
+                localStorage.setItem('civic_applications', JSON.stringify(apiApps));
+                return apiApps;
+              }
+            }
+          } catch(e) {}
           return JSON.parse(localStorage.getItem('civic_applications') || '[]');
         },
         async saveApplication(app) {
@@ -157,6 +167,13 @@
           if (client) {
             try { await client.from('applications').upsert(dbRow); } catch(e) {}
           }
+          try {
+            await fetch('/api/applications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(app)
+            });
+          } catch(e) {}
           const apps = JSON.parse(localStorage.getItem('civic_applications') || '[]');
           const idx = apps.findIndex(a => a.id === app.id);
           if (idx >= 0) apps[idx] = { ...apps[idx], ...app };
@@ -177,6 +194,17 @@
               }
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+            });
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData.success) return resData;
+            }
+          } catch(e) {}
           return { success: false, message: 'Invalid credentials.' };
         },
         async registerUser(userData) {
@@ -185,6 +213,13 @@
           if (client) {
             try { await client.from('users').upsert(dbUser); } catch(e) {}
           }
+          try {
+            await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(userData)
+            });
+          } catch(e) {}
           return { success: true, user: userData };
         },
         async fetchUsers() {
@@ -195,6 +230,13 @@
               if (!error && Array.isArray(data)) return data.map(mapDbToUser);
             } catch(e) {}
           }
+          try {
+            const res = await fetch('/api/auth/users');
+            if (res.ok) {
+              const resData = await res.json();
+              if (Array.isArray(resData)) return resData;
+            }
+          } catch(e) {}
           return [];
         },
         subscribeToApplications(onChange) {
@@ -425,6 +467,7 @@
       { name: 'Town Panchayat Chief Officer', email: 'tp@gmail.com', password: '123', passwords: ['123', 'tp123', '123456'], role: 'officer', authority: 'Town Panchayat (Hootagalli Town)', department: 'tp' },
 
       // Field Inspectors (Employee IDs: 4 letters + 4 numbers based on Panchayat)
+      { id: 'INS-MCC-183', name: 'Gargieee', email: 'gat@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11099', role: 'inspector', department: 'mcc', assignedPin: '501301', assignedArea: 'Ward 14 (Palace & City Zone)', designation: 'Ward Health Inspector' },
       { id: 'MCCU1001', name: 'Rajesh Kumar', email: 'inspector.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 11001', role: 'inspector', department: 'mcc', assignedPin: '570001', assignedArea: 'Ward 14 (Palace & Devaraja Market)', designation: 'Ward Health Inspector' },
       { id: 'MCCU1002', name: 'P. Ramesh', email: 'ramesh.mcc@gmail.com', password: '123', passwords: ['123', '123456'], phone: '+91 98450 44520', role: 'inspector', department: 'mcc', assignedPin: '570023', assignedArea: 'Ward 32 (Kuvempunagar & Central)', designation: 'Ward Health Inspector' },
       { id: 'BOGP1001', name: 'Seervi', email: 'q@gmail.com', password: '123', passwords: ['123', '123456', 'q123'], phone: '+91 98450 11002', role: 'inspector', department: 'gp', assignedPin: '570026', assignedArea: 'GP Ward 01 (Bogadi Rural & Ring Road)', designation: 'Panchayat Health Inspector' },
