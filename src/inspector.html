@@ -274,12 +274,23 @@
         if (emailParam) {
           const allUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
           const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-          const found = allInspectors.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase()) ||
-                        allUsers.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase());
-          if (found) {
-            localStorage.setItem('current_user', JSON.stringify(found));
-            return;
+          let found = allInspectors.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase()) ||
+                      allUsers.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase());
+          if (!found) {
+            found = {
+              id: 'INS-' + Math.floor(1000 + Math.random() * 9000),
+              name: emailParam.split('@')[0],
+              email: emailParam,
+              role: 'inspector',
+              department: 'mcc',
+              assignedPin: '570001',
+              designation: 'Ward Health Inspector'
+            };
           }
+          found.role = 'inspector';
+          localStorage.setItem('current_user', JSON.stringify(found));
+          sessionStorage.setItem('current_user', JSON.stringify(found));
+          return;
         }
 
         if (!saved) {
@@ -300,36 +311,21 @@
             creatingOfficerEmail: 'gp@gmail.com'
           };
           localStorage.setItem('current_user', JSON.stringify(defaultIns));
+          sessionStorage.setItem('current_user', JSON.stringify(defaultIns));
           return;
         }
 
         const user = JSON.parse(saved);
         const role = (user.role || '').toLowerCase();
         
-        // If customer/citizen tries to access inspector console
+        // Ensure user on inspector console is always treated as inspector
         if (role === 'citizen' || role === 'customer') {
-          if (urlParams.has('view_as_inspector')) {
-            const defaultIns = {
-              id: 'BOGP1001',
-              name: 'Seervi',
-              email: 'q@gmail.com',
-              role: 'inspector',
-              department: 'gp',
-              departmentName: 'Bogadi Gram Panchayat',
-              authority: 'Gram Panchayat (Bogadi Rural)',
-              assignedPin: '570026',
-              pin: '570026',
-              assignedArea: 'Bogadi Gram Panchayat Ward 01',
-              designation: 'Panchayat Health & C&D Inspector',
-              phone: '+91 98450 11005',
-              createdBy: 'K. S. Manjunath (PDO)',
-              creatingOfficerEmail: 'gp@gmail.com'
-            };
-            localStorage.setItem('current_user', JSON.stringify(defaultIns));
-            return;
-          }
-          window.location.href = 'citizen.html';
-          return;
+          user.role = 'inspector';
+          if (!user.assignedPin) user.assignedPin = '570026';
+          if (!user.department) user.department = 'gp';
+          if (!user.designation) user.designation = 'Field Health Inspector';
+          localStorage.setItem('current_user', JSON.stringify(user));
+          sessionStorage.setItem('current_user', JSON.stringify(user));
         }
       } catch(e) {}
     }

@@ -415,21 +415,47 @@
           </button>
         </form>
 
-        <!-- 2. CREATE ACCOUNT FORM (Citizen Only) -->
+        <!-- 2. CREATE ACCOUNT FORM (Supports Inspector, Citizen & Officer) -->
         <form id="signup-form" onsubmit="handleSignUp(event)" class="space-y-3.5 hidden">
-          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
-            <span class="font-bold block">👤 Citizen Registration Only</span>
-            <span class="text-[11px] text-amber-800/80">Panchayat Inspectors, Field Officers & Municipal Authorities are pre-rostered by civic administration.</span>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Role / Account Type</label>
+            <select id="reg-role" onchange="toggleRegRoleFields(this.value)" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold cursor-pointer">
+              <option value="inspector">👷 Field Inspector (Ward & Panchayat)</option>
+              <option value="citizen">👤 Citizen / Customer (Apply for Waste Clearance)</option>
+              <option value="officer">🏛️ Panchayat Officer (MCC / Gram / Town)</option>
+            </select>
+          </div>
+
+          <div id="inspector-jurisdiction-fields" class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2.5">
+            <span class="text-[10px] font-mono uppercase font-bold text-emerald-800 block">Inspector Jurisdiction & PIN Assignment</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Panchayat / Body</label>
+                <select id="reg-dept" onchange="handleDeptPinSync(this.value)" class="w-full px-3 py-1.5 rounded-lg bg-white border border-emerald-300 text-xs font-bold text-slate-800">
+                  <option value="gp">Gram Panchayat (Bogadi Rural)</option>
+                  <option value="tp">Town Panchayat (Hootagalli Town)</option>
+                  <option value="mcc">Mysuru Municipal Corp (MCC Urban)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Assigned PIN Code</label>
+                <input id="reg-pin" type="text" value="570026" placeholder="e.g. 570026" class="w-full px-3 py-1.5 rounded-lg bg-white border border-emerald-300 text-xs font-mono font-bold text-slate-900"/>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Assigned Ward / Locality</label>
+              <input id="reg-area" type="text" value="GP Ward 01 (Bogadi Rural & Ring Road)" placeholder="Ward or Zone description" class="w-full px-3 py-1.5 rounded-lg bg-white border border-emerald-300 text-xs font-medium text-slate-900"/>
+            </div>
           </div>
 
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Full Name</label>
-            <input id="reg-name" type="text" required placeholder="e.g. Harsha Vardhan" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"/>
+            <input id="reg-name" type="text" required placeholder="e.g. Inspector Suresh / Rahul" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"/>
           </div>
 
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Email Address</label>
-            <input id="reg-email" type="email" required placeholder="your.email@example.com" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"/>
+            <input id="reg-email" type="email" required placeholder="inspector.email@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"/>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -443,8 +469,8 @@
             </div>
           </div>
 
-          <button type="submit" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2">
-            <span>Register Citizen Account &rarr;</span>
+          <button id="reg-submit-btn" type="submit" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2">
+            <span>Register & Open Console &rarr;</span>
           </button>
         </form>
 
@@ -562,31 +588,79 @@
       }
     }
 
+    function toggleRegRoleFields(role) {
+      const inspFields = document.getElementById('inspector-jurisdiction-fields');
+      const submitBtn = document.getElementById('reg-submit-btn');
+      if (role === 'inspector') {
+        if (inspFields) inspFields.classList.remove('hidden');
+        if (submitBtn) submitBtn.innerHTML = '<span>Register Inspector & Open Console &rarr;</span>';
+      } else if (role === 'officer') {
+        if (inspFields) inspFields.classList.add('hidden');
+        if (submitBtn) submitBtn.innerHTML = '<span>Register Officer & Open Command &rarr;</span>';
+      } else {
+        if (inspFields) inspFields.classList.add('hidden');
+        if (submitBtn) submitBtn.innerHTML = '<span>Register Citizen Account &rarr;</span>';
+      }
+    }
+
+    function handleDeptPinSync(dept) {
+      const pinInput = document.getElementById('reg-pin');
+      const areaInput = document.getElementById('reg-area');
+      if (!pinInput || !areaInput) return;
+      if (dept === 'gp') {
+        pinInput.value = '570026';
+        areaInput.value = 'GP Ward 01 (Bogadi Rural & Ring Road)';
+      } else if (dept === 'tp') {
+        pinInput.value = '570018';
+        areaInput.value = 'TP Ward 01 (Hootagalli Town & Industrial)';
+      } else {
+        pinInput.value = '570001';
+        areaInput.value = 'Ward 14 (Palace & Central Zone)';
+      }
+    }
+
     async function handleSignUp(e) {
       e.preventDefault();
+      const roleSelect = (document.getElementById('reg-role')?.value || 'inspector').toLowerCase();
       const name = document.getElementById('reg-name').value.trim();
       const email = document.getElementById('reg-email').value.trim().toLowerCase();
       const phone = document.getElementById('reg-phone').value.trim();
       const password = document.getElementById('reg-password').value.trim();
+      const dept = (document.getElementById('reg-dept')?.value || 'gp').toLowerCase();
+      const pin = (document.getElementById('reg-pin')?.value || (dept === 'gp' ? '570026' : (dept === 'tp' ? '570018' : '570001'))).trim();
+      const area = (document.getElementById('reg-area')?.value || 'Jurisdiction Zone').trim();
+
+      let deptName = 'Gram Panchayat (Bogadi Rural)';
+      if (dept === 'tp') deptName = 'Town Panchayat (Hootagalli Town)';
+      else if (dept === 'mcc') deptName = 'Mysuru Municipal Corporation (MCC Urban)';
 
       let user = null;
+      const isInspector = (roleSelect === 'inspector');
+      const isOfficer = (roleSelect === 'officer');
+
+      const userData = {
+        id: (isInspector ? (dept.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)) : ('u_' + Date.now())),
+        name,
+        email,
+        phone,
+        password,
+        role: isInspector ? 'inspector' : (isOfficer ? 'officer' : 'citizen'),
+        department: isInspector ? dept : (isOfficer ? dept : ''),
+        departmentName: (isInspector || isOfficer) ? deptName : '',
+        assignedPin: isInspector ? pin : '',
+        pin: isInspector ? pin : '',
+        assignedArea: isInspector ? area : '',
+        designation: isInspector ? (dept === 'gp' ? 'Panchayat Health Inspector' : (dept === 'tp' ? 'Town Municipal Inspector' : 'Ward Health Inspector')) : (isOfficer ? 'Zonal Officer' : 'Citizen'),
+        authority: isInspector ? (deptName + ' Inspector (PIN: ' + pin + ')') : (isOfficer ? deptName : 'Customer'),
+        status: 'Active (On Duty)',
+        createdAt: new Date().toISOString()
+      };
 
       // 1. Direct Supabase / Backend registration
       if (window.civicDb && typeof window.civicDb.registerUser === 'function') {
         try {
-          const res = await window.civicDb.registerUser({
-            id: 'u_' + Date.now(),
-            name,
-            email,
-            phone,
-            password,
-            role: 'citizen',
-            authority: 'Customer',
-            createdAt: new Date().toISOString()
-          });
-          if (res && res.user) {
-            user = res.user;
-          }
+          const res = await window.civicDb.registerUser(userData);
+          if (res && res.user) user = res.user;
         } catch(err) {
           console.warn('civicDb registerUser err:', err);
         }
@@ -598,58 +672,64 @@
           const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone, password })
+            body: JSON.stringify(userData)
           });
           const data = await res.json();
-          if (data && data.success && data.user) {
-            user = data.user;
-          }
+          if (data && data.success && data.user) user = data.user;
         } catch(err) {}
       }
 
-      // 3. Local fallback
       if (!user) {
-        const allUsers = getAllUsers();
-        if (allUsers.find(u => (u.email || '').toLowerCase().trim() === email)) {
-          showToast('An account with this email already exists. Please sign in.', 'error');
-          return;
-        }
-        const registered = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
-        const isFirstUser = (registered.length === 0);
-        user = {
-          id: 'u_' + Date.now(),
-          name,
-          email,
-          phone,
-          password,
-          role: isFirstUser ? 'admin' : 'citizen',
-          authority: isFirstUser ? 'Super Admin' : 'Customer',
-          createdAt: new Date().toISOString()
-        };
+        user = userData;
       }
 
       // Save user session in localStorage and sessionStorage
       try {
         localStorage.removeItem('cust_my_requests');
         const registered = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
-        if (!registered.find(r => (r.email || '').toLowerCase().trim() === user.email.toLowerCase().trim())) {
+        const existingIdx = registered.findIndex(r => (r.email || '').toLowerCase().trim() === user.email.toLowerCase().trim());
+        if (existingIdx >= 0) {
+          registered[existingIdx] = user;
+        } else {
           registered.push(user);
-          localStorage.setItem('civic_registered_users', JSON.stringify(registered));
         }
+        localStorage.setItem('civic_registered_users', JSON.stringify(registered));
+
+        if (isInspector) {
+          const inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+          const insIdx = inspectors.findIndex(i => (i.email || '').toLowerCase().trim() === user.email.toLowerCase().trim());
+          if (insIdx >= 0) {
+            inspectors[insIdx] = user;
+          } else {
+            inspectors.unshift(user);
+          }
+          localStorage.setItem('civic_inspectors', JSON.stringify(inspectors));
+        }
+
         localStorage.setItem('current_user', JSON.stringify(user));
         sessionStorage.setItem('current_user', JSON.stringify(user));
+
+        if (typeof BroadcastChannel !== 'undefined') {
+          const channel = new BroadcastChannel('civic_sync_channel');
+          channel.postMessage({ type: 'INSPECTOR_CREATED', inspector: user });
+        }
       } catch(e) {}
 
-      if (user.role === 'admin' || user.role === 'super_admin' || (user.authority || '').toLowerCase().includes('admin')) {
-        showToast('Super Admin account registered! Opening Admin Console...', 'success');
+      if (isInspector) {
+        showToast('🎉 Field Inspector account activated! Opening Inspector Console...', 'success');
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 500);
+          window.location.href = 'inspector.html?email=' + encodeURIComponent(user.email) + '&pin=' + encodeURIComponent(pin);
+        }, 400);
+      } else if (isOfficer) {
+        showToast('🏛️ Officer account registered! Opening Officer Command...', 'success');
+        setTimeout(() => {
+          window.location.href = 'officer.html?auth=' + dept;
+        }, 400);
       } else {
         showToast('Customer account registered successfully! Opening Customer Portal...', 'success');
         setTimeout(() => {
           window.location.href = 'citizen.html';
-        }, 500);
+        }, 400);
       }
     }
 
@@ -728,7 +808,15 @@
         const email = (user.email || '').toLowerCase();
 
         // 1. Field Inspector Desk (For assigned PIN code inspectors)
-        const isInspector = (role === 'inspector' || role.includes('inspector') || auth.includes('inspector') || email.includes('inspector'));
+        const storedInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+        const isKnownInspector = storedInspectors.some(i => (i.email || '').toLowerCase().trim() === email);
+        const isInspector = isKnownInspector || (
+          role === 'inspector' || role.includes('inspector') ||
+          auth.includes('inspector') || email.includes('inspector') ||
+          email.includes('insp') || email === 'gat@gmail.com' ||
+          email === 'q@gmail.com' || email === 'dim@gmail.com' ||
+          email === 'anand.tp@gmail.com'
+        );
 
         // 2. Dedicated Officer Dashboard (For MCC, Gram Panchayat, and Town Panchayat Officers)
         const isOfficer = !isInspector && (
@@ -746,15 +834,15 @@
         );
 
         if (isInspector) {
-          window.location.href = 'inspector.html';
+          window.location.href = 'inspector.html?email=' + encodeURIComponent(user.email);
         } else if (isOfficer) {
           let deptKey = 'mcc';
-        if (email === 'gp@gmail.com' || (user.department === 'gp') || auth.includes('gram') || auth.includes('panchayat') || (user.assignedPin && ['570026','571130'].some(p=>user.assignedPin.includes(p)))) {
-          deptKey = 'gp';
-        } else if (email === 'tp@gmail.com' || (user.department === 'tp') || auth.includes('town') || (user.assignedPin && ['570018','570017'].some(p=>user.assignedPin.includes(p)))) {
-          deptKey = 'tp';
-        }
-        window.location.href = 'officer.html?auth=' + deptKey;
+          if (email === 'gp@gmail.com' || (user.department === 'gp') || auth.includes('gram') || auth.includes('panchayat') || (user.assignedPin && ['570026','571130'].some(p=>user.assignedPin.includes(p)))) {
+            deptKey = 'gp';
+          } else if (email === 'tp@gmail.com' || (user.department === 'tp') || auth.includes('town') || (user.assignedPin && ['570018','570017'].some(p=>user.assignedPin.includes(p)))) {
+            deptKey = 'tp';
+          }
+          window.location.href = 'officer.html?auth=' + deptKey;
         } else if (isSuperAdmin) {
           window.location.href = 'dashboard.html';
         } else {

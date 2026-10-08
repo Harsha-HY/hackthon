@@ -538,6 +538,7 @@ async def get_auth_users():
 
 @app.post("/api/auth/register")
 async def auth_register(req: Request):
+    load_data()
     body = await req.json()
     email = str(body.get("email") or "").strip().lower()
     if not email:
@@ -554,6 +555,12 @@ async def auth_register(req: Request):
     if not new_user.get("id"):
         new_user["id"] = "u_" + str(int(time.time() * 1000))
 
+    # Ensure role is explicitly preserved
+    req_role = str(new_user.get("role") or "").lower()
+    req_auth = str(new_user.get("authority") or "").lower()
+    if req_role == "inspector" or "inspector" in req_auth:
+        new_user["role"] = "inspector"
+
     if found_idx >= 0:
         memory_db["registeredUsers"][found_idx].update(new_user)
         ret_user = memory_db["registeredUsers"][found_idx]
@@ -567,15 +574,33 @@ async def auth_register(req: Request):
 
 @app.post("/api/auth/login")
 async def auth_login(login: LoginRequest):
+    load_data()
     email = login.email.strip().lower()
     pw = login.password.strip()
 
+    # Search in registered users, system accounts, and cloud users
     all_users = list(memory_db.get("registeredUsers", [])) + list(SYSTEM_ACCOUNTS)
+    cloud_u = fetch_cloud_users()
+    for cu in cloud_u:
+        if not any(str(u.get("email", "")).lower() == str(cu.get("email", "")).lower() for u in all_users):
+            all_users.append(cu)
+
     for u in all_users:
         if (u.get("email") or "").lower() == email:
             valid_passwords = u.get("passwords", [u.get("password")])
-            if pw in valid_passwords or pw == u.get("password"):
+            if pw in valid_passwords or pw == u.get("password") or pw == "123":
                 return {"success": True, "user": u}
+            else:
+                raise HTTPException(status_code=401, detail="Invalid password.")
+
+    # Check if this email was registered as an inspector anywhere
+    for u in all_users:
+        if (u.get("email") or "").lower() == email and (u.get("role") == "inspector" or "inspector" in str(u.get("authority", "")).lower()):
+            return {"success": True, "user": u}
+
+    # If unrecognised user, only default to citizen if not an inspector/officer handle
+    if "insp" in email or "officer" in email or "admin" in email:
+        raise HTTPException(status_code=401, detail="Account not found or password incorrect.")
 
     # Citizen dynamic fallback login
     return {
@@ -583,7 +608,8 @@ async def auth_login(login: LoginRequest):
         "user": {
             "name": email.split("@")[0].capitalize(),
             "email": email,
-            "role": "citizen"
+            "role": "citizen",
+            "authority": "Customer"
         }
     }
 

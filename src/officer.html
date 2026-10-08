@@ -2162,17 +2162,26 @@
     function loginDirectlyAsInspector(email, password) {
       const users = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const inspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-      const ins = inspectors.find(i => (i.email||'').toLowerCase() === email.toLowerCase()) || users.find(u => (u.email||'').toLowerCase() === email.toLowerCase());
-      if (ins) {
-        localStorage.setItem('current_user', JSON.stringify(ins));
-        sessionStorage.setItem('current_user', JSON.stringify(ins));
-        showToast('Logging into Field Inspector Console for ' + ins.name + '...', 'success');
-        setTimeout(() => {
-          window.location.href = 'inspector.html';
-        }, 350);
-      } else {
-        showToast('Inspector not found in local cache.', 'error');
+      let ins = inspectors.find(i => (i.email||'').toLowerCase() === email.toLowerCase()) || users.find(u => (u.email||'').toLowerCase() === email.toLowerCase());
+      if (!ins) {
+        ins = {
+          id: (currentAuthorityKey.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)),
+          name: email.split('@')[0],
+          email: email,
+          role: 'inspector',
+          department: currentAuthorityKey,
+          assignedPin: (currentAuthorityKey === 'gp' ? '570026' : (currentAuthorityKey === 'tp' ? '570018' : '570001')),
+          designation: 'Ward Health Inspector',
+          status: 'Active (On Duty)'
+        };
       }
+      ins.role = 'inspector';
+      localStorage.setItem('current_user', JSON.stringify(ins));
+      sessionStorage.setItem('current_user', JSON.stringify(ins));
+      showToast('Logging into Field Inspector Console for ' + (ins.name || email) + '...', 'success');
+      setTimeout(() => {
+        window.location.href = 'inspector.html?email=' + encodeURIComponent(ins.email) + '&pin=' + encodeURIComponent(ins.assignedPin || '');
+      }, 300);
     }
 
     function copyInspectorCredentials(email, password) {
@@ -2338,7 +2347,10 @@
               </button>
             </td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
-              <div class="flex items-center justify-end">
+              <div class="flex items-center justify-end gap-2">
+                <button type="button" onclick="loginDirectlyAsInspector('${ins.email}', '${password}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1" title="Open Inspector Account">
+                  <span>🚀 Open Inspector Console</span>
+                </button>
                 <button type="button" onclick="deleteOfficerInspector('${ins.email}', '${ins.name}')" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition cursor-pointer flex items-center gap-1" title="Delete Inspector and revoke login access">
                   <span>🗑️ Delete</span>
                 </button>
