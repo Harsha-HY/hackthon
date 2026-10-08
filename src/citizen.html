@@ -1316,18 +1316,18 @@
       if (customPinMatch) {
         const d = (customPinMatch.department || '').toLowerCase();
         const dn = (customPinMatch.departmentName || '').toLowerCase();
-        if (d === 'gp' || d.includes('panchayat') || dn.includes('panchayat')) {
-          authorityKey = 'gp';
-          authority = 'Gram Panchayat (Bogadi Rural)';
-          assignedOfficerEmail = 'gp@gmail.com';
-          badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
-          tag = 'Gram Panchayat';
-        } else if (d === 'tp' || d.includes('town') || dn.includes('town')) {
+        if (d === 'tp' || d.includes('town') || dn.includes('town')) {
           authorityKey = 'tp';
           authority = 'Town Panchayat (Hootagalli Town)';
           assignedOfficerEmail = 'tp@gmail.com';
           badgeColor = 'bg-teal-50 text-teal-900 border-teal-300';
           tag = 'Town Panchayat';
+        } else if (d === 'gp' || d.includes('panchayat') || dn.includes('panchayat') || d.includes('gram') || dn.includes('gram')) {
+          authorityKey = 'gp';
+          authority = 'Gram Panchayat (Bogadi Rural)';
+          assignedOfficerEmail = 'gp@gmail.com';
+          badgeColor = 'bg-emerald-50 text-emerald-900 border-emerald-300';
+          tag = 'Gram Panchayat';
         } else {
           authorityKey = 'mcc';
           authority = 'Mysuru Municipal Corporation (MCC Urban)';

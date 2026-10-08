@@ -10,23 +10,32 @@ const PORT = process.env.PORT || 8000;
 const DATA_FILE = path.join(__dirname, 'database.json');
 
 const CLOUD_OBJECT_ID = 'ff808181a09d98f701a0b5665eda376f';
+let cachedCloudUsers = null;
+let lastCloudFetchTime = 0;
 
 function fetchCloudUsers() {
+  if (cachedCloudUsers && Date.now() - lastCloudFetchTime < 60000) {
+    return Promise.resolve(cachedCloudUsers);
+  }
   return new Promise((resolve) => {
-    https.get('https://api.restful-api.dev/objects/' + CLOUD_OBJECT_ID, { headers: { 'User-Agent': 'NodeJS' } }, res => {
+    const req = https.get('https://api.restful-api.dev/objects/' + CLOUD_OBJECT_ID, { headers: { 'User-Agent': 'NodeJS' }, timeout: 1500 }, res => {
       let body = '';
       res.on('data', d => body += d);
       res.on('end', () => {
         try {
           const parsed = JSON.parse(body);
           if (parsed && parsed.data && Array.isArray(parsed.data.users)) {
+            cachedCloudUsers = parsed.data.users;
+            lastCloudFetchTime = Date.now();
             resolve(parsed.data.users);
             return;
           }
         } catch(e) {}
-        resolve([]);
+        resolve(cachedCloudUsers || []);
       });
-    }).on('error', () => resolve([]));
+    });
+    req.on('error', () => resolve(cachedCloudUsers || []));
+    req.on('timeout', () => { req.destroy(); resolve(cachedCloudUsers || []); });
   });
 }
 
@@ -598,18 +607,18 @@ const server = http.createServer(async (req, res) => {
           if (customPinMatch) {
             const insDept = (customPinMatch.department || '').toLowerCase();
             const insDeptName = (customPinMatch.departmentName || '').toLowerCase();
-            if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat')) {
-              resolvedAuthKey = 'gp';
-              resolvedAuthName = 'Gram Panchayat (Bogadi Rural)';
-              resolvedOfficerEmail = 'gp@gmail.com';
-            } else if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
+            if (insDept === 'tp' || insDept.includes('town') || insDeptName.includes('town')) {
               resolvedAuthKey = 'tp';
               resolvedAuthName = 'Town Panchayat (Hootagalli Town)';
               resolvedOfficerEmail = 'tp@gmail.com';
+            } else if (insDept === 'gp' || insDept.includes('panchayat') || insDeptName.includes('panchayat') || insDept.includes('gram') || insDeptName.includes('gram')) {
+              resolvedAuthKey = 'gp';
+              resolvedAuthName = 'Gram Panchayat (Bogadi Rural)';
+              resolvedOfficerEmail = 'gp@gmail.com';
             } else {
               resolvedAuthKey = 'mcc';
               resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
-              resolvedOfficerEmail = 'mcc@gmail.com';
+              resolvedOfficerEmail = 'officer.mcc@gmail.com';
             }
             resolvedInspName = customPinMatch.name;
             resolvedInspEmail = customPinMatch.email;
@@ -655,7 +664,7 @@ const server = http.createServer(async (req, res) => {
             } else {
               resolvedAuthKey = 'mcc';
               resolvedAuthName = 'Mysuru Municipal Corporation (MCC Urban)';
-              resolvedOfficerEmail = 'mcc@gmail.com';
+              resolvedOfficerEmail = 'officer.mcc@gmail.com';
               if (pin === '501301') {
                 resolvedInspName = 'Gargieee';
                 resolvedInspEmail = 'gat@gmail.com';

@@ -359,14 +359,14 @@ def resolve_pin_routing(pin: str):
                     auth_key = "mcc"
                     auth_name = "Mysuru Municipal Corporation (MCC Urban)"
                     off_email = "officer.mcc@gmail.com"
-                    if "gp" in dept or "panchayat" in dept or "panchayat" in dept_name:
-                        auth_key = "gp"
-                        auth_name = "Bogadi Gram Panchayat (Rural)"
-                        off_email = "gp@gmail.com"
-                    elif "tp" in dept or "town" in dept or "town" in dept_name:
+                    if "tp" in dept or "town" in dept or "town" in dept_name:
                         auth_key = "tp"
                         auth_name = "Hootagalli Town Panchayat"
                         off_email = "tp@gmail.com"
+                    elif "gp" in dept or "panchayat" in dept or "panchayat" in dept_name or "gram" in dept or "gram" in dept_name:
+                        auth_key = "gp"
+                        auth_name = "Bogadi Gram Panchayat (Rural)"
+                        off_email = "gp@gmail.com"
                     return {
                         "authorityKey": auth_key,
                         "authority": auth_name,
