@@ -539,10 +539,6 @@
       <!-- Portals & Switchers -->
       <div class="pt-4 mt-3 border-t border-white/10 space-y-1.5">
         <span class="text-[10px] font-mono uppercase font-bold text-emerald-400/80 px-2 tracking-wider block">Portals & Switch</span>
-        <a href="citizen.html" class="nav-btn flex items-center gap-2 hover:bg-emerald-900/40 text-slate-200">
-          <span class="text-base">👤</span>
-          <span>Citizen Portal</span>
-        </a>
         <a href="officer.html" class="nav-btn flex items-center gap-2 hover:bg-emerald-900/40 text-slate-200">
           <span class="text-base">🏛️</span>
           <span>Officer Command</span>
@@ -598,9 +594,6 @@
 
       <div class="flex items-center gap-2 sm:gap-3">
         <!-- Cross-Dashboard Quick Switch Badges -->
-        <a href="citizen.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
-          <span>👤</span> <span>Citizen</span>
-        </a>
         <a href="officer.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
           <span>🏛️</span> <span>Officer</span>
         </a>
@@ -888,6 +881,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const queryEmail = (urlParams.get('email') || urlParams.get('user') || '').toLowerCase().trim();
         const queryPin = (urlParams.get('pin') || '').trim();
+        const queryDept = (urlParams.get('dept') || urlParams.get('auth') || '').toLowerCase().trim();
 
         let saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
         let userObj = saved ? JSON.parse(saved) : null;
@@ -895,7 +889,9 @@
         if (queryEmail || !userObj) {
           const targetEmail = queryEmail || (userObj ? (userObj.email || '').toLowerCase().trim() : 'q@gmail.com');
           const regUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
-          const matchedReg = regUsers.find(u => (u.email || '').toLowerCase().trim() === targetEmail);
+          const storedInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
+          const matchedReg = storedInspectors.find(u => (u.email || '').toLowerCase().trim() === targetEmail) ||
+                             regUsers.find(u => (u.email || '').toLowerCase().trim() === targetEmail);
 
           if (matchedReg) {
             userObj = { ...matchedReg };
@@ -912,22 +908,22 @@
             const baseIns = BASELINE_INSPECTORS.find(b => (b.email || '').toLowerCase().trim() === targetEmail);
             if (baseIns) {
               userObj = { ...baseIns };
-            } else if (!userObj) {
+            } else if (!userObj || targetEmail) {
+              const assignedDept = queryDept || (['570018','570017','570027'].some(p => queryPin.startsWith(p) || p.startsWith(queryPin)) ? 'tp' : (['570026','571130','570028'].some(p => queryPin.startsWith(p) || p.startsWith(queryPin)) ? 'gp' : 'mcc'));
+              const deptNameText = assignedDept === 'tp' ? 'Town Panchayat (Hootagalli Town)' : (assignedDept === 'gp' ? 'Gram Panchayat (Bogadi Rural)' : 'Mysuru City Corporation (MCC Urban)');
               userObj = {
-                id: 'BOGP1001',
-                name: 'Seervi',
-                email: 'q@gmail.com',
+                id: (assignedDept.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)),
+                name: (targetEmail ? targetEmail.split('@')[0].toUpperCase() : 'Field Inspector'),
+                email: targetEmail || 'inspector@gmail.com',
                 role: 'inspector',
-                department: 'gp',
-                departmentName: 'Bogadi Gram Panchayat',
-                authority: 'Gram Panchayat (Bogadi Rural)',
-                assignedPin: '570026',
-                pin: '570026',
-                assignedArea: 'Bogadi Gram Panchayat Ward 01',
-                designation: 'Panchayat Health & C&D Inspector',
-                phone: '+91 98450 11005',
-                createdBy: 'K. S. Manjunath (PDO)',
-                creatingOfficerEmail: 'gp@gmail.com'
+                department: assignedDept,
+                departmentName: deptNameText,
+                authority: deptNameText,
+                assignedPin: queryPin || (assignedDept === 'tp' ? '570018' : (assignedDept === 'gp' ? '570026' : '570001')),
+                pin: queryPin || (assignedDept === 'tp' ? '570018' : (assignedDept === 'gp' ? '570026' : '570001')),
+                assignedArea: (assignedDept === 'tp' ? 'TP Ward 01 (Hootagalli Town & Industrial)' : (assignedDept === 'gp' ? 'GP Ward 01 (Bogadi Rural & Ring Road)' : 'Ward 14 (Palace & Central Zone)')),
+                designation: (assignedDept === 'tp' ? 'Town Municipal Inspector' : (assignedDept === 'gp' ? 'Panchayat Health Inspector' : 'Ward Health Inspector')),
+                status: 'Active (On Duty)'
               };
             }
           }
@@ -935,24 +931,26 @@
             userObj.assignedPin = queryPin;
             userObj.pin = queryPin;
           }
-          if (queryEmail) {
-            localStorage.setItem('current_user', JSON.stringify(userObj));
+          if (queryDept) {
+            userObj.department = queryDept;
           }
+          localStorage.setItem('current_user', JSON.stringify(userObj));
+          sessionStorage.setItem('current_user', JSON.stringify(userObj));
         }
 
         currentUser = userObj;
 
-        const dept = (currentUser.department || '').toLowerCase();
+        const dept = (currentUser.department || queryDept || '').toLowerCase();
         const deptName = (currentUser.departmentName || currentUser.department_name || '').toLowerCase();
         const auth = (currentUser.authority || '').toLowerCase();
         const email = (currentUser.email || '').toLowerCase();
-        const pin = String(currentUser.assignedPin || currentUser.pin || '570001').trim();
+        const pin = String(currentUser.assignedPin || currentUser.pin || queryPin || '570001').trim();
 
-        // Determine which Panchayat / Authority created this inspector
-        if (dept === 'gp' || dept.includes('panchayat') || dept.includes('gram') || deptName.includes('panchayat') || auth.includes('panchayat') || email.includes('gp') || AUTHORITY_CONFIGS.gp.defaultPins.some(p => pin.includes(p))) {
-          currentAuthorityKey = 'gp';
-        } else if (dept === 'tp' || dept.includes('town') || deptName.includes('town') || auth.includes('town') || email.includes('tp') || AUTHORITY_CONFIGS.tp.defaultPins.some(p => pin.includes(p))) {
+        // Strict Authority Routing: Town Panchayat, Gram Panchayat, MCC Urban
+        if (dept === 'tp' || dept.includes('town') || deptName.includes('town') || auth.includes('town') || email.includes('tp') || AUTHORITY_CONFIGS.tp.defaultPins.some(p => pin.startsWith(p) || p.startsWith(pin))) {
           currentAuthorityKey = 'tp';
+        } else if (dept === 'gp' || (dept !== 'mcc' && (dept.includes('panchayat') || dept.includes('gram') || deptName.includes('gram') || auth.includes('gram') || email.includes('gp') || AUTHORITY_CONFIGS.gp.defaultPins.some(p => pin.startsWith(p) || p.startsWith(pin))))) {
+          currentAuthorityKey = 'gp';
         } else {
           currentAuthorityKey = 'mcc';
         }
@@ -1104,12 +1102,13 @@
       const myPin = String(currentUser.assignedPin || currentUser.pin || '').trim();
       const myEmail = (currentUser.email || '').toLowerCase().trim();
       const myName = (currentUser.name || '').toLowerCase().trim();
+      const myAuth = currentAuthorityKey;
 
       const GP_PINS = ['570026', '571130', '570028', '571311', '571201', '571186', '571101', '571120', '571124', '571125'];
       const TP_PINS = ['570018', '570017', '570027', '571607', '571604', '571602', '571610'];
-      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570023', '570024'];
+      const MCC_PINS = ['570001', '570002', '570004', '570008', '570020', '570023', '570024', '501301'];
 
-      return applicationsList.filter(app => {
+      const matching = applicationsList.filter(app => {
         if (!app) return false;
         const appPin = String(app.pincode || app.pin || '').trim();
         const appAuthKey = (app.authorityKey || app.dept || '').toLowerCase().trim();
@@ -1118,7 +1117,7 @@
         const auditedBy = (app.auditedBy || app.audited_by || '').toLowerCase().trim();
         const authStr = (app.authority || '').toLowerCase().trim();
 
-        // 1. Direct inspector email assignment match (Highest Priority)
+        // 1. Direct inspector email assignment match
         if (appInspectorEmail && myEmail && (appInspectorEmail === myEmail || appInspectorEmail.includes(myEmail) || myEmail.includes(appInspectorEmail))) return true;
 
         // 2. Direct inspector name assignment match
@@ -1133,17 +1132,29 @@
           if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
         }
 
-        // 5. Authority Fallback Match when inspector is not conflicting
+        // 5. Authority Jurisdiction Match (Every inspector gets full real queue for their assigned authority)
         let appTargetAuth = appAuthKey;
         if (!appTargetAuth) {
-          if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) appTargetAuth = 'gp';
-          else if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('town') || authStr.includes('hootagalli')) appTargetAuth = 'tp';
+          if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('town') || authStr.includes('hootagalli')) appTargetAuth = 'tp';
+          else if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) appTargetAuth = 'gp';
           else appTargetAuth = 'mcc';
         }
-        if (appTargetAuth === currentAuthorityKey && (!appInspectorEmail || appInspectorEmail === myEmail)) return true;
 
-        return false;
+        return (appTargetAuth === myAuth);
       });
+
+      // Sort priority: exact PIN / inspector match at the top, then newest
+      matching.sort((a, b) => {
+        const aPin = String(a.pincode || a.pin || '').trim();
+        const bPin = String(b.pincode || b.pin || '').trim();
+        const aIsExact = (aPin === myPin || (a.assignedInspectorEmail || '').toLowerCase() === myEmail);
+        const bIsExact = (bPin === myPin || (b.assignedInspectorEmail || '').toLowerCase() === myEmail);
+        if (aIsExact && !bIsExact) return -1;
+        if (!aIsExact && bIsExact) return 1;
+        return 0;
+      });
+
+      return matching;
     }
 
     let currentInspectionFilter = 'pending';

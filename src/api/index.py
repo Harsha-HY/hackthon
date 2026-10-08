@@ -346,8 +346,8 @@ def resolve_pin_routing(pin: str):
             "assignedInspectorEmail": "gat@gmail.com"
         }
 
-    # 2. Check dynamic registered inspectors
-    all_users = list(memory_db.get("registeredUsers", [])) + list(SYSTEM_ACCOUNTS)
+    # 2. Check dynamic registered inspectors (newest first)
+    all_users = list(reversed(memory_db.get("registeredUsers", []))) + list(SYSTEM_ACCOUNTS)
     for ins in all_users:
         if ins and ins.get("role") == "inspector":
             ins_pin = str(ins.get("assignedPin") or ins.get("pin") or "").strip()

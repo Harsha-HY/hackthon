@@ -493,10 +493,6 @@
       <div>
         <span class="px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Portals & Switch</span>
         <div class="space-y-0.5">
-          <a href="citizen.html" class="nav-btn flex items-center gap-2 hover:bg-emerald-900/40 text-slate-200">
-            <span class="icon-box bg-emerald-500/20 text-emerald-300">👤</span>
-            <span class="truncate">Citizen Portal</span>
-          </a>
           <a href="inspector.html" class="nav-btn flex items-center gap-2 hover:bg-emerald-900/40 text-slate-200">
             <span class="icon-box bg-blue-500/20 text-blue-300">🔍</span>
             <span class="truncate">Inspector Desk</span>
@@ -554,9 +550,6 @@
         
 
         <!-- Cross-Dashboard Quick Switch Badges -->
-        <a href="citizen.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
-          <span>👤</span> <span>Citizen View</span>
-        </a>
         <a href="inspector.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
           <span>🔍</span> <span>Inspector Desk</span>
         </a>
@@ -2180,7 +2173,7 @@
       sessionStorage.setItem('current_user', JSON.stringify(ins));
       showToast('Logging into Field Inspector Console for ' + (ins.name || email) + '...', 'success');
       setTimeout(() => {
-        window.location.href = 'inspector.html?email=' + encodeURIComponent(ins.email) + '&pin=' + encodeURIComponent(ins.assignedPin || '');
+        window.location.href = 'inspector.html?email=' + encodeURIComponent(ins.email) + '&pin=' + encodeURIComponent(ins.assignedPin || '') + '&dept=' + encodeURIComponent(ins.department || currentAuthorityKey);
       }, 300);
     }
 

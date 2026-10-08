@@ -1283,7 +1283,7 @@
       // 1. Check if a custom registered inspector in localStorage or users table has this PIN assigned
       const regUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
       const storedIns = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-      const allInspectors = [...regUsers.filter(u => u && u.role === 'inspector'), ...storedIns, ...MASTER_ROSTER];
+      const allInspectors = [...storedIns, ...([...regUsers.filter(u => u && u.role === 'inspector')].reverse()), ...MASTER_ROSTER];
 
       const customPinMatch = allInspectors.find(ins => {
         const insPin = String(ins.assignedPin || ins.pin || '').trim();

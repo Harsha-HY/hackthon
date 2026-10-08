@@ -580,9 +580,9 @@ const server = http.createServer(async (req, res) => {
               }
             } catch(e) {}
           }
-          (db.registeredUsers || []).filter(u => u.role === 'inspector').forEach(ins => {
+          (db.registeredUsers || []).filter(u => u.role === 'inspector').slice().reverse().forEach(ins => {
             if (!allInspectors.some(ai => (ai.email || '').toLowerCase() === (ins.email || '').toLowerCase())) {
-              allInspectors.push(ins);
+              allInspectors.unshift(ins);
             }
           });
 
