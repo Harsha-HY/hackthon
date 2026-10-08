@@ -2653,7 +2653,7 @@
       if (!tableCerts) return;
 
       const allApps = getOriginalDemolitionApplications();
-      let certifiedApps = allApps.filter(a => (a.status || '').toLowerCase().includes('approved') || (a.status || '').toLowerCase().includes('issued') || (a.status || '').toLowerCase().includes('clearance') || (a.status || '').toLowerCase().includes('completed') || a.certificateNo);
+      let certifiedApps = allApps.filter(a => (a.status || '').toLowerCase().includes('approved') || (a.status || '').toLowerCase().includes('issued') || (a.status || '').toLowerCase().includes('clearance') || (a.status || '').toLowerCase().includes('completed'));
 
       if (filter === 'gp') {
         certifiedApps = certifiedApps.filter(c => c.dept === 'gp');
@@ -2784,7 +2784,7 @@
 
     function isAppCompleted(a) {
       const s = (a.status || '').toLowerCase();
-      return s.includes('approved') || s.includes('issued') || s.includes('clearance') || s.includes('completed') || Boolean(a.certificateNo);
+      return s.includes('approved') || s.includes('issued') || s.includes('clearance') || s.includes('completed');
     }
 
     function renderReportsAnalytics(redrawCharts = true) {

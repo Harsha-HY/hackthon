@@ -468,6 +468,18 @@ async def create_application(app_data: ApplicationCreate):
     
     app_dict["submittedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
     
+    # Normalize photos
+    if not app_dict.get("photos") and app_dict.get("photo"):
+        app_dict["photos"] = [app_dict["photo"]]
+    elif app_dict.get("photos") and not app_dict.get("photo"):
+        app_dict["photo"] = app_dict["photos"][0]
+        
+    # Ensure unapproved application does not carry premature certificate
+    if app_dict.get("status") not in ["Approved", "Clearance Approved", "Issued"]:
+        app_dict.pop("certificateNo", None)
+        app_dict.pop("certificateType", None)
+        app_dict["certificateStatus"] = "Pending Inspection"
+    
     # Prepend to memory applications
     memory_db["applications"].insert(0, app_dict)
     memory_db["stats"]["totalApplications"] = len(memory_db["applications"])

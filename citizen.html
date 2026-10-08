@@ -2074,9 +2074,6 @@
       const assignedOfficerEmail = matched.assignedOfficerEmail;
 
       const authPrefix = authorityKey.toUpperCase();
-      const certNo = `${authPrefix}-${Math.floor(100000 + Math.random() * 900000)}`;
-      const certType = 'C&D Waste Clearance NOC';
-      const issueDate = new Date().toISOString().split('T')[0];
       const status = 'Pending Inspection';
 
       const appId = `#${authPrefix}${new Date().getFullYear()}${String(Math.floor(100000 + Math.random() * 900000))}`;
@@ -2089,9 +2086,10 @@
         pin,
         address,
         propertyId,
-        certificateNo: certNo,
-        certificateType: certType,
-        issueDate,
+        certificateNo: null,
+        certificateType: null,
+        certificateStatus: 'Pending Inspection',
+        issueDate: null,
         status,
         photos: uploadedPhotos,
         photo: uploadedPhotos[0] || null,
@@ -2822,11 +2820,12 @@
       if (appId) {
         app = allApps.find(a => String(a.id) === String(appId));
       } else if (myRequests.length > 0) {
-        app = myRequests.find(a => isFinalizedStatus(a.status) && (a.status === 'Approved' || a.status === 'Clearance Approved' || a.status === 'Issued' || a.status === 'Certificate Issued')) || myRequests[0];
+        app = myRequests.find(a => isFinalizedStatus(a.status) && (a.status === 'Approved' || a.status === 'Clearance Approved' || a.status === 'Issued' || a.status === 'Certificate Issued'));
       }
 
-      if (!app) {
-        showToast('No approved clearance application found to generate NOC certificate.', 'info');
+      const isApproved = app && (app.status === 'Approved' || app.status === 'Clearance Approved' || app.status === 'Issued' || app.status === 'Certificate Issued' || app.certificateStatus === 'Issued');
+      if (!app || !isApproved) {
+        showToast('⚠️ NOC Clearance Certificate will be issued only after inspector completes and approves field inspection.', 'info');
         return;
       }
 

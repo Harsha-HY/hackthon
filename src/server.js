@@ -551,6 +551,11 @@ const server = http.createServer(async (req, res) => {
           mergedItem.pin = pin;
           mergedItem.pincode = pin;
           mergedItem.status = mergedItem.status || 'Pending Inspection';
+          if (mergedItem.status !== 'Approved' && mergedItem.status !== 'Issued' && mergedItem.status !== 'Clearance Approved') {
+            delete mergedItem.certificateNo;
+            delete mergedItem.certificateType;
+            delete mergedItem.certificateStatus;
+          }
           mergedItem.lat = mergedItem.lat || 12.2958;
           mergedItem.lng = mergedItem.lng || 76.6394;
           mergedItem.gpsLocation = mergedItem.gpsLocation || `${mergedItem.lat}° N, ${mergedItem.lng}° E`;

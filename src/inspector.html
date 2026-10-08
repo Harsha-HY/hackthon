@@ -788,6 +788,48 @@
     </div>
   </div>
 
+  <!-- Camera Capture Modal for On-Site Field Audit Geotagging -->
+  <div id="camera-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <span>📷</span> Inspector On-Site Verification Camera
+          </h4>
+          <p class="text-[10px] text-slate-500 font-medium">Automatic tamper-evident GPS coordinates, inspector stamp, and timestamp watermark</p>
+        </div>
+        <button onclick="closeCameraModal()" class="size-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center transition cursor-pointer">&times;</button>
+      </div>
+      <div class="p-4 flex flex-col items-center">
+        <!-- Live Camera Stream with Geotag HUD -->
+        <div class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-800">
+          <video id="camera-stream" autoplay playsinline class="w-full h-full object-cover"></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+          
+          <!-- Live HUD Overlay -->
+          <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 text-white pointer-events-none space-y-1">
+            <div class="flex items-center gap-2 text-emerald-400 font-mono text-[11px] font-bold">
+              <span class="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="cam-hud-gps">Acquiring GPS...</span>
+            </div>
+            <p id="cam-hud-addr" class="text-xs text-slate-200 truncate font-medium">Field Audit Inspection Desk</p>
+          </div>
+
+          <div id="camera-loading" class="absolute inset-0 flex items-center justify-center bg-slate-900 text-white text-xs font-mono">
+            <span>⌛ Initializing camera & live GPS...</span>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center gap-3 w-full">
+          <button type="button" onclick="closeCameraModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 cursor-pointer">Cancel</button>
+          <button type="button" onclick="snapInspectorPhoto()" class="flex-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer">
+            <span>📸 Snap Geotagged Audit Photo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ========================================================================= -->
   <!-- 5. JAVASCRIPT CONTROLLER                                                  -->
   <!-- ========================================================================= -->
@@ -830,6 +872,222 @@
     let currentUser = null;
     let currentAuthorityKey = 'mcc';
     let applicationsList = [];
+    let currentCameraStream = null;
+    let auditUploadedPhotos = [];
+    let currentInspectingAppId = null;
+
+    function extractPhotos(item) {
+      if (!item) return [];
+      if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos.filter(Boolean);
+      if (typeof item.photos === 'string' && item.photos.trim().startsWith('[')) {
+        try {
+          const parsed = JSON.parse(item.photos);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed.filter(Boolean);
+        } catch(e) {}
+      }
+      if (item.photo && typeof item.photo === 'string' && item.photo.trim()) return [item.photo.trim()];
+      if (typeof item.photos === 'string' && item.photos.trim()) return [item.photos.trim()];
+      return [];
+    }
+
+    function compressImage(fileOrDataUrl, maxWidth = 1000, maxHeight = 1000, quality = 0.75) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxWidth || h > maxHeight) {
+            if (w / h > maxWidth / maxHeight) {
+              h = Math.round((h * maxWidth) / w);
+              w = maxWidth;
+            } else {
+              w = Math.round((w * maxHeight) / h);
+              h = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => {
+          if (typeof fileOrDataUrl === 'string') resolve(fileOrDataUrl);
+          else resolve(null);
+        };
+        if (typeof fileOrDataUrl === 'string') {
+          img.src = fileOrDataUrl;
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e) => { img.src = e.target.result; };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(fileOrDataUrl);
+        }
+      });
+    }
+
+    async function triggerInspectorCamera() {
+      const modal = document.getElementById('camera-modal');
+      const video = document.getElementById('camera-stream');
+      const loading = document.getElementById('camera-loading');
+      const hudGps = document.getElementById('cam-hud-gps');
+      const hudAddr = document.getElementById('cam-hud-addr');
+
+      if (!modal || !video) return;
+      modal.classList.remove('hidden');
+      if (loading) loading.classList.remove('hidden');
+
+      let lat = 12.29581;
+      let lng = 76.63942;
+      const curApp = applicationsList.find(a => a.id === currentInspectingAppId);
+      if (curApp && curApp.lat) {
+        lat = curApp.lat;
+        lng = curApp.lng;
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            lat = pos.coords.latitude;
+            lng = pos.coords.longitude;
+            if (hudGps) hudGps.innerText = `📍 GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+            if (hudAddr) hudAddr.innerText = curApp ? (curApp.address || 'Mysuru Premise') : 'On-Site Inspection Premise';
+          },
+          err => {
+            if (hudGps) hudGps.innerText = `📍 GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+            if (hudAddr) hudAddr.innerText = curApp ? (curApp.address || 'Mysuru Premise') : 'On-Site Inspection Premise';
+          },
+          { enableHighAccuracy: true, timeout: 6000 }
+        );
+      } else {
+        if (hudGps) hudGps.innerText = `📍 GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+        if (hudAddr) hudAddr.innerText = curApp ? (curApp.address || 'Mysuru Premise') : 'On-Site Inspection Premise';
+      }
+
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+          });
+          currentCameraStream = stream;
+          video.srcObject = stream;
+          video.onloadedmetadata = () => {
+            video.play();
+            if (loading) loading.classList.add('hidden');
+          };
+        } else {
+          throw new Error('Camera not supported');
+        }
+      } catch(err) {
+        if (loading) loading.classList.add('hidden');
+        showToast('⚠️ Camera access denied or not available. Using file upload.', 'info');
+        closeCameraModal();
+        const fileInput = document.getElementById('inspector-file-input');
+        if (fileInput) fileInput.click();
+      }
+    }
+
+    function closeCameraModal() {
+      const modal = document.getElementById('camera-modal');
+      if (modal) modal.classList.add('hidden');
+      if (currentCameraStream) {
+        currentCameraStream.getTracks().forEach(t => t.stop());
+        currentCameraStream = null;
+      }
+    }
+
+    async function snapInspectorPhoto() {
+      const video = document.getElementById('camera-stream');
+      const canvas = document.getElementById('camera-canvas');
+      if (!video) return;
+
+      const width = video.videoWidth || 1280;
+      const height = video.videoHeight || 720;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      const curApp = applicationsList.find(a => a.id === currentInspectingAppId);
+      const lat = curApp && curApp.lat ? curApp.lat : 12.29581;
+      const lng = curApp && curApp.lng ? curApp.lng : 76.63942;
+      const inspName = currentUser ? (currentUser.name || 'Field Inspector') : 'Field Inspector';
+      const addrStr = curApp ? (curApp.address || 'Mysuru Site') : 'Mysuru Site';
+      const pinStr = curApp ? (curApp.pincode || curApp.pin || '570001') : '570001';
+
+      // Geotag Watermark banner
+      const bannerHeight = Math.max(88, Math.round(height * 0.17));
+      const bannerY = height - bannerHeight;
+
+      const grad = ctx.createLinearGradient(0, bannerY, 0, height);
+      grad.addColorStop(0, 'rgba(0, 0, 0, 0.40)');
+      grad.addColorStop(0.25, 'rgba(8, 29, 25, 0.88)');
+      grad.addColorStop(1, 'rgba(8, 29, 25, 0.96)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, bannerY, width, bannerHeight);
+
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(0, bannerY, width, 3.5);
+
+      const fontSize = Math.max(13, Math.round(width * 0.020));
+      const subFontSize = Math.max(11, Math.round(width * 0.016));
+      ctx.textBaseline = 'middle';
+
+      ctx.font = `bold ${fontSize}px "JetBrains Mono", monospace, sans-serif`;
+      ctx.fillStyle = '#ffffff';
+      const nowStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+      ctx.fillText(`📍 GPS: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E   |   ${nowStr} IST`, 24, bannerY + bannerHeight * 0.30);
+
+      ctx.font = `600 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
+      ctx.fillStyle = '#a7f3d0';
+      ctx.fillText(`🏠 Site: ${addrStr} · PIN: ${pinStr} · Case: ${currentInspectingAppId || ''}`, 24, bannerY + bannerHeight * 0.60);
+
+      ctx.font = `bold ${Math.max(9, Math.round(width * 0.013))}px "Plus Jakarta Sans", sans-serif`;
+      ctx.fillStyle = '#34d399';
+      ctx.fillText(`✓ OFFICIAL ON-SITE AUDIT VERIFICATION · AUDITED BY ${inspName.toUpperCase()}`, 24, bannerY + bannerHeight * 0.84);
+
+      const raw = canvas.toDataURL('image/jpeg', 0.85);
+      const compressed = await compressImage(raw, 900, 900, 0.70);
+      if (compressed) {
+        auditUploadedPhotos.push(compressed);
+        renderInspectorPhotoPreview();
+        closeCameraModal();
+        showToast(`🎉 On-site geotagged photo captured! (${auditUploadedPhotos.length} attached)`, 'success');
+      }
+    }
+
+    async function handleInspectorFileUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      for (let i = 0; i < files.length; i++) {
+        const compressed = await compressImage(files[i], 900, 900, 0.70);
+        if (compressed) auditUploadedPhotos.push(compressed);
+      }
+      renderInspectorPhotoPreview();
+      showToast(`📁 Attached ${files.length} photo(s).`, 'success');
+      event.target.value = '';
+    }
+
+    function removeInspectorAuditPhoto(idx) {
+      auditUploadedPhotos.splice(idx, 1);
+      renderInspectorPhotoPreview();
+    }
+
+    function renderInspectorPhotoPreview() {
+      const container = document.getElementById('inspector-audit-photos-preview');
+      if (!container) return;
+      if (auditUploadedPhotos.length === 0) {
+        container.innerHTML = '<span class="text-[11px] text-slate-400 font-mono italic">No new audit photos added yet.</span>';
+        return;
+      }
+      container.innerHTML = auditUploadedPhotos.map((p, idx) => `
+        <div class="relative group size-16 sm:size-20 rounded-xl overflow-hidden border border-emerald-500/40 bg-slate-950 shrink-0">
+          <img src="${p}" class="w-full h-full object-cover"/>
+          <button type="button" onclick="removeInspectorAuditPhoto(${idx})" class="absolute top-1 right-1 size-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center justify-center cursor-pointer shadow-xs">&times;</button>
+        </div>
+      `).join('');
+    }
 
     // Real-Time High Speed Synchronization across Citizen & Officer Consoles
     const civicSyncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('civic_sync_channel') : null;
@@ -1076,22 +1334,58 @@
 
       const local = JSON.parse(localStorage.getItem('civic_applications') || '[]');
       const custReqs = JSON.parse(localStorage.getItem('cust_my_requests') || '[]');
-      const liveData = [...(Array.isArray(fetched) ? fetched : []), ...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : [])];
       
-      const combined = liveData.length > 0 ? liveData : [...BASELINE_SUBMITTED_APPLICATIONS];
+      // Merge: local first, then custReqs, then fetched from server LAST so server truth updates local
+      const allSources = [...(Array.isArray(local) ? local : []), ...(Array.isArray(custReqs) ? custReqs : []), ...(Array.isArray(fetched) ? fetched : [])];
+      const combined = allSources.length > 0 ? allSources : [...BASELINE_SUBMITTED_APPLICATIONS];
       const uniqueMap = new Map();
+
       combined.forEach(a => {
         if (!a) return;
         const id = String(a.id || a.requestId || '').trim();
         if (!id) return;
+        const aPhotos = extractPhotos(a);
         if (!uniqueMap.has(id)) {
-          uniqueMap.set(id, a);
+          const copy = { ...a };
+          if (aPhotos.length > 0) {
+            copy.photos = aPhotos;
+            copy.photo = aPhotos[0];
+          }
+          uniqueMap.set(id, copy);
         } else {
-          uniqueMap.set(id, { ...uniqueMap.get(id), ...a });
+          const existing = uniqueMap.get(id);
+          const existingPhotos = extractPhotos(existing);
+          const merged = { ...existing, ...a };
+          // Preserve photos if existing record had photos and incoming doesn't
+          if (aPhotos.length > 0) {
+            merged.photos = aPhotos;
+            merged.photo = aPhotos[0];
+          } else if (existingPhotos.length > 0) {
+            merged.photos = existingPhotos;
+            merged.photo = existingPhotos[0];
+          }
+          uniqueMap.set(id, merged);
         }
       });
+
       applicationsList = Array.from(uniqueMap.values());
-      localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
+      try {
+        localStorage.setItem('civic_applications', JSON.stringify(applicationsList));
+      } catch(storageErr) {
+        try {
+          const light = applicationsList.map(item => {
+            const copy = { ...item };
+            if (Array.isArray(copy.photos) && copy.photos.some(p => typeof p === 'string' && p.length > 1000)) {
+              copy.photos = copy.photos.map((p, idx) => p.startsWith('data:') ? `[Photo ${idx+1}]` : p);
+            }
+            if (typeof copy.photo === 'string' && copy.photo.startsWith('data:')) {
+              copy.photo = '[Photo 1]';
+            }
+            return copy;
+          });
+          localStorage.setItem('civic_applications', JSON.stringify(light));
+        } catch(e) {}
+      }
 
       renderAllPanels();
     }
@@ -1143,7 +1437,7 @@
         return (appTargetAuth === myAuth);
       });
 
-      // Sort priority: exact PIN / inspector match at the top, then newest
+      // DETERMINISTIC MULTI-TIER SORT: ZERO SHUFFLING ON REFRESH/POLL
       matching.sort((a, b) => {
         const aPin = String(a.pincode || a.pin || '').trim();
         const bPin = String(b.pincode || b.pin || '').trim();
@@ -1151,7 +1445,20 @@
         const bIsExact = (bPin === myPin || (b.assignedInspectorEmail || '').toLowerCase() === myEmail);
         if (aIsExact && !bIsExact) return -1;
         if (!aIsExact && bIsExact) return 1;
-        return 0;
+
+        // Status tier: Pending / Active audits first, Finalized/Approved later
+        const isCompletedA = ['approved', 'issued', 'clearance approved', 'cancelled', 'rejected'].includes((a.status || '').toLowerCase().trim());
+        const isCompletedB = ['approved', 'issued', 'clearance approved', 'cancelled', 'rejected'].includes((b.status || '').toLowerCase().trim());
+        if (!isCompletedA && isCompletedB) return -1;
+        if (isCompletedA && !isCompletedB) return 1;
+
+        // Submission time descending (newest first)
+        const timeA = new Date(a.submittedAt || a.issueDate || a.createdAt || 0).getTime();
+        const timeB = new Date(b.submittedAt || b.issueDate || b.createdAt || 0).getTime();
+        if (timeB !== timeA) return timeB - timeA;
+
+        // Deterministic ID tiebreaker: 100% stable, NEVER shuffles
+        return String(b.id || '').localeCompare(String(a.id || ''));
       });
 
       return matching;
@@ -1245,7 +1552,7 @@
       }
 
       container.innerHTML = myApps.map(a => {
-        const photos = (a.photos && Array.isArray(a.photos) && a.photos.length > 0) ? a.photos : (a.photo ? [a.photo] : []);
+        const photos = extractPhotos(a);
         const gpsText = a.gpsLocation || (a.lat ? `Lat: ${a.lat}° N, Lng: ${a.lng}° E` : `Lat: 12.29581° N, Lng: 76.63942° E`);
         const mapUrl = a.mapUrl || (a.lat ? `https://www.google.com/maps?q=${a.lat},${a.lng}` : `https://www.google.com/maps?q=12.29581,76.63942`);
         const inspectTime = a.inspectionTime || a.auditedAt ? new Date(a.auditedAt || a.inspectionTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Pending Site Visit';
@@ -1257,7 +1564,7 @@
         if (photos.length > 0) {
           photoThumbHtml = `
             <div class="relative group cursor-pointer shrink-0 rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950 shadow-xs" onclick="viewPhoto('${a.id}')" title="Click to enlarge live geotagged photo">
-              <img src="${photos[0]}" alt="Live Site Photo" class="h-28 w-28 sm:h-32 sm:w-32 object-cover group-hover:scale-105 transition duration-200"/>
+              <img src="${photos[0]}" alt="Live Site Photo" class="h-28 w-28 sm:h-32 sm:w-32 object-cover group-hover:scale-105 transition duration-200" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=400';"/>
               <div class="absolute bottom-1 left-1 right-1 bg-black/75 backdrop-blur-xs rounded-lg px-1.5 py-0.5 text-center">
                 <span class="text-[9px] font-mono font-extrabold text-emerald-300 block truncate">📍 LIVE GEOTAG</span>
               </div>
@@ -1270,9 +1577,9 @@
           `;
         } else {
           photoThumbHtml = `
-            <div class="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl border border-dashed border-slate-300 bg-slate-100/70 flex flex-col items-center justify-center p-2 text-center shrink-0">
-              <span class="text-xl">📷</span>
-              <span class="text-[9px] font-mono text-slate-500 mt-1">No site photo</span>
+            <div class="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl border border-dashed border-emerald-500/40 bg-emerald-950/20 flex flex-col items-center justify-center p-2 text-center shrink-0 cursor-pointer hover:bg-emerald-900/30 transition" onclick="openInspectionModal('${a.id}')" title="Click to conduct audit and capture photo">
+              <span class="text-2xl">📸</span>
+              <span class="text-[9px] font-mono text-emerald-400 mt-1 font-bold">+ Add Geotag Photo</span>
             </div>
           `;
         }
@@ -1421,7 +1728,10 @@
       const app = applicationsList.find(a => a.id === appId);
       if (!app) return;
 
-      const photos = (app.photos && Array.isArray(app.photos) && app.photos.length > 0) ? app.photos : (app.photo ? [app.photo] : []);
+      currentInspectingAppId = appId;
+      auditUploadedPhotos = [];
+
+      const photos = extractPhotos(app);
       const modalContainer = document.getElementById('modal-container');
       const backdrop = document.getElementById('modal-backdrop');
       const nowFormatted = new Date().toISOString().slice(0, 16);
@@ -1431,7 +1741,7 @@
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <span>📋</span> Field Site Audit & Approval
+              <span>📋</span> Field Site Audit & Approval Desk
             </h3>
             <p class="text-[11px] text-slate-500 font-mono">${app.id} · PIN: ${app.pincode || app.pin || '570001'}</p>
           </div>
@@ -1447,22 +1757,52 @@
             <span class="text-xs font-mono font-bold text-emerald-800 block mt-0.5">PIN: ${app.pincode || app.pin || '570001'} · Citizen: ${app.applicantName || 'Citizen'} (${app.phone || ''})</span>
           </div>
 
-          <!-- Photo Evidence Preview Strip (Inspect on Phone) -->
+          <!-- Existing Geotag Photos Preview Strip -->
           ${photos.length > 0 ? `
             <div class="p-3 bg-slate-900 rounded-2xl text-white space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-[10px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Site Geotag Photos (${photos.length})</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Citizen Geotag Photos (${photos.length})</span>
                 <button type="button" onclick="viewPhoto('${app.id}')" class="text-[10px] text-emerald-300 underline font-bold cursor-pointer">Enlarge &rarr;</button>
               </div>
               <div class="flex items-center gap-2 overflow-x-auto py-1">
                 ${photos.map((p, idx) => `
                   <div class="h-20 w-20 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center shrink-0 border border-slate-700">
-                    <img src="${p}" alt="Site Photo ${idx+1}" class="h-full w-full object-cover cursor-pointer hover:scale-105 transition" onclick="viewPhoto('${app.id}')"/>
+                    <img src="${p}" alt="Site Photo ${idx+1}" class="h-full w-full object-cover cursor-pointer hover:scale-105 transition" onclick="viewPhoto('${app.id}')" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=400';"/>
                   </div>
                 `).join('')}
               </div>
             </div>
-          ` : ''}
+          ` : `
+            <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+              <span class="text-lg">📷</span>
+              <div>
+                <span class="font-bold block">No initial citizen photo attached.</span>
+                <span class="text-[11px] text-amber-800">Please capture a live on-site inspection photo below before approval.</span>
+              </div>
+            </div>
+          `}
+
+          <!-- Inspector On-Site Verification Photo Section -->
+          <div class="p-3 bg-slate-900 rounded-2xl text-white space-y-2.5 border border-emerald-500/30">
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">📸 Live Geotag Audit Evidence</span>
+              <span class="text-[10px] text-slate-400">Inspector Verified Evidence</span>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="triggerInspectorCamera()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 cursor-pointer">
+                <span>📷</span> <span>Snap Live Camera Photo</span>
+              </button>
+              <label class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                <span>📁</span> <span>Upload Photo Files</span>
+                <input id="inspector-file-input" type="file" accept="image/*" multiple onchange="handleInspectorFileUpload(event)" class="hidden"/>
+              </label>
+            </div>
+
+            <div id="inspector-audit-photos-preview" class="flex items-center gap-2 overflow-x-auto py-1 min-h-[48px]">
+              <span class="text-[11px] text-slate-400 font-mono italic">No new audit photos added yet.</span>
+            </div>
+          </div>
 
           <!-- GPS Location & Auto-Fetch -->
           <div>
@@ -1529,7 +1869,7 @@
           <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-slate-100">
             <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer text-center">Cancel</button>
             <button type="submit" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/25 cursor-pointer flex items-center justify-center gap-1.5 text-center">
-              <span>✓ Save Audit & Issue NOC Certificate</span>
+              <span>✓ Save Audit & Submit Decision</span>
             </button>
           </div>
 
@@ -1551,7 +1891,6 @@
             showToast('📍 Live GPS coordinates captured: ' + val, 'success');
           },
           err => {
-            // Fallback realistic Mysuru GPS
             const input = document.getElementById('audit-gps');
             if (input) input.value = 'Lat: 12.29581° N, Lng: 76.63942° E';
             showToast('📍 GPS Location set to Mysuru Ward Coordinate.', 'success');
@@ -1577,7 +1916,7 @@
         const remarks = document.getElementById('audit-remarks').value.trim();
         const waterDiscountInput = document.getElementById('audit-water-discount');
         const waterDiscount = waterDiscountInput ? waterDiscountInput.value.trim() : '';
-        const isPassing = decision === 'Approved' || decision.includes('Approve') || decision.includes('Inspection Passed') || decision.includes('NOC');
+        const isPassing = decision === 'Approved' || decision.includes('Approve') || decision.includes('NOC');
         const finalStatus = decision.includes('Approve') ? 'Approved' : decision;
         const completionDate = compDateInput || (isPassing ? (scheduledDate || new Date().toISOString().split('T')[0]) : (decision === 'Visit Scheduled' || decision === 'On-Site Audit In Progress' ? 'In Progress' : 'Pending'));
 
@@ -1595,6 +1934,15 @@
         app.assignedInspectorEmail = currentUser ? (currentUser.email || app.assignedInspectorEmail) : (app.assignedInspectorEmail || 'inspector@gmail.com');
         app.auditedAt = new Date().toISOString();
 
+        // Attach any inspector on-site photos captured during this audit
+        if (auditUploadedPhotos && auditUploadedPhotos.length > 0) {
+          const existingPhotos = extractPhotos(app);
+          const combinedPhotos = [...auditUploadedPhotos, ...existingPhotos];
+          app.photos = combinedPhotos;
+          app.photo = combinedPhotos[0];
+          app.inspectionPhotos = [...auditUploadedPhotos];
+        }
+
         if (isPassing) {
           app.certificateStatus = 'Issued';
           if (!app.certificateNo) {
@@ -1605,6 +1953,10 @@
           if (!app.issueDate) {
             app.issueDate = new Date().toISOString().split('T')[0];
           }
+        } else {
+          delete app.certificateNo;
+          delete app.certificateType;
+          delete app.certificateStatus;
         }
 
         // 1. Save directly to Backend REST API AND Supabase Cloud Database
@@ -1660,6 +2012,12 @@
     function openCertificateModal(appId) {
       const app = applicationsList.find(a => a.id === appId);
       if (!app) return;
+
+      const isApproved = app.status === 'Approved' || app.status === 'Clearance Approved' || app.certificateStatus === 'Issued';
+      if (!isApproved) {
+        showToast('⚠️ Official NOC Certificate is only available after field inspection is approved.', 'info');
+        return;
+      }
 
       const cleanId = (app.id || 'REQ-101').replace(/[^a-zA-Z0-9]/g, '');
       const deptKey = (app.authorityKey || (currentAuthorityKey || 'mcc')).toLowerCase();

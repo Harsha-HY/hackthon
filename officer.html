@@ -2611,7 +2611,7 @@
       });
 
       // Strictly isolate to the current authority ONLY
-      let certifiedApps = allCerts.filter(c => (c.isApproved || c.certificateNo) && (c.dept === currentAuthorityKey || c.authorityKey === currentAuthorityKey));
+      let certifiedApps = allCerts.filter(c => c.isApproved && (c.dept === currentAuthorityKey || c.authorityKey === currentAuthorityKey));
 
       if (searchQueryOfficerCertificates) {
         const q = searchQueryOfficerCertificates;
@@ -2819,7 +2819,7 @@
 
     function isOfficerAppCompleted(a) {
       const s = (a.status || '').toLowerCase();
-      return s.includes('approved') || s.includes('issued') || s.includes('clearance') || s.includes('completed') || Boolean(a.certificateNo);
+      return s.includes('approved') || s.includes('issued') || s.includes('clearance') || s.includes('completed');
     }
 
     function renderReportsTable(redrawCharts = true) {
