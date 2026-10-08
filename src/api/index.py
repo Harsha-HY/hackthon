@@ -155,17 +155,26 @@ memory_db = {
     "registeredUsers": list(SYSTEM_ACCOUNTS)
 }
 
+def get_storage_path():
+    parent = os.path.dirname(DATA_FILE)
+    if os.path.exists(parent) and os.access(parent, os.W_OK):
+        return DATA_FILE
+    return "/tmp/database.json"
+
 def load_data():
     global memory_db
-    if os.path.exists(DATA_FILE):
+    p = get_storage_path()
+    if not os.path.exists(p) and os.path.exists(DATA_FILE):
+        p = DATA_FILE
+    if os.path.exists(p):
         try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
+            with open(p, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, dict):
                     memory_db["stats"] = data.get("stats", memory_db["stats"])
                     memory_db["applications"] = data.get("applications", [])
-        except Exception as e:
-            print("Error loading database.json:", e)
+        except Exception:
+            pass
 
 def save_data():
     try:
@@ -174,10 +183,11 @@ def save_data():
             "applications": memory_db["applications"],
             "hotspots": []
         }
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
+        target = get_storage_path()
+        with open(target, "w", encoding="utf-8") as f:
             json.dump(data_to_save, f, indent=2)
-    except Exception as e:
-        print("Error saving database.json:", e)
+    except Exception:
+        pass
 
 load_data()
 
