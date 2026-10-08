@@ -373,6 +373,24 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Real-Time Server-Sent Events (SSE) Stream for Dashboard-to-Dashboard Instant Updates
+    if (pathname === '/api/stream' && method === 'GET') {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.write(`data: ${JSON.stringify({ type: 'connected', timestamp: Date.now() })}\n\n`);
+      if (!global.sseSubscribers) global.sseSubscribers = [];
+      global.sseSubscribers.push(res);
+      req.on('close', () => {
+        const idx = (global.sseSubscribers || []).indexOf(res);
+        if (idx !== -1) global.sseSubscribers.splice(idx, 1);
+      });
+      return;
+    }
+
     // High-Accuracy Reverse Geocode API (OSM Nominatim with valid User-Agent)
     if (pathname === '/api/reverse-geocode' && method === 'GET') {
       const q = parsedUrl.query;
@@ -762,6 +780,12 @@ const server = http.createServer(async (req, res) => {
           db.stats.pendingDebris = db.applications.filter(a => a.status !== 'Approved').length;
 
           saveDB(db);
+          if (global.sseSubscribers && Array.isArray(global.sseSubscribers)) {
+            const msg = `data: ${JSON.stringify({ type: 'NEW_APPLICATION', data: mergedItem, timestamp: Date.now() })}\n\n`;
+            for (let i = global.sseSubscribers.length - 1; i >= 0; i--) {
+              try { global.sseSubscribers[i].write(msg); } catch(e) { global.sseSubscribers.splice(i, 1); }
+            }
+          }
           res.writeHead(201, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, item: mergedItem, inspection: inspectionRecord }));
         });

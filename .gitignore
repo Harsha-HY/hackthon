@@ -4,10 +4,6 @@
 .env.*.local
 *.env
 
-# Serverless API endpoints & secrets
-# API sources were removed from version control in commit 3caf1ff.
-api/
-src/api/
 
 # Local database files & mock stores
 database.json
@@ -28,3 +24,6 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+__pycache__/
+*.pyc

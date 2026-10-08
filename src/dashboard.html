@@ -2313,6 +2313,22 @@
           window.civicDb.subscribeToApplications(() => syncAdminDatabase());
         }
         setInterval(syncAdminDatabase, 4000);
+
+    // FastAPI Real-Time SSE Stream for Instant Cross-Device Sync
+    if (typeof EventSource !== 'undefined') {
+      try {
+        const sse = new EventSource('/api/stream');
+        sse.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'NEW_APPLICATION' || data.type === 'APPLICATION_UPDATED') {
+              syncAdminDatabase();
+            }
+          } catch(e) {}
+        };
+      } catch(e) {}
+    }
+
       });
     } else {
       syncAdminDatabase();

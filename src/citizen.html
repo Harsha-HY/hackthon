@@ -973,6 +973,23 @@
 
     // Real-Time High Speed Synchronization across Inspector & Officer Consoles
     const civicSyncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('civic_sync_channel') : null;
+
+    // FastAPI Real-Time SSE Stream for Instant Cross-Device Sync
+    if (typeof EventSource !== 'undefined') {
+      try {
+        const sse = new EventSource('/api/stream');
+        sse.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'NEW_APPLICATION' || data.type === 'APPLICATION_UPDATED') {
+              syncLiveCustomerApplications();
+            }
+          } catch(e) {}
+        };
+      } catch(e) {}
+    }
+    setInterval(syncLiveCustomerApplications, 4000);
+
     if (civicSyncChannel) {
       civicSyncChannel.onmessage = (event) => {
         syncLiveCustomerApplications();
