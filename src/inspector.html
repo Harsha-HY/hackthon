@@ -268,26 +268,43 @@
     function checkInspectorAuth() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const emailParam = urlParams.get('email') || urlParams.get('inspector');
+        const emailParam = (urlParams.get('email') || urlParams.get('inspector') || '').toLowerCase().trim();
+        const pinParam = (urlParams.get('pin') || '').trim();
+        const deptParam = (urlParams.get('dept') || urlParams.get('auth') || '').toLowerCase().trim();
         let saved = localStorage.getItem('current_user') || sessionStorage.getItem('current_user');
         
         if (emailParam) {
           const allUsers = JSON.parse(localStorage.getItem('civic_registered_users') || '[]');
           const allInspectors = JSON.parse(localStorage.getItem('civic_inspectors') || '[]');
-          let found = allInspectors.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase()) ||
-                      allUsers.find(u => (u.email||'').toLowerCase() === emailParam.toLowerCase());
+          let found = allInspectors.find(u => (u.email||'').toLowerCase().trim() === emailParam) ||
+                      allUsers.find(u => (u.email||'').toLowerCase().trim() === emailParam);
+          
+          const determinedDept = deptParam || (found && found.department) || (['570018','570017','570027'].some(p=>pinParam.startsWith(p)||p.startsWith(pinParam)) ? 'tp' : (['570026','571130','570028','123123'].some(p=>pinParam.startsWith(p)||p.startsWith(pinParam)) ? 'gp' : 'mcc'));
+          const determinedPin = pinParam || (found && (found.assignedPin || found.pin)) || (determinedDept === 'gp' ? '570026' : (determinedDept === 'tp' ? '570018' : '570001'));
+          const deptNameText = determinedDept === 'tp' ? 'Town Panchayat (Hootagalli Town)' : (determinedDept === 'gp' ? 'Gram Panchayat (Bogadi Rural)' : 'Mysuru City Corporation (MCC Urban)');
+
           if (!found) {
             found = {
-              id: 'INS-' + Math.floor(1000 + Math.random() * 9000),
+              id: (determinedDept.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)),
               name: emailParam.split('@')[0],
               email: emailParam,
               role: 'inspector',
-              department: 'mcc',
-              assignedPin: '570001',
-              designation: 'Ward Health Inspector'
+              department: determinedDept,
+              departmentName: deptNameText,
+              authority: deptNameText + ' Inspector (PIN: ' + determinedPin + ')',
+              assignedPin: determinedPin,
+              pin: determinedPin,
+              designation: (determinedDept === 'gp' ? 'Panchayat Health Inspector' : (determinedDept === 'tp' ? 'Town Municipal Inspector' : 'Ward Health Inspector')),
+              status: 'Active (On Duty)'
             };
+          } else {
+            found.role = 'inspector';
+            if (deptParam) found.department = deptParam;
+            if (pinParam) {
+              found.assignedPin = pinParam;
+              found.pin = pinParam;
+            }
           }
-          found.role = 'inspector';
           localStorage.setItem('current_user', JSON.stringify(found));
           sessionStorage.setItem('current_user', JSON.stringify(found));
           return;
@@ -878,15 +895,22 @@
 
     function extractPhotos(item) {
       if (!item) return [];
-      if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos.filter(Boolean);
+      const isValid = (p) => typeof p === 'string' && p.trim() && !p.startsWith('[Photo') && (p.startsWith('data:image') || p.startsWith('http') || p.startsWith('blob:'));
+      if (Array.isArray(item.photos)) {
+        const valid = item.photos.filter(isValid);
+        if (valid.length > 0) return valid;
+      }
       if (typeof item.photos === 'string' && item.photos.trim().startsWith('[')) {
         try {
           const parsed = JSON.parse(item.photos);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed.filter(Boolean);
+          if (Array.isArray(parsed)) {
+            const valid = parsed.filter(isValid);
+            if (valid.length > 0) return valid;
+          }
         } catch(e) {}
       }
-      if (item.photo && typeof item.photo === 'string' && item.photo.trim()) return [item.photo.trim()];
-      if (typeof item.photos === 'string' && item.photos.trim()) return [item.photos.trim()];
+      if (isValid(item.photo)) return [item.photo.trim()];
+      if (isValid(item.photos)) return [item.photos.trim()];
       return [];
     }
 

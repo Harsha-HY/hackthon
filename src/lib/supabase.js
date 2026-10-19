@@ -1,8 +1,8 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://evnjukozsucobknwvzfp.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bmp1a296c3Vjb2Jrbnd2emZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTc3MjA1MywiZXhwIjoyMTA1MzQ4MDUzfQ.OzV3s8TKPGefQPdAKfMEUwKFYJwa4cYH6vsl7E9uGKk';
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '';
 
 let supabase = null;
 if (supabaseUrl && supabaseKey) {
@@ -119,15 +119,18 @@ function mapUserToDb(u) {
 }
 
 function mapDbToUser(row) {
+  const deptName = row.department_name || (row.department === 'gp' ? 'Bogadi Gram Panchayat' : (row.department === 'tp' ? 'Hootagalli Town Panchayat' : 'Mysuru City Corporation'));
+  const pin = row.assigned_pin || '';
   return {
     id: row.id,
     name: row.name,
     email: row.email,
     phone: row.phone,
     password: row.password,
-    role: row.role,
+    role: row.role || (row.assigned_pin ? 'inspector' : 'citizen'),
     department: row.department,
-    departmentName: row.department_name,
+    departmentName: deptName,
+    authority: row.authority || (row.role === 'inspector' || row.assigned_pin ? (deptName + ' Inspector (PIN: ' + pin + ')') : (row.role === 'officer' ? deptName : (row.role === 'admin' ? 'Super Admin' : 'Customer'))),
     assignedPin: row.assigned_pin,
     pin: row.assigned_pin,
     assignedArea: row.assigned_area,

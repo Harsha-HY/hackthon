@@ -466,16 +466,52 @@ const server = http.createServer(async (req, res) => {
     // 2. Applications
     if (pathname === '/api/applications') {
       if (method === 'GET') {
-        let apps = db.applications || [];
+        let apps = Array.isArray(db.applications) ? [...db.applications] : [];
         if (supabase) {
           try {
             const { data: suApps } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
             if (Array.isArray(suApps) && suApps.length > 0) {
-              apps = suApps.map(mapDbToApp);
+              const suMapped = suApps.map(mapDbToApp);
+              const mergedMap = new Map();
+              
+              // 1. Index server-side local memory applications first
+              apps.forEach(a => {
+                if (a && a.id) mergedMap.set(String(a.id).trim(), a);
+              });
+
+              // 2. Merge incoming Supabase applications while strictly preserving photos
+              suMapped.forEach(suItem => {
+                if (!suItem || !suItem.id) return;
+                const id = String(suItem.id).trim();
+                const existing = mergedMap.get(id);
+                if (existing) {
+                  const existingPhotos = (Array.isArray(existing.photos) && existing.photos.length > 0) ? existing.photos : (existing.photo ? [existing.photo] : []);
+                  const suPhotos = (Array.isArray(suItem.photos) && suItem.photos.length > 0) ? suItem.photos : (suItem.photo ? [suItem.photo] : []);
+                  const chosenPhotos = existingPhotos.length > 0 ? existingPhotos : suPhotos;
+                  mergedMap.set(id, {
+                    ...suItem,
+                    ...existing,
+                    photos: chosenPhotos,
+                    photo: chosenPhotos[0] || null
+                  });
+                } else {
+                  mergedMap.set(id, suItem);
+                }
+              });
+
+              apps = Array.from(mergedMap.values());
               db.applications = apps;
             }
           } catch(e) {}
         }
+
+        // Deterministic sort: Newest submitted first, deterministic ID tiebreaker (Zero shuffling)
+        apps.sort((a, b) => {
+          const tA = new Date(a.submittedAt || a.created_at || a.issueDate || 0).getTime();
+          const tB = new Date(b.submittedAt || b.created_at || b.issueDate || 0).getTime();
+          if (tB !== tA) return tB - tA;
+          return String(b.id || '').localeCompare(String(a.id || ''));
+        });
 
         const query = parsedUrl.query || {};
         if (query.inspector) {

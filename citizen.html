@@ -582,17 +582,14 @@
 
       <!-- Header Navigation Links & Right User Menu -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Quick Switch Badges -->
+        <!-- Clean Customer Header Action -->
         <div class="hidden md:flex items-center gap-2">
-          <a href="inspector.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
-            <span>🔍</span> <span>Inspector Portal</span>
-          </a>
-          <a href="officer.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
-            <span>🏛️</span> <span>Officer Command</span>
-          </a>
-          <a href="dashboard.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
-            <span>📊</span> <span>Civic Dashboard</span>
-          </a>
+          <button onclick="switchTab('panel')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200 transition">
+            <span>📝</span> <span>New Request</span>
+          </button>
+          <button onclick="switchTab('applications')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold border border-slate-200 transition">
+            <span>📜</span> <span>Track Requests</span>
+          </button>
         </div>
 
         <div class="relative">
@@ -617,19 +614,6 @@
             <button onclick="switchTab('applications')" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
               <span>📜</span> <span>Application History</span>
             </button>
-            <div class="border-t border-slate-100 my-1"></div>
-            <a href="inspector.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
-              <span>🔍</span> <span>Inspector Portal</span>
-            </a>
-            <a href="officer.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
-              <span>🏛️</span> <span>Officer Command Center</span>
-            </a>
-            <a href="dashboard.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
-              <span>📊</span> <span>Civic Public Analytics</span>
-            </a>
-            <a href="auth.html" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center gap-2">
-              <span>🔐</span> <span>Switch Role / Login</span>
-            </a>
             <div class="border-t border-slate-100 my-1"></div>
             <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition">
               🚪 Sign Out
@@ -3014,6 +2998,17 @@
       if (saved) {
         try {
           const user = JSON.parse(saved);
+          const role = (user.role || '').toLowerCase();
+          const auth = (user.authority || '').toLowerCase();
+          // If logged in as an inspector, redirect straight to inspector console
+          if (role === 'inspector' || auth.includes('inspector')) {
+            window.location.href = 'inspector.html?email=' + encodeURIComponent(user.email || '') + '&pin=' + encodeURIComponent(user.assignedPin || user.pin || '');
+            return;
+          }
+          if (role === 'officer' && !auth.includes('citizen') && !auth.includes('customer')) {
+            window.location.href = 'officer.html?auth=' + encodeURIComponent(user.department || 'mcc');
+            return;
+          }
           if (user.name && document.getElementById('top-user-name')) document.getElementById('top-user-name').innerText = user.name;
           if (user.name && document.getElementById('drop-user-name')) document.getElementById('drop-user-name').innerText = user.name;
           if (user.email && document.getElementById('drop-user-email')) document.getElementById('drop-user-email').innerText = user.email;

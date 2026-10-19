@@ -815,7 +815,8 @@
           auth.includes('inspector') || email.includes('inspector') ||
           email.includes('insp') || email === 'gat@gmail.com' ||
           email === 'q@gmail.com' || email === 'dim@gmail.com' ||
-          email === 'anand.tp@gmail.com'
+          email === 'anand.tp@gmail.com' ||
+          (user.assignedPin && role !== 'officer')
         );
 
         // 2. Dedicated Officer Dashboard (For MCC, Gram Panchayat, and Town Panchayat Officers)
@@ -834,7 +835,7 @@
         );
 
         if (isInspector) {
-          window.location.href = 'inspector.html?email=' + encodeURIComponent(user.email);
+          window.location.href = 'inspector.html?email=' + encodeURIComponent(user.email) + '&pin=' + encodeURIComponent(user.assignedPin || user.pin || '') + '&dept=' + encodeURIComponent(user.department || '');
         } else if (isOfficer) {
           let deptKey = 'mcc';
           if (email === 'gp@gmail.com' || (user.department === 'gp') || auth.includes('gram') || auth.includes('panchayat') || (user.assignedPin && ['570026','571130'].some(p=>user.assignedPin.includes(p)))) {
