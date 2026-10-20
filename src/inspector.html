@@ -1450,15 +1450,8 @@
           if (pinList.some(p => p && (p === appPin || appPin.startsWith(p) || p.startsWith(appPin)))) return true;
         }
 
-        // 5. Authority Jurisdiction Match (Every inspector gets full real queue for their assigned authority)
-        let appTargetAuth = appAuthKey;
-        if (!appTargetAuth) {
-          if (TP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('town') || authStr.includes('hootagalli')) appTargetAuth = 'tp';
-          else if (GP_PINS.some(p => appPin.startsWith(p) || p.startsWith(appPin)) || authStr.includes('panchayat') || authStr.includes('gram') || authStr.includes('bogadi')) appTargetAuth = 'gp';
-          else appTargetAuth = 'mcc';
-        }
-
-        return (appTargetAuth === myAuth);
+        // Strict Assigned Scope: Never bleed other wards or generic authority cases into this inspector's desk
+        return false;
       });
 
       // DETERMINISTIC MULTI-TIER SORT: ZERO SHUFFLING ON REFRESH/POLL
@@ -1588,7 +1581,7 @@
         if (photos.length > 0) {
           photoThumbHtml = `
             <div class="relative group cursor-pointer shrink-0 rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950 shadow-xs" onclick="viewPhoto('${a.id}')" title="Click to enlarge live geotagged photo">
-              <img src="${photos[0]}" alt="Live Site Photo" class="h-28 w-28 sm:h-32 sm:w-32 object-cover group-hover:scale-105 transition duration-200" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=400';"/>
+              <img src="${photos[0]}" alt="Live Site Photo" class="h-28 w-28 sm:h-32 sm:w-32 object-cover group-hover:scale-105 transition duration-200" onerror="this.style.display='none';"/>
               <div class="absolute bottom-1 left-1 right-1 bg-black/75 backdrop-blur-xs rounded-lg px-1.5 py-0.5 text-center">
                 <span class="text-[9px] font-mono font-extrabold text-emerald-300 block truncate">📍 LIVE GEOTAG</span>
               </div>
@@ -1791,7 +1784,7 @@
               <div class="flex items-center gap-2 overflow-x-auto py-1">
                 ${photos.map((p, idx) => `
                   <div class="h-20 w-20 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center shrink-0 border border-slate-700">
-                    <img src="${p}" alt="Site Photo ${idx+1}" class="h-full w-full object-cover cursor-pointer hover:scale-105 transition" onclick="viewPhoto('${app.id}')" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=400';"/>
+                    <img src="${p}" alt="Site Photo ${idx+1}" class="h-full w-full object-cover cursor-pointer hover:scale-105 transition" onclick="viewPhoto('${app.id}')" onerror="this.style.display='none';"/>
                   </div>
                 `).join('')}
               </div>
